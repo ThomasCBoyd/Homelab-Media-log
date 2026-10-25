@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -25,27 +26,103 @@ if(!data)data={channels:[{id:1,num:'62',name:'Cartoon Network'},{id:2,num:'63',n
 let tab='guide';
 function save(){localStorage.setItem(key,JSON.stringify(data))}
 function setTab(t){tab=t;render()}
-function addChannel(){let num=prompt('Channel number?');if(num===null)return;let name=prompt('Channel name?');if(!name)return;data.channels.push({id:Date.now(),num,name});save();render()}
-function addItem(type,channel){let title=prompt('Title?');if(!title)return;data.items.push({id:Date.now(),type,channel,title,owned:false,ripped:false,added:false});save();render()}
-function editItem(id){let item=data.items.find(x=>x.id===id);let title=prompt('Edit title',item.title);if(title===null)return;item.title=title;save();render()}
-function toggle(id,field){let item=data.items.find(x=>x.id===id);item[field]=!item[field];save();render()}
-function backup(){let a=document.createElement('a');let u=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.href=u;a.download='comcast-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
+function addChannel(){
+let num=prompt('Channel number?');
+if(num===null)return;
+num=num.trim();
+if(!num)return alert('Enter a channel number.');
+let name=prompt('Channel name?');
+if(name===null)return;
+name=name.trim();
+if(!name)return alert('Enter a channel name.');
+data.channels.push({id:Date.now(),num,name});
+save();render();
+}
+function editChannel(id){
+let c=data.channels.find(x=>String(x.id)===String(id));
+if(!c)return;
+let num=prompt('Edit channel number',c.num);
+if(num===null)return;
+num=num.trim();
+if(!num)return alert('Enter a channel number.');
+let name=prompt('Edit channel name',c.name);
+if(name===null)return;
+name=name.trim();
+if(!name)return alert('Enter a channel name.');
+c.num=num;
+c.name=name;
+save();render();
+}
+function addItem(type,channel){
+let title=prompt('Title?');
+if(!title||!title.trim())return;
+data.items.push({id:Date.now(),type,channel,title:title.trim(),owned:false,ripped:false,added:false});
+save();render();
+}
+function editItem(id){
+let item=data.items.find(x=>x.id===id);
+if(!item)return;
+let title=prompt('Edit title',item.title);
+if(title===null)return;
+title=title.trim();
+if(!title)return alert('Title cannot be empty.');
+item.title=title;
+save();render();
+if(item.type==='show'&&confirm('Do you also want to move this show to another channel?')){
+moveShow(id);
+}
+}
+function moveShow(id){
+let item=data.items.find(x=>x.id===id);
+if(!item)return;
+let choices=data.channels.map(c=>c.num+' — '+c.name).join('\n');
+let current=data.channels.find(c=>String(c.id)===String(item.channel));
+let number=prompt('Enter the destination channel number:\n'+choices,current?current.num:'');
+if(number===null)return;
+let target=data.channels.find(c=>c.num===number.trim());
+if(!target)return alert('That channel number was not found.');
+item.channel=target.id;
+save();render();
+}
+function toggle(id,field){
+let item=data.items.find(x=>x.id===id);
+if(!item)return;
+item[field]=!item[field];
+save();render();
+}
+function backup(){
+let a=document.createElement('a');
+let u=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+a.href=u;
+a.download='comcast-backup.json';
+a.click();
+setTimeout(()=>URL.revokeObjectURL(u),1000);
+}
 function render(){
 let owned=data.items.filter(x=>x.owned).length,total=data.items.length;
 document.getElementById('stats').textContent=owned+' owned / '+total+' entries';
 document.getElementById('bar').style.width=(total?owned/total*100:0)+'%';
 let q=document.getElementById('search').value.toLowerCase();
-let groups=tab==='guide'?data.channels.map(c=>({name:c.name,num:c.num,id:c.id,type:'show',items:data.items.filter(x=>x.type==='show'&&x.channel===c.id)})):[{name:tab==='movies'?'Movie Collection':'TV Series',num:tab==='movies'?'🎬':'📼',type:tab==='movies'?'movie':'season',items:data.items.filter(x=>x.type===(tab==='movies'?'movie':'season'))}];
+let groups=tab==='guide'
+?data.channels.map(c=>({name:c.name,num:c.num,id:c.id,type:'show',items:data.items.filter(x=>x.type==='show'&&String(x.channel)===String(c.id))}))
+:[{name:tab==='movies'?'Movie Collection':'TV Series',num:tab==='movies'?'🎬':'📼',type:tab==='movies'?'movie':'season',items:data.items.filter(x=>x.type===(tab==='movies'?'movie':'season'))}];
 let out='';
 for(let g of groups){
 let items=g.items.filter(x=>x.title.toLowerCase().includes(q));
 if(q&&!items.length&&!g.name.toLowerCase().includes(q))continue;
-out+='<section class="card"><div class="cardhead"><span class="num">'+escapeHTML(g.num)+'</span><div class="grow"><h2>'+escapeHTML(g.name)+'</h2><span class="muted">'+g.items.length+' entries</span></div></div><div class="rows"><table><thead><tr><th>Title / Show</th><th>Owned</th><th>Ripped</th><th>Added</th><th>Edit</th></tr></thead><tbody>';
-for(let x of items){out+='<tr><td>'+escapeHTML(x.title)+'</td>'+['owned','ripped','added'].map(f=>'<td><input type="checkbox" '+(x[f]?'checked':'')+' onchange="toggle('+x.id+',\''+f+'\')"></td>').join('')+'<td><button onclick="editItem('+x.id+')">Edit</button></td></tr>'}
-out+='</tbody></table></div><div class="actions"><button onclick="addItem(\''+g.type+'\','+(g.id||'null')+')">+ Add '+(g.type==='show'?'Show':g.type==='movie'?'Movie':'Season')+'</button></div></section>'
+out+='<section class="card"><div class="cardhead"><span class="num">'+escapeHTML(g.num)+'</span><div class="grow"><h2>'+escapeHTML(g.name)+'</h2><span class="muted">'+g.items.length+' entries</span></div>'+(g.type==='show'?'<button onclick="editChannel('+JSON.stringify(g.id)+')">Edit</button>':'')+'</div><div class="rows"><table><thead><tr><th>Title / Show</th><th>Owned</th><th>Ripped</th><th>Added</th><th>Edit</th></tr></thead><tbody>';
+for(let x of items){
+out+='<tr><td>'+escapeHTML(x.title)+'</td>'+
+['owned','ripped','added'].map(f=>'<td><input type="checkbox" '+(x[f]?'checked':'')+' onchange="toggle('+JSON.stringify(x.id)+',\''+f+'\')"></td>').join('')+
+'<td><button onclick="editItem('+JSON.stringify(x.id)+')">Edit</button></td></tr>';
 }
-document.getElementById('content').innerHTML=out
+out+='</tbody></table></div><div class="actions"><button onclick="addItem(\''+g.type+'\','+(g.id===undefined?'null':JSON.stringify(g.id))+')">+ Add '+(g.type==='show'?'Show':g.type==='movie'?'Movie':'Season')+'</button></div></section>';
 }
-function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-document.getElementById('search').addEventListener('input',render);render();
+document.getElementById('content').innerHTML=out;
+}
+function escapeHTML(s){
+return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+document.getElementById('search').addEventListener('input',render);
+render();
 </script></body></html>
