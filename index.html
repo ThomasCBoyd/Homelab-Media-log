@@ -211,4 +211,141 @@ render();
   });
 })();
 
+/* Comcast TV Show Inventory Import */
+(function () {
+  const tools = document.querySelector('.tools');
+  if (!tools || document.getElementById('importShows')) return;
+
+  const button = document.createElement('button');
+  button.id = 'importShows';
+  button.textContent = 'Import Shows';
+
+  const picker = document.createElement('input');
+  picker.type = 'file';
+  picker.accept = '.json,application/json';
+  picker.style.display = 'none';
+
+  tools.appendChild(button);
+  tools.appendChild(picker);
+
+  button.addEventListener('click', () => picker.click());
+
+  picker.addEventListener('change', async () => {
+    const file = picker.files[0];
+    if (!file) return;
+
+    try {
+      const imported = JSON.parse(await file.text());
+
+      const rows = Array.isArray(imported)
+        ? imported
+        : imported.shows || imported.entries || imported.items;
+
+      if (!Array.isArray(rows)) {
+        throw new Error('No TV show list found in JSON.');
+      }
+
+      const get = (row, names) => {
+        for (const name of names) {
+          if (row[name] !== undefined && row[name] !== null)
+            return String(row[name]).trim();
+        }
+        return '';
+      };
+
+      const normalized = rows.map(row => ({
+        title: get(row, ['title','show','Show','name']),
+        num: get(row, ['channel','Channel','channel_number','num']),
+        network: get(row, ['network','Network','channel_name','Channel group'])
+      })).filter(row => row.title);
+
+      if (!normalized.length) {
+        throw new Error('No recognizable show titles found.');
+      }
+
+      // Prepare changes without modifying the saved collection.
+      const newChannels = [];
+      const newItems = [];
+      const seen = new Set(
+        data.items.filter(i => i.type === 'show').map(i =>
+          String(i.channel) + '|' + i.title.trim().toLowerCase()
+        )
+      );
+
+      const findChannel = (num, network) => {
+        const all = [...data.channels, ...newChannels];
+        let channel = all.find(c =>
+          num && String(c.num) === num &&
+          (!network || c.name.toLowerCase() === network.toLowerCase())
+        );
+        if (!channel && num) {
+          channel = all.find(c => String(c.num) === num);
+        }
+        if (!channel && network) {
+          channel = all.find(c =>
+            c.name.toLowerCase() === network.toLowerCase()
+          );
+        }
+        if (!channel) {
+          channel = {
+            id: 'import-channel-' + (newChannels.length + 1) + '-' + Date.now(),
+            num: num || 'TBD',
+            name: network || 'Network research needed'
+          };
+          newChannels.push(channel);
+        }
+        return channel;
+      };
+
+      for (const row of normalized) {
+        const channel = findChannel(row.num, row.network);
+        const identity = String(channel.id) + '|' + row.title.toLowerCase();
+        if (seen.has(identity)) continue;
+        seen.add(identity);
+
+        newItems.push({
+          id: 'import-show-' + newItems.length + '-' + Date.now(),
+          channel: channel.id,
+          title: row.title,
+          type: 'show',
+          owned: false,
+          ripped: false,
+          added: false
+        });
+      }
+
+      if (!confirm(
+        'Import preview:\n' +
+        normalized.length + ' source entries\n' +
+        newItems.length + ' new shows\n' +
+        newChannels.length + ' new channels\n\n' +
+        'Existing entries and tracking statuses will be kept.\n\n' +
+        'Continue?'
+      )) return;
+
+      // Create a browser recovery point before import.
+      localStorage.setItem(
+        'comcast-collection-pre-import',
+        JSON.stringify(data)
+      );
+
+      const next = {
+        ...data,
+        channels: [...data.channels, ...newChannels],
+        items: [...data.items, ...newItems]
+      };
+
+      localStorage.setItem(key, JSON.stringify(next));
+      data = next;
+      render();
+
+      alert('Imported ' + newItems.length + ' new TV shows.');
+    } catch (error) {
+      alert('Import failed: ' + error.message);
+    } finally {
+      picker.value = '';
+    }
+  });
+})();
+
 </script></body></html>
