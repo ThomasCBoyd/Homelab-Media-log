@@ -1,33 +1,51 @@
-index.html<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Classic Comcast</title>
-  <style>
-    body {
-      background: #08285c;
-      color: white;
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 40px 15px;
-    }
-    h1 { color: #ffd15c; }
-    button {
-      background: #ffd15c;
-      border: none;
-      padding: 15px;
-      border-radius: 8px;
-      font-weight: bold;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Classic Comcast Collection</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(135deg,#061739,#12458d);color:white;font:14px Arial,sans-serif;min-height:100vh;padding:15px 10px 80px}
+main{max-width:900px;margin:auto}header,.card{background:#103876;border:1px solid #76b9e8;border-radius:12px;margin-bottom:14px;overflow:hidden}
+header{padding:20px;border-color:#e9bc4c}h1{color:#ffd35b;margin:0 0 8px;font-size:27px}h2{margin:0;font-size:19px}.muted{color:#c6dff5}.progress{background:#051b42;border-radius:20px;height:12px;overflow:hidden;margin-top:8px}.fill{height:100%;background:#ffd35b}
+.tools,.actions{display:flex;gap:8px;flex-wrap:wrap;padding:12px 0}button{background:#ffd35b;color:#092550;border:0;border-radius:7px;padding:10px;font-weight:bold;cursor:pointer}input{padding:10px;border:0;border-radius:7px;min-width:0}.tools input{flex:1}
+.cardhead{display:flex;align-items:center;gap:12px;padding:13px;background:#18529a}.num{color:#ffd35b;font-size:24px;font-weight:bold}.grow{flex:1}.rows{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:560px}th{background:#8dd5f1;color:#092550;text-align:left;padding:10px}td{padding:10px;border-bottom:1px solid #4276a9}td input{width:18px;height:18px;accent-color:#ffd35b}.actions{padding:10px}nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#041735;padding:10px;gap:8px}nav button{flex:1}
+</style>
 </head>
-<body>
-  <h1>📺 Classic Comcast</h1>
-  <h2>My Media Collection</h2>
-  <p>Your Comcast collection app is loading.</p>
-  <button onclick="alert('The app is working!')">
-    Test App
-  </button>
-</body>
-</html> 
+<body><main>
+<header><h1>📺 Classic Comcast</h1><div>DVD Research & Collection Guide</div><p id="stats"></p><div class="progress"><div id="bar" class="fill"></div></div></header>
+<div class="tools"><input id="search" placeholder="Search collection"><button onclick="addChannel()">+ Channel</button><button onclick="backup()">Backup</button></div>
+<div id="content"></div>
+</main><nav><button onclick="setTab('guide')">📺 Guide</button><button onclick="setTab('movies')">🎬 Movies</button><button onclick="setTab('series')">📼 Series</button></nav>
+<script>
+const key='comcast-collection-v1';
+let data;
+try{data=JSON.parse(localStorage.getItem(key))}catch(e){}
+if(!data)data={channels:[{id:1,num:'62',name:'Cartoon Network'},{id:2,num:'63',name:'Nickelodeon'},{id:3,num:'64',name:'Disney Channel'},{id:4,num:'266',name:'Toon Disney'}],items:[{id:10,channel:1,title:'Batman Beyond',type:'show',owned:false,ripped:true,added:false},{id:11,title:'Shrek Collection',type:'movie',owned:true,ripped:false,added:false},{id:12,title:'Pirates of the Caribbean Collection',type:'movie',owned:true,ripped:false,added:false},{id:13,title:'Harry Potter Collection',type:'movie',owned:true,ripped:false,added:false},...Array.from({length:10},(_,i)=>({id:20+i,title:'Stargate SG-1 Season '+(i+1),type:'season',owned:true,ripped:false,added:false}))]};
+let tab='guide';
+function save(){localStorage.setItem(key,JSON.stringify(data))}
+function setTab(t){tab=t;render()}
+function addChannel(){let num=prompt('Channel number?');if(num===null)return;let name=prompt('Channel name?');if(!name)return;data.channels.push({id:Date.now(),num,name});save();render()}
+function addItem(type,channel){let title=prompt('Title?');if(!title)return;data.items.push({id:Date.now(),type,channel,title,owned:false,ripped:false,added:false});save();render()}
+function editItem(id){let item=data.items.find(x=>x.id===id);let title=prompt('Edit title',item.title);if(title===null)return;item.title=title;save();render()}
+function toggle(id,field){let item=data.items.find(x=>x.id===id);item[field]=!item[field];save();render()}
+function backup(){let a=document.createElement('a');let u=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.href=u;a.download='comcast-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
+function render(){
+let owned=data.items.filter(x=>x.owned).length,total=data.items.length;
+document.getElementById('stats').textContent=owned+' owned / '+total+' entries';
+document.getElementById('bar').style.width=(total?owned/total*100:0)+'%';
+let q=document.getElementById('search').value.toLowerCase();
+let groups=tab==='guide'?data.channels.map(c=>({name:c.name,num:c.num,id:c.id,type:'show',items:data.items.filter(x=>x.type==='show'&&x.channel===c.id)})):[{name:tab==='movies'?'Movie Collection':'TV Series',num:tab==='movies'?'🎬':'📼',type:tab==='movies'?'movie':'season',items:data.items.filter(x=>x.type===(tab==='movies'?'movie':'season'))}];
+let out='';
+for(let g of groups){
+let items=g.items.filter(x=>x.title.toLowerCase().includes(q));
+if(q&&!items.length&&!g.name.toLowerCase().includes(q))continue;
+out+='<section class="card"><div class="cardhead"><span class="num">'+escapeHTML(g.num)+'</span><div class="grow"><h2>'+escapeHTML(g.name)+'</h2><span class="muted">'+g.items.length+' entries</span></div></div><div class="rows"><table><thead><tr><th>Title / Show</th><th>Owned</th><th>Ripped</th><th>Added</th><th>Edit</th></tr></thead><tbody>';
+for(let x of items){out+='<tr><td>'+escapeHTML(x.title)+'</td>'+['owned','ripped','added'].map(f=>'<td><input type="checkbox" '+(x[f]?'checked':'')+' onchange="toggle('+x.id+',\''+f+'\')"></td>').join('')+'<td><button onclick="editItem('+x.id+')">Edit</button></td></tr>'}
+out+='</tbody></table></div><div class="actions"><button onclick="addItem(\''+g.type+'\','+(g.id||'null')+')">+ Add '+(g.type==='show'?'Show':g.type==='movie'?'Movie':'Season')+'</button></div></section>'
+}
+document.getElementById('content').innerHTML=out
+}
+function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+document.getElementById('search').addEventListener('input',render);render();
+</script></body></html>
