@@ -1,224 +1,780 @@
 
-/* Classic Comcast: expandable collections, additive upgrade */
-(function () {
-  if (document.getElementById('comcast-expandable-style')) return;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Classic Comcast Collection</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:12px 9px 85px;background:linear-gradient(135deg,#061739,#12458d);background-attachment:fixed;color:white;font:14px Arial,sans-serif}
+main{max-width:1000px;margin:auto}
+header,.card{background:#103876;border:1px solid #76b9e8;border-radius:12px;margin-bottom:12px;overflow:hidden}
+header{padding:17px;border-color:#e9bc4c}
+h1{margin:0 0 8px;color:#ffd35b;font-size:26px}
+h2{margin:0;font-size:18px}
+.muted{color:#c6dff5}
+.progress{height:11px;background:#051b42;border-radius:20px;overflow:hidden;margin-top:10px}
+#bar{height:100%;background:#ffd35b;width:0}
+.tools{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}
+button{background:#ffd35b;color:#092550;border:0;border-radius:6px;padding:8px;font-weight:bold;cursor:pointer}
+#search{width:100%;padding:12px;border:0;border-radius:7px;font-size:15px}
+.cardhead{display:flex;align-items:center;gap:10px;padding:12px;background:#18529a}
+.channelnum{color:#ffd35b;font-size:24px;font-weight:bold}
+.grow{flex:1;min-width:0}
+.row{display:grid;grid-template-columns:minmax(0,1fr) 27px 27px 27px 33px;align-items:center;gap:6px;padding:9px 7px;border-bottom:1px solid #4276a9}
+.heading{background:#8dd5f1;color:#092550;font-size:9px;font-weight:bold;padding:7px}
+.center{text-align:center}
+.title{background:transparent;color:white;text-align:left;padding:0;font-weight:normal;font-size:13px;overflow-wrap:anywhere}
+.title strong{font-weight:bold}
+.arrow{color:#ffd35b}
+.check{display:flex;justify-content:center;align-items:center}
+.check input{width:17px;height:17px;margin:0;accent-color:#ffd35b}
+.mini{padding:5px 3px;font-size:10px}
+.children{margin:0 7px 8px 12px;border-left:3px solid #ffd35b;background:#082653;border-radius:5px}
+.child{display:grid;grid-template-columns:minmax(0,1fr) 27px 27px 27px 33px;align-items:center;gap:6px;padding:9px 7px;border-bottom:1px solid #345c8b}
+.childname{font-size:12px;overflow-wrap:anywhere}
+.actions{padding:10px;display:flex;gap:7px;flex-wrap:wrap}
+.empty{padding:14px;color:#c6dff5}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;gap:8px;padding:10px;background:#041735;z-index:10}
+nav button{flex:1}
+nav button.active{background:#8dd5f1}
+@media(min-width:650px){
+.row,.child{grid-template-columns:minmax(0,1fr) 65px 65px 65px 65px}
+.heading{font-size:12px}
+.title{font-size:14px}
+.mini{font-size:12px}
+}
+</style>
+</head>
+<body>
+<main>
+<header>
+<h1>📺 Classic Comcast</h1>
+<div>DVD Research & Collection Guide</div>
+<p id="stats"></p>
+<div class="progress"><div id="bar"></div></div>
+<p id="seasonStats" class="muted"></p>
+</header>
 
-  const style = document.createElement('style');
-  style.id = 'comcast-expandable-style';
-  style.textContent = `
-    .cc-collection{margin:10px;border:1px solid #4276a9;border-radius:9px;overflow:hidden;background:#0b2d61}
-    .cc-collection summary{cursor:pointer;display:flex;align-items:center;gap:12px;padding:12px;background:#18529a;list-style:none}
-    .cc-collection summary::-webkit-details-marker{display:none}
-    .cc-collection summary:before{content:'▸';color:#ffd35b}
-    .cc-collection[open] summary:before{content:'▾'}
-    .cc-collection .cc-count{color:#c6dff5;font-size:12px}
-    .cc-collection .cc-body{overflow-x:auto}
-    .cc-collection table{min-width:560px}
-    .cc-collection .cc-actions{padding:10px;display:flex;gap:8px;flex-wrap:wrap}
-  `;
-  document.head.appendChild(style);
+<div class="tools">
+<input id="search" type="search" placeholder="Search channels, shows, movies, seasons...">
+<button id="addChannel">+ Channel</button>
+<button id="backup">Backup</button>
+<button id="restore">Restore</button>
+<button id="import">Import Shows</button>
+</div>
 
-  // Save individual movies inside the existing collection data.
-  if (!Array.isArray(data.collectionChildren)) {
-    data.collectionChildren = [];
+<div id="content"></div>
+</main>
+
+<nav>
+<button id="guideTab" class="active">📺 TV Guide</button>
+<button id="movieTab">🎬 Movies</button>
+</nav>
+
+<input id="restoreFile" type="file" accept=".json,application/json" hidden>
+<input id="importFile" type="file" accept=".json,application/json" hidden>
+
+<script>
+"use strict";
+
+const KEY="comcast-collection-v1";
+const $=id=>document.getElementById(id);
+const uid=()=>Date.now()+"-"+Math.random().toString(36).slice(2,9);
+const norm=s=>String(s||"").toLowerCase().replace(/[^a-z0-9]/g,"");
+const fields=["owned","ripped","added"];
+
+function initialData(){
+ return {
+  channels:[
+   {id:1,num:"62",name:"Cartoon Network"},
+   {id:2,num:"63",name:"Nickelodeon"},
+   {id:3,num:"64",name:"Disney Channel"},
+   {id:4,num:"266",name:"Toon Disney"},
+   {id:74,num:"74",name:"SYFY"}
+  ],
+  items:[
+   {id:10,channel:1,title:"Batman Beyond",type:"show",owned:false,ripped:true,added:false},
+   {id:11,title:"Shrek Collection",type:"movie",owned:true,ripped:false,added:false},
+   {id:12,title:"Pirates of the Caribbean Collection",type:"movie",owned:true,ripped:false,added:false},
+   {id:13,title:"Harry Potter Collection",type:"movie",owned:true,ripped:false,added:false},
+   {id:14,channel:74,title:"Stargate SG-1",type:"show",owned:true,ripped:false,added:false}
+  ],
+  collectionChildren:[]
+ };
+}
+
+let data;
+try{data=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+
+if(!data||!Array.isArray(data.items)||!Array.isArray(data.channels)){
+ data=initialData();
+}
+if(!Array.isArray(data.collectionChildren)){
+ data.collectionChildren=[];
+}
+
+let tab="guide";
+const opened=new Set();
+
+function save(){
+ try{
+  localStorage.setItem(KEY,JSON.stringify(data));
+ }catch(e){
+  alert("Unable to save. Please keep your JSON backup.");
+ }
+}
+
+function backupRecovery(){
+ try{
+  if(!localStorage.getItem("comcast-recovery-clean-v2")){
+   localStorage.setItem("comcast-recovery-clean-v2",JSON.stringify(data));
+  }
+ }catch(e){}
+}
+
+function children(parent){
+ return data.collectionChildren.filter(c=>String(c.parentId)===String(parent.id));
+}
+
+function findShow(title){
+ return data.items.find(i=>i.type==="show"&&norm(i.title)===norm(title));
+}
+
+function addChildRecord(parent,title,values={}){
+ const existing=children(parent).find(c=>norm(c.title)===norm(title));
+ if(existing)return existing;
+
+ const child={
+  id:uid(),
+  parentId:parent.id,
+  title,
+  owned:!!values.owned,
+  ripped:!!values.ripped,
+  added:!!values.added
+ };
+ data.collectionChildren.push(child);
+ return child;
+}
+
+function migrate(){
+ backupRecovery();
+
+ let syfy=data.channels.find(c=>String(c.num)==="74");
+
+ if(!syfy){
+  syfy={id:uid(),num:"74",name:"SYFY"};
+  data.channels.push(syfy);
+ }else{
+  syfy.name="SYFY";
+ }
+
+ let stargate=findShow("Stargate SG-1");
+ const old=data.items.filter(i=>
+  i.type==="season"&&/^Stargate SG-1 Season\s*\d+$/i.test(i.title)
+ );
+
+ if(!stargate){
+  stargate={
+   id:uid(),
+   channel:syfy.id,
+   title:"Stargate SG-1",
+   type:"show",
+   owned:old.length?old.some(i=>i.owned):true,
+   ripped:false,
+   added:false
+  };
+  data.items.push(stargate);
+ }
+
+ stargate.channel=syfy.id;
+
+ for(const season of old){
+  addChildRecord(stargate,season.title,season);
+ }
+
+ const oldIds=new Set(old.map(i=>String(i.id)));
+ data.items=data.items.filter(i=>!oldIds.has(String(i.id)));
+
+ if(!children(stargate).length){
+  for(let n=1;n<=10;n++){
+   addChildRecord(stargate,"Stargate SG-1 Season "+n,{
+    owned:!!stargate.owned
+   });
+  }
+ }
+
+ // Migrate older season entries for other shows.
+ const remaining=data.items.filter(i=>i.type==="season");
+
+ for(const season of remaining){
+  const match=season.title.match(/^(.*?)\s+Season\s+(\d+)$/i);
+  if(!match)continue;
+
+  let parent=findShow(match[1]);
+
+  if(!parent){
+   parent={
+    id:uid(),
+    title:match[1],
+    type:"show",
+    owned:!!season.owned,
+    ripped:!!season.ripped,
+    added:!!season.added
+   };
+   data.items.push(parent);
   }
 
-  const children = data.collectionChildren;
-  const uid = () => 'cc-child-' + Date.now() + '-' +
-    Math.random().toString(36).slice(2, 9);
+  addChildRecord(parent,season.title,season);
+  data.items=data.items.filter(i=>String(i.id)!==String(season.id));
+ }
 
-  const norm = s => String(s || '')
-    .toLowerCase().replace(/[^a-z0-9]/g, '');
+ const movieCollections=[
+  ["Shrek Collection",[
+   "Shrek","Shrek 2","Shrek the Third","Shrek Forever After"
+  ]],
+  ["Pirates of the Caribbean Collection",[
+   "Pirates of the Caribbean: The Curse of the Black Pearl",
+   "Pirates of the Caribbean: Dead Man's Chest",
+   "Pirates of the Caribbean: At World's End",
+   "Pirates of the Caribbean: On Stranger Tides",
+   "Pirates of the Caribbean: Dead Men Tell No Tales"
+  ]],
+  ["Harry Potter Collection",[
+   "Harry Potter and the Sorcerer's Stone",
+   "Harry Potter and the Chamber of Secrets",
+   "Harry Potter and the Prisoner of Azkaban",
+   "Harry Potter and the Goblet of Fire",
+   "Harry Potter and the Order of the Phoenix",
+   "Harry Potter and the Half-Blood Prince",
+   "Harry Potter and the Deathly Hallows – Part 1",
+   "Harry Potter and the Deathly Hallows – Part 2"
+  ]]
+ ];
 
-  function seed(parentTitle, names) {
-    const parent = data.items.find(i =>
-      norm(i.title) === norm(parentTitle)
-    );
-    if (!parent) return;
+ for(const [name,titles] of movieCollections){
+  const parent=data.items.find(i=>
+   i.type==="movie"&&norm(i.title)===norm(name)
+  );
+  if(!parent)continue;
 
-    for (const name of names) {
-      if (!children.some(c =>
-        String(c.parentId) === String(parent.id) &&
-        norm(c.title) === norm(name)
-      )) {
-        children.push({
-          id: uid(),
-          parentId: parent.id,
-          title: name,
-          owned: !!parent.owned,
-          ripped: false,
-          added: false
-        });
-      }
-    }
+  for(const title of titles){
+   addChildRecord(parent,title,{owned:parent.owned});
+  }
+ }
+
+ save();
+}
+
+function element(tag,className,text){
+ const e=document.createElement(tag);
+ if(className)e.className=className;
+ if(text!==undefined)e.textContent=text;
+ return e;
+}
+
+function makeCheck(item,field){
+ const label=element("label","check");
+ const input=document.createElement("input");
+ input.type="checkbox";
+ input.checked=!!item[field];
+ input.setAttribute("aria-label",field+" "+item.title);
+
+ input.addEventListener("change",()=>{
+  item[field]=input.checked;
+  save();
+  updateStats();
+ });
+
+ label.appendChild(input);
+ return label;
+}
+
+function editTitle(item){
+ const title=prompt("Edit title",item.title);
+ if(title===null||!title.trim())return;
+ item.title=title.trim();
+
+ if(item.type==="show"&&confirm("Move this show to another channel?")){
+  const current=data.channels.find(c=>String(c.id)===String(item.channel));
+  const number=prompt("Destination channel number",current?current.num:"");
+  if(number!==null){
+   const destination=data.channels.find(c=>String(c.num)===number.trim());
+   if(destination)item.channel=destination.id;
+   else alert("Channel not found.");
+  }
+ }
+
+ save();
+ render();
+}
+
+function addChild(parent){
+ const title=prompt(
+  parent.type==="show"?"Season title?":"Movie title?",
+  parent.type==="show"?"Season "+(children(parent).length+1):""
+ );
+ if(!title||!title.trim())return;
+
+ addChildRecord(parent,title.trim());
+ opened.add(String(parent.id));
+ save();
+ render();
+}
+
+function childRow(child){
+ const row=element("div","child");
+ row.appendChild(element("span","childname",child.title));
+
+ for(const field of fields){
+  row.appendChild(makeCheck(child,field));
+ }
+
+ const edit=element("button","mini","Edit");
+ edit.addEventListener("click",()=>editTitle(child));
+ row.appendChild(edit);
+ return row;
+}
+
+function itemRow(item){
+ const wrapper=element("div");
+ const row=element("div","row");
+
+ const title=element("button","title");
+ const isOpen=opened.has(String(item.id));
+
+ title.append(
+  element("span","arrow",isOpen?"▼ ":"▶ "),
+  element("strong","",item.title)
+ );
+
+ title.addEventListener("click",()=>{
+  const id=String(item.id);
+  if(opened.has(id))opened.delete(id);
+  else opened.add(id);
+  render();
+ });
+
+ row.appendChild(title);
+
+ const isCollection=item.type==="movie"&&children(item).length>0;
+
+ for(const field of fields){
+  row.appendChild(
+   isCollection
+    ?element("span","center muted","—")
+    :makeCheck(item,field)
+  );
+ }
+
+ const edit=element("button","mini","Edit");
+ edit.addEventListener("click",()=>editTitle(item));
+ row.appendChild(edit);
+ wrapper.appendChild(row);
+
+ if(isOpen){
+  const body=element("div","children");
+  const list=[...children(item)];
+
+  if(item.type==="show"){
+   list.sort((a,b)=>{
+    const number=s=>Number(s.title.match(/Season\s*(\d+)/i)?.[1]||0);
+    return number(a)-number(b);
+   });
   }
 
-  seed('Harry Potter Collection', [
-    "Harry Potter and the Sorcerer's Stone",
-    'Harry Potter and the Chamber of Secrets',
-    'Harry Potter and the Prisoner of Azkaban',
-    'Harry Potter and the Goblet of Fire',
-    'Harry Potter and the Order of the Phoenix',
-    'Harry Potter and the Half-Blood Prince',
-    'Harry Potter and the Deathly Hallows - Part 1',
-    'Harry Potter and the Deathly Hallows - Part 2'
-  ]);
+  for(const child of list){
+   body.appendChild(childRow(child));
+  }
 
-  seed('Pirates of the Caribbean Collection', [
-    'The Curse of the Black Pearl',
-    "Dead Man's Chest",
-    "At World's End",
-    'On Stranger Tides',
-    'Dead Men Tell No Tales'
-  ]);
+  if(!list.length){
+   body.appendChild(element(
+    "div","empty",
+    item.type==="show"?"No seasons yet.":"No movies yet."
+   ));
+  }
 
-  seed('Shrek Collection', [
-    'Shrek',
-    'Shrek 2',
-    'Shrek the Third',
-    'Shrek Forever After'
-  ]);
+  const actions=element("div","actions");
+  const add=element(
+   "button","",
+   item.type==="show"?"+ Add Season":"+ Add Movie"
+  );
+  add.addEventListener("click",()=>addChild(item));
+  actions.appendChild(add);
+  body.appendChild(actions);
+  wrapper.appendChild(body);
+ }
+
+ return wrapper;
+}
+
+function addItem(type,channel){
+ const title=prompt(type==="show"?"Show title?":"Movie or collection title?");
+ if(!title||!title.trim())return;
+
+ data.items.push({
+  id:uid(),
+  title:title.trim(),
+  type,
+  channel:channel?channel.id:null,
+  owned:false,
+  ripped:false,
+  added:false
+ });
+
+ save();
+ render();
+}
+
+function section(name,num,items,type,channel){
+ const card=element("section","card");
+ const head=element("div","cardhead");
+
+ head.appendChild(element("span","channelnum",num));
+
+ const grow=element("div","grow");
+ grow.append(
+  element("h2","",name),
+  element("span","muted",items.length+" titles")
+ );
+ head.appendChild(grow);
+
+ if(channel){
+  const edit=element("button","mini","Edit");
+  edit.addEventListener("click",()=>{
+   const number=prompt("Channel number",channel.num);
+   if(number===null||!number.trim())return;
+
+   const name=prompt("Channel name",channel.name);
+   if(name===null||!name.trim())return;
+
+   channel.num=number.trim();
+   channel.name=name.trim();
+   save();
+   render();
+  });
+  head.appendChild(edit);
+ }
+
+ card.appendChild(head);
+
+ const headings=element("div","row heading");
+ for(const label of ["Title","Owned","Ripped","Added","Edit"]){
+  headings.appendChild(element(
+   "span",label==="Title"?"":"center",label
+  ));
+ }
+ card.appendChild(headings);
+
+ for(const item of items){
+  card.appendChild(itemRow(item));
+ }
+
+ if(!items.length){
+  card.appendChild(element("div","empty","No matching titles."));
+ }
+
+ const actions=element("div","actions");
+ const add=element(
+  "button","",
+  type==="show"?"+ Add Show":"+ Add Movie / Collection"
+ );
+ add.addEventListener("click",()=>addItem(type,channel));
+ actions.appendChild(add);
+ card.appendChild(actions);
+
+ return card;
+}
+
+function updateStats(){
+ const folders=new Set(
+  data.items.filter(i=>
+   i.type==="movie"&&children(i).length>0
+  ).map(i=>String(i.id))
+ );
+
+ const main=data.items.filter(i=>
+  i.type!=="season"&&!folders.has(String(i.id))
+ );
+
+ const movies=data.collectionChildren.filter(i=>
+  folders.has(String(i.parentId))
+ );
+
+ const titles=[...main,...movies];
+
+ const owned=titles.filter(i=>i.owned).length;
+ const ripped=titles.filter(i=>i.ripped).length;
+ const added=titles.filter(i=>i.added).length;
+
+ $("stats").textContent=
+  owned+" owned / "+titles.length+
+  " titles • "+ripped+" ripped • "+added+" added";
+
+ $("bar").style.width=
+  (titles.length?owned/titles.length*100:0)+"%";
+
+ const showIds=new Set(
+  data.items.filter(i=>i.type==="show").map(i=>String(i.id))
+ );
+
+ const seasons=data.collectionChildren.filter(i=>
+  showIds.has(String(i.parentId))
+ );
+
+ $("seasonStats").textContent=
+  "Seasons: "+seasons.filter(i=>i.owned).length+
+  "/"+seasons.length+" owned • "+
+  seasons.filter(i=>i.ripped).length+" ripped • "+
+  seasons.filter(i=>i.added).length+" added";
+}
+
+function render(){
+ const root=$("content");
+ root.replaceChildren();
+
+ $("guideTab").classList.toggle("active",tab==="guide");
+ $("movieTab").classList.toggle("active",tab==="movies");
+
+ const q=$("search").value.trim().toLowerCase();
+ const searching=q.length>0;
+
+ const matches=item=>
+  item.title.toLowerCase().includes(q)||
+  children(item).some(c=>c.title.toLowerCase().includes(q));
+
+ // Search both tabs at once when text is entered.
+ if(searching||tab==="guide"){
+  for(const channel of data.channels){
+   const all=data.items.filter(i=>
+    i.type==="show"&&String(i.channel)===String(channel.id)
+   );
+
+   const channelMatches=
+    String(channel.num).toLowerCase().includes(q)||
+    channel.name.toLowerCase().includes(q);
+
+   const filtered=!searching||channelMatches
+    ?all
+    :all.filter(matches);
+
+   if(searching&&!channelMatches&&!filtered.length)continue;
+
+   root.appendChild(section(
+    channel.name,channel.num,filtered,"show",channel
+   ));
+  }
+
+  const unassigned=data.items.filter(i=>
+   i.type==="show"&&!data.channels.some(c=>
+    String(c.id)===String(i.channel)
+   )
+  );
+
+  const filtered=searching
+   ?unassigned.filter(matches)
+   :unassigned;
+
+  if(filtered.length){
+   root.appendChild(section(
+    "Other TV Series","📼",filtered,"show",null
+   ));
+  }
+ }
+
+ if(searching||tab==="movies"){
+  const movies=data.items.filter(i=>i.type==="movie");
+  const filtered=searching?movies.filter(matches):movies;
+
+  if(!searching||filtered.length){
+   root.appendChild(section(
+    "Movie Collection","🎬",filtered,"movie",null
+   ));
+  }
+ }
+
+ if(!root.children.length){
+  root.appendChild(element(
+   "div","empty",
+   "No matching channels, shows, seasons, movies or collections."
+  ));
+ }
+
+ updateStats();
+}
+
+function downloadJSON(value,filename){
+ const blob=new Blob(
+  [JSON.stringify(value,null,2)],
+  {type:"application/json"}
+ );
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement("a");
+ a.href=url;
+ a.download=filename;
+ document.body.appendChild(a);
+ a.click();
+ a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),3000);
+}
+
+function backup(){
+ downloadJSON(data,"comcast-backup.json");
+}
+
+async function restore(file){
+ if(!file)return;
+
+ try{
+  const restored=JSON.parse(await file.text());
+
+  if(!restored||
+     !Array.isArray(restored.items)||
+     !Array.isArray(restored.channels)){
+   throw Error("Invalid backup");
+  }
+
+  if(!confirm("Restore backup? Current data will be downloaded first.")){
+   return;
+  }
+
+  backup();
+  data=restored;
+
+  if(!Array.isArray(data.collectionChildren)){
+   data.collectionChildren=[];
+  }
+
+  migrate();
+  render();
+  alert("Collection restored.");
+ }catch(e){
+  alert("Restore failed: "+e.message);
+ }
+}
+
+async function importShows(file){
+ if(!file)return;
+
+ try{
+  const parsed=JSON.parse(await file.text());
+  const list=Array.isArray(parsed)
+   ?parsed
+   :parsed.shows||parsed.entries||parsed.items;
+
+  if(!Array.isArray(list)){
+   throw Error("Expected a list of shows");
+  }
+
+  let count=0;
+
+  for(const entry of list){
+   const title=typeof entry==="string"
+    ?entry.trim()
+    :String(entry.title||entry.name||"").trim();
+
+   if(!title)continue;
+
+   const network=typeof entry==="object"
+    ?String(entry.network||entry.channelName||"").trim()
+    :"";
+
+   const number=typeof entry==="object"
+    ?String(entry.channelNumber||entry.channel_number||entry.channelNum||"").trim()
+    :"";
+
+   let channel=data.channels.find(c=>
+    (network&&norm(c.name)===norm(network))||
+    (number&&String(c.num)===number)
+   );
+
+   if(!channel&&network){
+    channel={id:uid(),num:number||"?",name:network};
+    data.channels.push(channel);
+   }
+
+   const channelId=channel?channel.id:
+    (typeof entry==="object"&&entry.channel!=null
+     ?entry.channel:null);
+
+   if(data.items.some(i=>
+    i.type==="show"&&norm(i.title)===norm(title)&&
+    String(i.channel)===String(channelId)
+   ))continue;
+
+   data.items.push({
+    id:uid(),
+    title,
+    type:"show",
+    channel:channelId,
+    owned:false,
+    ripped:false,
+    added:false
+   });
+
+   count++;
+  }
 
   save();
+  render();
+  alert(count+" shows imported.");
+ }catch(e){
+  alert("Import failed: "+e.message);
+ }
+}
 
-  const originalRender = render;
+$("guideTab").addEventListener("click",()=>{
+ tab="guide";
+ render();
+});
 
-  function expandableRender() {
-    const open = new Set(
-      [...document.querySelectorAll('details.cc-collection[open]')]
-        .map(el => el.dataset.parent)
-    );
+$("movieTab").addEventListener("click",()=>{
+ tab="movies";
+ render();
+});
 
-    originalRender();
+$("search").addEventListener("input",render);
 
-    if (tab !== 'movies' && tab !== 'series') return;
+$("addChannel").addEventListener("click",()=>{
+ const number=prompt("Channel number?");
+ if(!number||!number.trim())return;
 
-    const container = document.getElementById('content');
-    const rows = [...container.querySelectorAll('tbody tr')];
-    const type = tab === 'movies' ? 'movie' : 'season';
-    const query = document.getElementById('search').value.toLowerCase();
+ const name=prompt("Channel name?");
+ if(!name||!name.trim())return;
 
-    const parents = data.items.filter(item =>
-      item.type === type &&
-      (!query || item.title.toLowerCase().includes(query))
-    );
+ data.channels.push({
+  id:uid(),
+  num:number.trim(),
+  name:name.trim()
+ });
 
-    parents.forEach((parent, index) => {
-      const row = rows[index];
-      if (!row) return;
+ save();
+ render();
+});
 
-      const kids = children.filter(child =>
-        String(child.parentId) === String(parent.id)
-      );
+$("backup").addEventListener("click",backup);
 
-      if (tab === 'series' && !kids.length) return;
+$("restore").addEventListener("click",()=>{
+ $("restoreFile").click();
+});
 
-      const details = document.createElement('details');
-      details.className = 'cc-collection';
-      details.dataset.parent = String(parent.id);
-      details.open = open.has(String(parent.id));
+$("import").addEventListener("click",()=>{
+ $("importFile").click();
+});
 
-      const summary = document.createElement('summary');
-      const label = document.createElement('strong');
-      label.textContent = parent.title;
+$("restoreFile").addEventListener("change",async e=>{
+ await restore(e.target.files[0]);
+ e.target.value="";
+});
 
-      const count = document.createElement('span');
-      count.className = 'cc-count';
-      count.textContent = kids.length + ' entries';
+$("importFile").addEventListener("change",async e=>{
+ await importShows(e.target.files[0]);
+ e.target.value="";
+});
 
-      summary.append(label, count);
-      details.appendChild(summary);
-
-      const body = document.createElement('div');
-      body.className = 'cc-body';
-
-      const table = document.createElement('table');
-      table.innerHTML =
-        '<thead><tr><th>Movie / Season</th>' +
-        '<th>Owned</th><th>Ripped</th>' +
-        '<th>Added</th><th>Edit</th></tr></thead>';
-
-      const tbody = document.createElement('tbody');
-
-      kids.forEach(child => {
-        const tr = document.createElement('tr');
-        const nameCell = document.createElement('td');
-        nameCell.textContent = child.title;
-        tr.appendChild(nameCell);
-
-        ['owned', 'ripped', 'added'].forEach(field => {
-          const cell = document.createElement('td');
-          const checkbox = document.createElement('input');
-          checkbox.type = 'checkbox';
-          checkbox.checked = !!child[field];
-
-          checkbox.addEventListener('change', () => {
-            child[field] = checkbox.checked;
-            save();
-          });
-
-          cell.appendChild(checkbox);
-          tr.appendChild(cell);
-        });
-
-        const editCell = document.createElement('td');
-        const edit = document.createElement('button');
-        edit.textContent = 'Edit';
-
-        edit.addEventListener('click', () => {
-          const name = prompt('Edit title', child.title);
-          if (name === null || !name.trim()) return;
-          child.title = name.trim();
-          save();
-          expandableRender();
-        });
-
-        editCell.appendChild(edit);
-        tr.appendChild(editCell);
-        tbody.appendChild(tr);
-      });
-
-      table.appendChild(tbody);
-      body.appendChild(table);
-
-      const actions = document.createElement('div');
-      actions.className = 'cc-actions';
-
-      const add = document.createElement('button');
-      add.textContent = '+ Add Movie / Season';
-
-      add.addEventListener('click', () => {
-        const title = prompt('Movie or season title?');
-        if (!title || !title.trim()) return;
-
-        children.push({
-          id: uid(),
-          parentId: parent.id,
-          title: title.trim(),
-          owned: false,
-          ripped: false,
-          added: false
-        });
-
-        save();
-        expandableRender();
-      });
-
-      actions.appendChild(add);
-      body.appendChild(actions);
-      details.appendChild(body);
-
-      const detailRow = document.createElement('tr');
-      const detailCell = document.createElement('td');
-      detailCell.colSpan = 5;
-      detailCell.style.padding = '0';
-      detailCell.appendChild(details);
-      detailRow.appendChild(detailCell);
-
-      row.after(detailRow);
-    });
-  }
-
-  render = expandableRender;
-  expandableRender();
-})();
+migrate();
+render();
+</script>
+</body>
+</html>
