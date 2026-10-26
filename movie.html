@@ -4,208 +4,116 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Classic Comcast — Movies</title>
+<title>Classic Comcast — Movie Details</title>
 <style>
-:root{
- --gold:#ffd15a;
- --muted:#bfd8f4;
- --blue:#10448b;
- --deep:#082650
-}
+:root{--gold:#ffd15a;--muted:#bfd8f4;--deep:#082650;--line:#326ba8}
 *{box-sizing:border-box}
-body{
- margin:0;
- background:linear-gradient(140deg,#061735,#10458b) fixed;
- color:white;
- font:15px system-ui,-apple-system,Arial,sans-serif
-}
+body{margin:0;background:linear-gradient(140deg,#061735,#10458b) fixed;color:#fff;font:15px system-ui,-apple-system,Arial,sans-serif}
 main{max-width:1050px;margin:auto;padding:14px 12px 75px}
 a{color:var(--gold)}
 h1,h2{color:var(--gold)}
 h1{font-size:clamp(23px,5vw,33px);margin:0 0 8px}
-h2{font-size:21px;margin:0 0 15px}
-.card{
- background:linear-gradient(120deg,#092d63,#10448b);
- border:1px solid var(--gold);
- border-radius:16px;
- padding:19px;
- margin:15px 0
-}
+h2{font-size:21px;margin:0 0 12px}
+.card{background:linear-gradient(120deg,#092d63,#10448b);border:1px solid var(--gold);border-radius:16px;padding:19px;margin:15px 0}
 .hero{display:flex;gap:17px;align-items:flex-start}
-.poster{
- width:clamp(95px,25vw,175px);
- aspect-ratio:2/3;
- object-fit:cover;
- border-radius:9px;
- background:var(--deep);
- flex-shrink:0
-}
-.poster.blank{
- display:flex;
- align-items:center;
- justify-content:center;
- text-align:center;
- border:1px dashed #88b5e8;
- color:var(--muted);
- font-size:12px
-}
+.poster{width:clamp(95px,25vw,175px);aspect-ratio:2/3;object-fit:cover;border-radius:9px;background:var(--deep);flex-shrink:0}
+.poster.blank{display:flex;align-items:center;justify-content:center;text-align:center;border:1px dashed #88b5e8;color:var(--muted);font-size:12px}
 .info{min-width:0;flex:1}
 .muted{color:var(--muted)}
 .small{font-size:13px}
 .description{line-height:1.6;margin:13px 0}
-button{
- background:var(--gold);
- color:#092650;
- border:0;
- border-radius:9px;
- padding:10px 13px;
- font:inherit;
- font-weight:700;
- cursor:pointer
-}
-.secondary{
- background:#164f95;
- color:white;
- border:1px solid #73a9e5
-}
-.actions{
- display:flex;
- gap:9px;
- flex-wrap:wrap;
- margin:13px 0
-}
+button{background:var(--gold);color:#092650;border:0;border-radius:9px;padding:10px 13px;font:inherit;font-weight:700;cursor:pointer}
+.secondary{background:#164f95;color:#fff;border:1px solid #73a9e5}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin:13px 0}
 .status{color:var(--gold);font-size:13px}
-.tracking{
- display:grid;
- grid-template-columns:repeat(3,minmax(0,1fr));
- gap:9px
-}
-.track{
- background:#082650;
- border-radius:10px;
- text-align:center;
- padding:14px 5px
-}
-.track input{
- width:22px;
- height:22px;
- accent-color:var(--gold)
-}
-.track label{
- display:flex;
- flex-direction:column;
- align-items:center;
- gap:8px;
- font-size:12px
-}
-.movie{
- display:flex;
- gap:12px;
- align-items:center;
- padding:12px 0;
- border-top:1px solid #326ba8
-}
+.tracking{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.track{background:var(--deep);border-radius:10px;text-align:center;padding:14px 5px}
+.track input{width:22px;height:22px;accent-color:var(--gold)}
+.track label{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:12px}
+.movie{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line)}
 .movie:first-child{border-top:0}
-.movie img{
- width:58px;
- aspect-ratio:2/3;
- object-fit:cover;
- border-radius:6px;
- background:#082650
-}
+.movie-poster{width:65px;height:98px;object-fit:cover;border-radius:6px;background:var(--deep);flex-shrink:0;cursor:pointer}
+.movie-poster.blank{display:flex;align-items:center;justify-content:center;text-align:center;font-size:10px;color:var(--muted);border:1px dashed #88b5e8}
 .movie-info{flex:1;min-width:0}
-.movie-info strong{display:block;margin-bottom:5px}
-.movie-info p{
- color:var(--muted);
- font-size:12px;
- line-height:1.45;
- margin:5px 0
-}
-.movie .actions{margin:7px 0}
-.movie .actions button{padding:7px 9px;font-size:12px}
-textarea,input[type="text"]{
- width:100%;
- padding:12px;
- border:1px solid #73a9e5;
- border-radius:8px;
- background:#082650;
- color:white;
- font:inherit
-}
+.movie-name{background:none;color:#fff;text-align:left;padding:0;font-size:15px}
+.movie-info p{color:var(--muted);font-size:12px;line-height:1.45;margin:6px 0}
+.movie .actions{margin:8px 0}
+.movie .actions button{padding:7px 10px;font-size:12px}
+.movie-checks{display:flex;gap:12px;flex-wrap:wrap}
+.movie-checks label{font-size:12px}
+.movie-checks input{accent-color:var(--gold)}
+.circle{width:31px;height:31px;border-radius:50%;padding:0;display:grid;place-items:center;color:#fff;background:#216bd0;border:1px solid #6ea8f5;font-size:23px;flex-shrink:0}
+.circle.minus{background:#9a2343;border-color:#fa637e}
+.collection-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.undo{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;background:#082650;border:1px solid var(--gold);border-radius:9px;margin:12px 0}
+textarea,input[type=text]{width:100%;padding:12px;border:1px solid #73a9e5;border-radius:8px;background:#082650;color:#fff;font:inherit}
 textarea{min-height:120px}
 .editor{margin-top:12px}
 [hidden]{display:none!important}
 .footer{text-align:center;color:var(--muted);font-size:12px}
 @media(max-width:480px){
- .card{padding:13px}
- .hero{gap:11px}
- .poster{width:100px}
- .description{font-size:13px}
- .hero button{font-size:12px}
- .movie{gap:8px}
- .movie img{width:46px}
+.card{padding:13px}
+.hero{gap:11px}
+.poster{width:100px}
+.description{font-size:13px}
+.hero button{font-size:12px}
+.movie{gap:8px}
+.movie-poster{width:52px;height:78px}
+.circle{width:28px;height:28px}
 }
 </style>
 </head>
 <body>
 <main>
-
 <a id="back" href="./index.html">← Back to Comcast Guide</a>
-
 <section class="card">
- <div class="hero">
-  <div id="posterHolder"></div>
-  <div class="info">
-   <h1 id="title">Loading movie...</h1>
-   <p id="meta" class="muted small"></p>
-   <p id="description" class="description"></p>
-   <div class="actions">
-    <button id="loadInfo">↻ Find Movie Info</button>
-    <button id="editInfo" class="secondary">✎ Edit Details</button>
-    <button id="changePoster" class="secondary">Change Poster</button>
-   </div>
-  </div>
- </div>
-
- <div id="editor" class="editor" hidden>
-  <p class="muted small">Description</p>
-  <textarea id="descriptionInput"></textarea>
-  <p class="muted small">Release year</p>
-  <input id="yearInput" type="text" placeholder="Example: 2001">
-  <p class="muted small">Genres</p>
-  <input id="genresInput" type="text" placeholder="Animation, Comedy">
-  <p class="muted small">Runtime</p>
-  <input id="runtimeInput" type="text" placeholder="Example: 90 minutes">
-  <div class="actions">
-   <button id="saveInfo">Save Details</button>
-   <button id="cancelInfo" class="secondary">Cancel</button>
-  </div>
- </div>
-
- <p id="status" class="status" role="status"></p>
+<div class="hero">
+<div id="posterHolder"></div>
+<div class="info">
+<h1 id="title">Loading movie...</h1>
+<p id="meta" class="muted small"></p>
+<p id="description" class="description"></p>
+<div class="actions">
+<button id="loadInfo">↻ Find Movie Info</button>
+<button id="editInfo" class="secondary">✎ Edit Details</button>
+<button id="changePoster" class="secondary">Change Poster</button>
+</div>
+</div>
+</div>
+<div id="editor" class="editor" hidden>
+<p class="muted small">Description</p>
+<textarea id="descriptionInput"></textarea>
+<p class="muted small">Release year</p>
+<input id="yearInput" type="text" placeholder="Example: 2001">
+<p class="muted small">Genres</p>
+<input id="genresInput" type="text" placeholder="Animation, Comedy">
+<p class="muted small">Runtime</p>
+<input id="runtimeInput" type="text" placeholder="90 minutes">
+<div class="actions">
+<button id="saveInfo">Save Details</button>
+<button id="cancelInfo" class="secondary">Cancel</button>
+</div>
+</div>
+<p id="status" class="status" role="status"></p>
 </section>
-
 <section id="trackingCard" class="card">
- <h2>My Collection</h2>
- <div class="tracking" id="tracking"></div>
+<h2>My Collection</h2>
+<div id="tracking" class="tracking"></div>
 </section>
-
 <section id="collectionCard" class="card" hidden>
- <h2>Movies in This Collection</h2>
- <p class="muted small">
-  Each movie has its own details and collection status.
- </p>
- <div id="movieList"></div>
+<div class="collection-heading">
+<h2>Movies in This Collection</h2>
+<button id="addMovie" class="circle" aria-label="Add movie" title="Add movie">+</button>
+</div>
+<p class="muted small">Tap a movie poster or title for its details. Use − to remove it from this collection.</p>
+<div id="undoArea"></div>
+<div id="movieList"></div>
+<div class="actions">
+<button id="addMovieBottom">+ Add Movie</button>
+</div>
 </section>
-
-<p class="footer">
- Movie metadata and posters may be provided by TMDB.
- This product uses the TMDB API but is not endorsed
- or certified by TMDB.
-</p>
-
+<p class="footer">Movie metadata and posters may be provided by TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
 </main>
-
 <script>
 'use strict';
 
@@ -218,26 +126,28 @@ const params=new URLSearchParams(location.search);
 const id=params.get('id');
 const parentId=params.get('parent');
 
-function read(key,fallback){
+const read=(key,fallback)=>{
  try{
   return JSON.parse(localStorage.getItem(key))??fallback;
  }catch{
   return fallback;
  }
-}
+};
 
-function norm(value){
- return String(value||'')
-  .toLowerCase()
-  .replace(/[^a-z0-9]/g,'');
-}
+const norm=value=>String(value||'')
+ .toLowerCase().replace(/[^a-z0-9]/g,'');
+
+const uid=()=>Date.now()+'-'+
+ Math.random().toString(36).slice(2,9);
 
 let data=read(KEY,null);
 let posters=read(POSTER_KEY,{});
+let lastDelete=null;
 
 if(data){
  data.collectionChildren ||= [];
  data.movieDetails ||= {};
+ data.deletedMovieChildren ||= {};
 }
 
 const topLevel=data?.items?.find(x=>
@@ -264,8 +174,7 @@ function savePosters(){
 }
 
 function detailFor(target){
- let key=String(target.id);
- return data.movieDetails[key] ||= {};
+ return data.movieDetails[String(target.id)] ||= {};
 }
 
 function collectionChildren(target){
@@ -279,23 +188,22 @@ function status(message){
 }
 
 function el(tag,cls,text){
- let node=document.createElement(tag);
- if(cls)node.className=cls;
- if(text!==undefined)node.textContent=text;
- return node;
+ let n=document.createElement(tag);
+ if(cls)n.className=cls;
+ if(text!==undefined)n.textContent=text;
+ return n;
 }
 
 function button(label,cls,fn){
- let node=el('button',cls,label);
- node.type='button';
- node.onclick=fn;
- return node;
+ let b=el('button',cls,label);
+ b.type='button';
+ b.onclick=fn;
+ return b;
 }
 
 function posterUrl(target){
  return posters[String(target.id)]||
-  detailFor(target).poster||
-  '';
+  detailFor(target).poster||'';
 }
 
 function createPoster(target,large=false){
@@ -304,35 +212,29 @@ function createPoster(target,large=false){
  if(!url){
   return el(
    'div',
-   'poster blank',
+   large?'poster blank':'movie-poster blank',
    'No Poster'
   );
  }
 
- let img=el('img',large?'poster':'');
+ let img=el('img',large?'poster':'movie-poster');
  img.src=url;
  img.alt=target.title+' poster';
  img.loading='lazy';
- img.onerror=()=>{
-  img.style.opacity='.3';
- };
+ img.onerror=()=>img.style.opacity='.3';
  return img;
 }
 
 function updateHeader(){
- let detail=detailFor(item);
-
+ let d=detailFor(item);
  $('title').textContent=item.title;
  document.title=item.title+' — Classic Comcast';
 
  $('description').textContent=
-  detail.description||
-  'No description available yet.';
+  d.description||'No description available yet.';
 
  $('meta').textContent=[
-  detail.year,
-  detail.genres,
-  detail.runtime
+  d.year,d.genres,d.runtime
  ].filter(Boolean).join(' · ');
 
  $('posterHolder').replaceChildren(
@@ -353,43 +255,157 @@ function trackingControl(target,field,label){
   save();
  };
 
- holder.append(
-  check,
-  el('span','',label)
- );
-
+ holder.append(check,el('span','',label));
  wrap.append(holder);
  return wrap;
 }
 
 function renderTracking(){
  let root=$('tracking');
- root.replaceChildren();
-
- root.append(
+ root.replaceChildren(
   trackingControl(item,'owned','Owned'),
   trackingControl(item,'ripped','Ripped'),
   trackingControl(item,'added','In Jellyfin')
  );
 }
 
-function movieRow(movie){
- let row=el('div','movie');
- let poster=posterUrl(movie);
+function movieUrl(movie){
+ return './movie.html?id='+
+  encodeURIComponent(movie.id)+
+  '&parent='+encodeURIComponent(item.id);
+}
 
- if(poster){
-  let image=el('img');
-  image.src=poster;
-  image.alt=movie.title;
-  row.append(image);
- }else{
-  let placeholder=el('div','poster blank','No Poster');
-  placeholder.style.width='58px';
-  row.append(placeholder);
+function openMovie(movie){
+ location.href=movieUrl(movie);
+}
+
+function deletedNames(){
+ return data.deletedMovieChildren[String(item.id)] ||= [];
+}
+
+function addMovie(){
+ if(!topLevel)return;
+
+ let names=prompt(
+  'Add movie titles (one per line):'
+ );
+
+ if(names===null)return;
+
+ let added=0;
+
+ for(let title of names.split('\n')
+  .map(s=>s.trim()).filter(Boolean)){
+
+  if(collectionChildren(item).some(m=>
+   norm(m.title)===norm(title)
+  ))continue;
+
+  let movie={
+   id:uid(),
+   parentId:item.id,
+   title,
+   owned:false,
+   ripped:false,
+   added:false
+  };
+
+  data.collectionChildren.push(movie);
+
+  let list=deletedNames();
+  let i=list.indexOf(norm(title));
+  if(i>=0)list.splice(i,1);
+
+  added++;
  }
 
+ save();
+ renderCollection();
+
+ status(
+  added+' movie(s) added. Tap a title to open its page.'
+ );
+}
+
+function removeMovie(movie){
+ if(!confirm(
+  'Remove "'+movie.title+
+  '" from this collection?\n\n'+
+  'This does not delete any video files.'
+ ))return;
+
+ let index=data.collectionChildren.findIndex(x=>
+  String(x.id)===String(movie.id)&&
+  String(x.parentId)===String(item.id)
+ );
+
+ if(index<0)return;
+
+ lastDelete={
+  movie:{...movie},
+  index
+ };
+
+ data.collectionChildren.splice(index,1);
+
+ let names=deletedNames();
+
+ if(!names.includes(norm(movie.title))){
+  names.push(norm(movie.title));
+ }
+
+ save();
+ renderCollection();
+
+ status('Movie removed. Tap Undo to restore it.');
+}
+
+function undoDelete(){
+ if(!lastDelete)return;
+
+ let {movie,index}=lastDelete;
+
+ if(!data.collectionChildren.some(x=>
+  String(x.id)===String(movie.id)
+ )){
+  data.collectionChildren.splice(
+   Math.min(index,data.collectionChildren.length),
+   0,
+   movie
+  );
+ }
+
+ let names=deletedNames();
+ let i=names.indexOf(norm(movie.title));
+ if(i>=0)names.splice(i,1);
+
+ lastDelete=null;
+ save();
+ renderCollection();
+ status('Movie restored.');
+}
+
+function movieRow(movie){
+ let row=el('div','movie');
+ let poster=createPoster(movie);
  let info=el('div','movie-info');
- info.append(el('strong','',movie.title));
+
+ let name=button(
+  movie.title,
+  'movie-name',
+  ()=>openMovie(movie)
+ );
+
+ poster.setAttribute('role','link');
+ poster.setAttribute('tabindex','0');
+ poster.onclick=()=>openMovie(movie);
+
+ poster.onkeydown=e=>{
+  if(e.key==='Enter')openMovie(movie);
+ };
+
+ row.append(poster);
+ info.append(name);
 
  let d=detailFor(movie);
 
@@ -398,92 +414,120 @@ function movieRow(movie){
  }
 
  if(d.description){
-  let short=d.description.length>160
-   ?d.description.slice(0,157)+'...'
-   :d.description;
-  info.append(el('p','',short));
+  info.append(el(
+   'p',
+   '',
+   d.description.length>160
+    ?d.description.slice(0,157)+'...'
+    :d.description
+  ));
  }
 
  let actions=el('div','actions');
 
  actions.append(
-  button('View Details','',()=>{
-   location.href='./movie.html?id='+
-    encodeURIComponent(movie.id)+
-    '&parent='+encodeURIComponent(item.id);
-  })
+  button('View Details','secondary',()=>openMovie(movie))
  );
 
  info.append(actions);
 
- let flags=el('div','actions');
+ let flags=el('div','movie-checks');
 
  for(let [field,label] of [
   ['owned','Owned'],
   ['ripped','Ripped'],
   ['added','Jellyfin']
  ]){
-  let control=el('label','small');
+  let control=el('label');
   let input=el('input');
+
   input.type='checkbox';
   input.checked=!!movie[field];
-  input.style.accentColor='#ffd15a';
 
   input.onchange=()=>{
    movie[field]=input.checked;
    save();
   };
 
-  control.append(input,document.createTextNode(' '+label));
+  control.append(
+   input,
+   document.createTextNode(' '+label)
+  );
+
   flags.append(control);
  }
 
  info.append(flags);
  row.append(info);
+
+ row.append(
+  button('−','circle minus',()=>removeMovie(movie))
+ );
+
  return row;
 }
 
 function renderCollection(){
- let children=topLevel?collectionChildren(item):[];
+ if(!topLevel)return;
+
  let card=$('collectionCard');
-
- card.hidden=!children.length;
-
- if(!children.length)return;
+ card.hidden=false;
 
  let list=$('movieList');
  list.replaceChildren();
 
- for(let movie of children){
+ for(let movie of collectionChildren(item)){
   list.append(movieRow(movie));
+ }
+
+ if(!list.children.length){
+  list.append(el(
+   'p','muted',
+   'No movies yet. Tap + to add one.'
+  ));
+ }
+
+ let undo=$('undoArea');
+ undo.replaceChildren();
+
+ if(lastDelete){
+  let wrap=el('div','undo');
+
+  wrap.append(
+   el('span','small',
+    'Removed: '+lastDelete.movie.title
+   ),
+   button('↶ Undo','',undoDelete)
+  );
+
+  undo.append(wrap);
  }
 }
 
 function render(){
  if(!item)return;
-
  updateHeader();
  renderTracking();
  renderCollection();
 }
 
 function openEditor(){
- let detail=detailFor(item);
+ let d=detailFor(item);
 
  $('editor').hidden=false;
- $('descriptionInput').value=detail.description||'';
- $('yearInput').value=detail.year||'';
- $('genresInput').value=detail.genres||'';
- $('runtimeInput').value=detail.runtime||'';
+ $('descriptionInput').value=d.description||'';
+ $('yearInput').value=d.year||'';
+ $('genresInput').value=d.genres||'';
+ $('runtimeInput').value=d.runtime||'';
 }
 
 function saveEditor(){
- let detail=detailFor(item);
+ let d=detailFor(item);
 
- detail.description=$('descriptionInput').value.trim();
- detail.year=$('yearInput').value.trim();
- detail.genres=$('genresInput').value.trim();
- detail.runtime=$('runtimeInput').value.trim();
+ d.description=$('descriptionInput').value.trim();
+ d.year=$('yearInput').value.trim();
+ d.genres=$('genresInput').value.trim();
+ d.runtime=$('runtimeInput').value.trim();
 
  save();
  $('editor').hidden=true;
@@ -499,7 +543,6 @@ function changePoster(){
  );
 
  if(url===null)return;
-
  url=url.trim();
 
  if(url&&!url.startsWith('https://')){
@@ -528,28 +571,20 @@ function resultsFrom(body){
  return [];
 }
 
-function titleFrom(result){
+function titleFrom(r){
  return String(
-  result.title||
-  result.name||
-  result.original_title||
-  ''
+  r.title||r.name||r.original_title||''
  );
 }
 
-function posterFrom(result){
- let value=
-  result.poster||
-  result.posterUrl||
-  result.poster_path||
-  '';
+function posterFrom(r){
+ let v=r.poster||r.posterUrl||r.poster_path||'';
 
- if(typeof value!=='string')return '';
+ if(typeof v!=='string')return '';
+ if(v.startsWith('https://'))return v;
 
- if(value.startsWith('https://'))return value;
-
- if(value.startsWith('/')){
-  return 'https://image.tmdb.org/t/p/w500'+value;
+ if(v.startsWith('/')){
+  return 'https://image.tmdb.org/t/p/w500'+v;
  }
 
  return '';
@@ -559,16 +594,16 @@ function searchTerms(){
  let terms=[item.title];
 
  if(topLevel&&collectionChildren(item).length){
-  let base=item.title
-   .replace(/\s+(collection|box set|film collection)$/i,'')
-   .trim();
+  let base=item.title.replace(
+   /\s+(collection|box set|film collection)$/i,
+   ''
+  ).trim();
 
   if(norm(base)!==norm(item.title)){
    terms.push(base);
   }
 
   let first=collectionChildren(item)[0];
-
   if(first)terms.push(first.title);
  }
 
@@ -578,7 +613,6 @@ function searchTerms(){
 async function loadInfo(){
  let control=$('loadInfo');
  control.disabled=true;
-
  status('Searching movie information...');
 
  try{
@@ -586,18 +620,16 @@ async function loadInfo(){
 
   for(let term of searchTerms()){
    let url=new URL(API+'/poster');
+
    url.searchParams.set('title',term);
    url.searchParams.set('type','movie');
 
    let response=await fetch(url);
-
    if(!response.ok)continue;
 
    let body=await response.json();
 
-   let results=resultsFrom(body);
-
-   match=results.find(x=>
+   match=resultsFrom(body).find(x=>
     norm(titleFrom(x))===norm(term)
    );
 
@@ -612,7 +644,7 @@ async function loadInfo(){
    return;
   }
 
-  let detail=detailFor(item);
+  let d=detailFor(item);
   let poster=posterFrom(match);
 
   if(poster&&!posters[String(item.id)]){
@@ -620,19 +652,14 @@ async function loadInfo(){
    savePosters();
   }
 
-  // Save fields only when the search service supplies them.
-  if(!detail.description){
-   detail.description=
-    match.overview||
-    match.description||
-    '';
+  if(!d.description){
+   d.description=
+    match.overview||match.description||'';
   }
 
-  if(!detail.year){
-   detail.year=String(
-    match.release_date||
-    match.releaseDate||
-    ''
+  if(!d.year){
+   d.year=String(
+    match.release_date||match.releaseDate||''
    ).slice(0,4);
   }
 
@@ -640,27 +667,61 @@ async function loadInfo(){
   render();
 
   status(
-   detail.description
+   d.description
     ?'Movie information loaded.'
     :'Poster found. The service did not return a description; you can edit it manually.'
   );
 
- }catch(error){
-  status('Movie lookup failed: '+error.message);
+ }catch(e){
+  status('Movie lookup failed: '+e.message);
  }finally{
   control.disabled=false;
  }
 }
 
+function configureBack(){
+ let back=$('back');
+
+ if(parent){
+  back.textContent='← Back to '+parent.title;
+  back.href='./movie.html?id='+
+   encodeURIComponent(parent.id);
+ }
+
+ back.addEventListener('click',e=>{
+  let ref=document.referrer;
+
+  try{
+   let u=new URL(ref);
+
+   if(
+    u.origin===location.origin&&
+    u.pathname.startsWith(
+     location.pathname.replace(/[^/]+$/,'')
+    )&&
+    /\/(?:index|movie)\.html$/.test(u.pathname)
+   ){
+    e.preventDefault();
+    history.back();
+   }
+  }catch{}
+ });
+}
+
+configureBack();
+
 if(!item){
  $('title').textContent='Movie not found';
+
  status(
   'Return to the Comcast Guide and open a movie from your collection.'
  );
+
  $('trackingCard').hidden=true;
  $('loadInfo').disabled=true;
  $('editInfo').disabled=true;
  $('changePoster').disabled=true;
+
 }else{
  $('editInfo').onclick=openEditor;
  $('saveInfo').onclick=saveEditor;
@@ -671,16 +732,13 @@ if(!item){
 
  $('changePoster').onclick=changePoster;
  $('loadInfo').onclick=loadInfo;
-
- if(parent){
-  $('back').textContent='← Back to '+parent.title;
-  $('back').href='./movie.html?id='+
-   encodeURIComponent(parent.id);
- }
+ $('addMovie').onclick=addMovie;
+ $('addMovieBottom').onclick=addMovie;
 
  render();
 
- if(!posterUrl(item)&&!detailFor(item).description){
+ if(!posterUrl(item)&&
+    !detailFor(item).description){
   loadInfo();
  }
 }
