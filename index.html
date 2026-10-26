@@ -84,7 +84,6 @@ nav button.active{background:#8dd5f1}
 <p id="seasonStats" class="muted"></p>
 <p id="posterStatus"></p>
 </header>
-
 <div class="tools">
 <input id="search" type="search" placeholder="Search channels, shows, movies, seasons...">
 <button id="addChannel">+ Channel</button>
@@ -93,23 +92,18 @@ nav button.active{background:#8dd5f1}
 <button id="import">Import Shows</button>
 <button id="scanPosters">↻ Find Posters</button>
 </div>
-
 <div class="view-switch">
 <button id="listView">☰ List View</button>
 <button id="gridView">▦ Poster Grid</button>
 </div>
-
 <div id="content"></div>
 </main>
-
 <nav>
 <button id="guideTab">📺 TV Guide</button>
 <button id="movieTab">🎬 Movies</button>
 </nav>
-
 <input id="restoreFile" type="file" accept=".json,application/json" hidden>
 <input id="importFile" type="file" accept=".json,application/json" hidden>
-
 <script>
 'use strict';
 
@@ -158,6 +152,7 @@ if(!data||!Array.isArray(data.items)||!Array.isArray(data.channels)){
 data.collectionChildren ||= [];
 data.showDetails ||= {};
 data.movieDetails ||= {};
+data.deletedMovieChildren ||= {};
 
 let posters=stored(POSTER_KEY,{});
 if(!posters||typeof posters!=='object')posters={};
@@ -175,7 +170,6 @@ if(!Array.isArray(openChannels))openChannels=[];
 let tab=previous?.tab==='movies'?'movies':'guide';
 const opened=new Set(Array.isArray(previous?.opened)?previous.opened:[]);
 let posterBusy=false;
-let posterStatus='';
 
 function save(){
  localStorage.setItem(KEY,JSON.stringify(data));
@@ -289,39 +283,8 @@ function migrate(){
   data.items=data.items.filter(x=>String(x.id)!==String(season.id));
  }
 
- const collections=[
-  ['Shrek Collection',[
-   'Shrek','Shrek 2','Shrek the Third','Shrek Forever After'
-  ]],
-  ['Pirates of the Caribbean Collection',[
-   'Pirates of the Caribbean: The Curse of the Black Pearl',
-   "Pirates of the Caribbean: Dead Man's Chest",
-   "Pirates of the Caribbean: At World's End",
-   'Pirates of the Caribbean: On Stranger Tides',
-   'Pirates of the Caribbean: Dead Men Tell No Tales'
-  ]],
-  ['Harry Potter Collection',[
-   "Harry Potter and the Sorcerer's Stone",
-   'Harry Potter and the Chamber of Secrets',
-   'Harry Potter and the Prisoner of Azkaban',
-   'Harry Potter and the Goblet of Fire',
-   'Harry Potter and the Order of the Phoenix',
-   'Harry Potter and the Half-Blood Prince',
-   'Harry Potter and the Deathly Hallows – Part 1',
-   'Harry Potter and the Deathly Hallows – Part 2'
-  ]]
- ];
-
- for(const [name,titles] of collections){
-  const parent=data.items.find(x=>
-   x.type==='movie'&&norm(x.title)===norm(name)
-  );
-  if(parent){
-   for(const title of titles){
-    addChildRecord(parent,title,{owned:parent.owned});
-   }
-  }
- }
+ // Collections are user-managed.
+ // Never automatically recreate removed movie entries.
  save();
 }
 
@@ -393,11 +356,26 @@ function addChild(parent){
  );
  if(!title||!title.trim())return;
 
- addChildRecord(parent,title.trim());
+ const clean=title.trim();
+
+ if(children(parent).some(x=>norm(x.title)===norm(clean))){
+  alert('That title is already in this collection.');
+  return;
+ }
+
+ addChildRecord(parent,clean);
+
+ if(parent.type==='movie'){
+  const removed=data.deletedMovieChildren[String(parent.id)];
+  if(Array.isArray(removed)){
+   data.deletedMovieChildren[String(parent.id)]=
+    removed.filter(x=>x!==norm(clean));
+  }
+ }
+
  save();
  opened.add(String(parent.id));
  render();
- if(parent.type==='movie')scanPosters();
 }
 
 function movieUrl(item,parent){
@@ -471,9 +449,14 @@ function itemRow(item){
 
  const poster=posterFor(item);
  poster.style.cursor='pointer';
+ poster.setAttribute('role','link');
+ poster.setAttribute('tabindex','0');
  poster.onclick=()=>{
   if(item.type==='show')openShow(item);
   else openMovie(item);
+ };
+ poster.onkeydown=e=>{
+  if(e.key==='Enter')poster.click();
  };
 
  const editPoster=button(
@@ -838,6 +821,7 @@ async function restore(file){
   data.collectionChildren ||= [];
   data.showDetails ||= {};
   data.movieDetails ||= {};
+  data.deletedMovieChildren ||= {};
 
   if(restored.posters&&typeof restored.posters==='object'){
    posters=restored.posters;
@@ -1018,7 +1002,6 @@ async function findPoster(item){
 }
 
 function setPosterStatus(message){
- posterStatus=message;
  $('posterStatus').textContent=message;
 }
 
@@ -1080,15 +1063,15 @@ async function scanPosters(){
 $('guideTab').onclick=()=>{
  tab='guide';
  render();
- rememberPlace();
  window.scrollTo(0,0);
+ rememberPlace();
 };
 
 $('movieTab').onclick=()=>{
  tab='movies';
  render();
- rememberPlace();
  window.scrollTo(0,0);
+ rememberPlace();
 };
 
 $('listView').onclick=()=>{
