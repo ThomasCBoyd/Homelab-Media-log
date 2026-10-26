@@ -3,47 +3,74 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Classic Comcast Collection</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;padding:12px 9px 85px;background:linear-gradient(135deg,#061739,#12458d);background-attachment:fixed;color:white;font:14px Arial,sans-serif}
-main{max-width:1000px;margin:auto}
-header,.card{background:#103876;border:1px solid #76b9e8;border-radius:12px;margin-bottom:12px;overflow:hidden}
-header{padding:17px;border-color:#e9bc4c}
-h1{margin:0 0 8px;color:#ffd35b;font-size:26px}
-h2{margin:0;font-size:18px}
-.muted{color:#c6dff5}
-.progress{height:11px;background:#051b42;border-radius:20px;overflow:hidden;margin-top:10px}
-#bar{height:100%;background:#ffd35b;width:0}
-.tools{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}
-button{background:#ffd35b;color:#092550;border:0;border-radius:6px;padding:8px;font-weight:bold;cursor:pointer}
-#search{width:100%;padding:12px;border:0;border-radius:7px;font-size:15px}
-.cardhead{display:flex;align-items:center;gap:10px;padding:12px;background:#18529a}
-.channelnum{color:#ffd35b;font-size:24px;font-weight:bold}
+body{margin:0;padding:12px 9px 90px;background:linear-gradient(135deg,#061739,#12458d);background-attachment:fixed;color:white;font:14px Arial,sans-serif}
+main{max-width:1050px;margin:auto}
+header,.card{border:1px solid #e7bb4c;border-radius:12px;background:#10366e;margin-bottom:12px;overflow:hidden}
+header{padding:16px}
+h1{color:#ffd15a;margin:0 0 10px;font-size:27px}
+h2{font-size:16px;margin:0}
+.muted{color:#bed8ef;font-size:12px}
+.progress{height:10px;background:#051b3b;border-radius:20px;overflow:hidden}
+.progress>div{height:100%;background:#ffd15a;width:0}
+.tools{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0}
+.tools input{flex:1 0 100%;min-width:0;padding:12px;border-radius:7px;border:0;font-size:15px}
+button{background:#ffd15a;color:#072047;border:0;border-radius:7px;padding:10px;font-weight:bold;cursor:pointer}
+button:focus-visible{outline:2px solid white;outline-offset:2px}
+.view-switch{display:flex;gap:8px;margin:12px 0}
+.view-switch button{flex:1;background:#10366e;color:white;border:1px solid #ffd15a}
+.view-switch button.active{background:#ffd15a;color:#061739}
+.cardhead{display:flex;align-items:center;gap:9px;padding:13px;background:#0a2a5d;cursor:pointer}
+.channelnum{font-size:23px;font-weight:bold;color:#ffd15a;min-width:35px}
 .grow{flex:1;min-width:0}
-.row{display:grid;grid-template-columns:minmax(0,1fr) 27px 27px 27px 33px;align-items:center;gap:6px;padding:9px 7px;border-bottom:1px solid #4276a9}
-.heading{background:#8dd5f1;color:#092550;font-size:9px;font-weight:bold;padding:7px}
+.grow h2{margin:0 0 3px}
+.arrow{color:#ffd15a}
+.row,.child{display:grid;grid-template-columns:minmax(0,1fr) 38px 38px 38px 42px;gap:5px;align-items:center;padding:8px;border-top:1px solid #315b90}
+.heading{font-size:10px;color:#c5def3;text-align:center}
+.heading span:first-child{text-align:left}
+.title{background:transparent;color:white;text-align:left;padding:2px;font-weight:normal;overflow-wrap:anywhere;min-width:0}
+.title strong{font-size:13px}
 .center{text-align:center}
-.title{background:transparent;color:white;text-align:left;padding:0;font-weight:normal;font-size:13px;overflow-wrap:anywhere}
-.title strong{font-weight:bold}
-.arrow{color:#ffd35b}
-.check{display:flex;justify-content:center;align-items:center}
-.check input{width:17px;height:17px;margin:0;accent-color:#ffd35b}
-.mini{padding:5px 3px;font-size:10px}
-.children{margin:0 7px 8px 12px;border-left:3px solid #ffd35b;background:#082653;border-radius:5px}
-.child{display:grid;grid-template-columns:minmax(0,1fr) 27px 27px 27px 33px;align-items:center;gap:6px;padding:9px 7px;border-bottom:1px solid #345c8b}
-.childname{font-size:12px;overflow-wrap:anywhere}
+.center input{width:17px;height:17px;accent-color:#ffd15a}
+.mini{font-size:11px;padding:6px}
+.children{margin:3px 4px 8px 12px;border-left:2px solid #e7bb4c;background:#092751}
+.child{font-size:12px}
+.childname{overflow-wrap:anywhere}
 .actions{padding:10px;display:flex;gap:7px;flex-wrap:wrap}
 .empty{padding:14px;color:#c6dff5}
+.posterline{display:flex;align-items:center;gap:9px;min-width:0}
+.posterline>div:last-child{min-width:0}
+.poster{width:48px;height:72px;object-fit:cover;border-radius:4px;border:1px solid #6e9cc7;flex-shrink:0}
+.poster.blank{display:flex;align-items:center;justify-content:center;text-align:center;font-size:10px;color:#b5cee9;border-style:dashed}
+.posteredit{display:block;background:transparent;color:#ffd15a;padding:3px 0;font-size:11px;text-align:left}
+.grid-items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:9px}
+.grid-items>.itemwrap{min-width:0;background:#092751;border:1px solid #376ba0;border-radius:8px;overflow:hidden}
+.grid-items .row{display:flex;flex-wrap:wrap;gap:6px}
+.grid-items .posterline{width:100%;display:block}
+.grid-items .poster{width:100%;height:auto;aspect-ratio:2/3}
+.grid-items .posterline>div:last-child{padding-top:5px}
+.grid-items .center{flex:1}
+.grid-items .children{margin:4px}
+.grid-items .title{display:block;width:100%}
+.grid-items .mini{font-size:10px}
+.grid-items .itemwrap{align-self:start}
+.grid-items .child{grid-template-columns:minmax(0,1fr) repeat(3,25px) 32px;padding:5px;font-size:10px}
+.grid-items .child .mini{padding:3px;font-size:9px}
+.grid-items .child .center input{width:15px}
+.grid-items .actions{padding:6px}
+.grid-items .actions button{font-size:10px;padding:6px}
+.cardhead .mini{margin-left:auto}
 nav{position:fixed;bottom:0;left:0;right:0;display:flex;gap:8px;padding:10px;background:#041735;z-index:10}
 nav button{flex:1}
 nav button.active{background:#8dd5f1}
-@media(min-width:650px){
+@media(min-width:700px){
+.grid-items{grid-template-columns:repeat(4,minmax(0,1fr))}
 .row,.child{grid-template-columns:minmax(0,1fr) 65px 65px 65px 65px}
 .heading{font-size:12px}
-.title{font-size:14px}
-.mini{font-size:12px}
+.title strong{font-size:14px}
 }
 </style>
 </head>
@@ -51,12 +78,11 @@ nav button.active{background:#8dd5f1}
 <main>
 <header>
 <h1>📺 Classic Comcast</h1>
-<div>DVD Research & Collection Guide</div>
+<div>DVD Research &amp; Collection Guide</div>
 <p id="stats"></p>
 <div class="progress"><div id="bar"></div></div>
 <p id="seasonStats" class="muted"></p>
 </header>
-
 <div class="tools">
 <input id="search" type="search" placeholder="Search channels, shows, movies, seasons...">
 <button id="addChannel">+ Channel</button>
@@ -64,74 +90,72 @@ nav button.active{background:#8dd5f1}
 <button id="restore">Restore</button>
 <button id="import">Import Shows</button>
 </div>
-
+<div class="view-switch">
+<button id="listView">☰ List View</button>
+<button id="gridView">▦ Poster Grid</button>
+</div>
 <div id="content"></div>
 </main>
-
 <nav>
-<button id="guideTab" class="active">📺 TV Guide</button>
+<button id="guideTab">📺 TV Guide</button>
 <button id="movieTab">🎬 Movies</button>
 </nav>
-
 <input id="restoreFile" type="file" accept=".json,application/json" hidden>
 <input id="importFile" type="file" accept=".json,application/json" hidden>
-
 <script>
-"use strict";
+'use strict';
 
-const KEY="comcast-collection-v1";
+const KEY='comcast-collection-v1';
+const POSTER_KEY='comcast-posters-v1';
+const VIEW_KEY='comcast-poster-view-v1';
+const OPEN_KEY='comcast-open-channels-v1';
 const $=id=>document.getElementById(id);
-const uid=()=>Date.now()+"-"+Math.random().toString(36).slice(2,9);
-const norm=s=>String(s||"").toLowerCase().replace(/[^a-z0-9]/g,"");
-const fields=["owned","ripped","added"];
+const uid=()=>Date.now()+'-'+Math.random().toString(36).slice(2,9);
+const norm=s=>String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+const fields=['owned','ripped','added'];
+
+function getStored(key,fallback){
+ try{
+  const v=JSON.parse(localStorage.getItem(key));
+  return v??fallback;
+ }catch(e){return fallback}
+}
 
 function initialData(){
  return {
   channels:[
-   {id:1,num:"62",name:"Cartoon Network"},
-   {id:2,num:"63",name:"Nickelodeon"},
-   {id:3,num:"64",name:"Disney Channel"},
-   {id:4,num:"266",name:"Toon Disney"},
-   {id:74,num:"74",name:"SYFY"}
+   {id:1,num:'62',name:'Cartoon Network'},
+   {id:2,num:'63',name:'Nickelodeon'},
+   {id:3,num:'64',name:'Disney Channel'},
+   {id:4,num:'266',name:'Toon Disney'},
+   {id:74,num:'74',name:'SYFY'}
   ],
   items:[
-   {id:10,channel:1,title:"Batman Beyond",type:"show",owned:false,ripped:true,added:false},
-   {id:11,title:"Shrek Collection",type:"movie",owned:true,ripped:false,added:false},
-   {id:12,title:"Pirates of the Caribbean Collection",type:"movie",owned:true,ripped:false,added:false},
-   {id:13,title:"Harry Potter Collection",type:"movie",owned:true,ripped:false,added:false},
-   {id:14,channel:74,title:"Stargate SG-1",type:"show",owned:true,ripped:false,added:false}
+   {id:10,channel:1,title:'Batman Beyond',type:'show',owned:false,ripped:true,added:false},
+   {id:11,title:'Shrek Collection',type:'movie',owned:true,ripped:false,added:false},
+   {id:12,title:'Pirates of the Caribbean Collection',type:'movie',owned:true,ripped:false,added:false},
+   {id:13,title:'Harry Potter Collection',type:'movie',owned:true,ripped:false,added:false},
+   {id:14,channel:74,title:'Stargate SG-1',type:'show',owned:true,ripped:false,added:false}
   ],
   collectionChildren:[]
  };
 }
 
-let data;
-try{data=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+let data=getStored(KEY,null);
+if(!data||!Array.isArray(data.items)||!Array.isArray(data.channels))data=initialData();
+if(!Array.isArray(data.collectionChildren))data.collectionChildren=[];
 
-if(!data||!Array.isArray(data.items)||!Array.isArray(data.channels)){
- data=initialData();
-}
-if(!Array.isArray(data.collectionChildren)){
- data.collectionChildren=[];
-}
+let posters=getStored(POSTER_KEY,{});
+if(!posters||typeof posters!=='object')posters={};
 
-let tab="guide";
+let view=localStorage.getItem(VIEW_KEY)==='grid'?'grid':'list';
+let openChannels=getStored(OPEN_KEY,[]);
+if(!Array.isArray(openChannels))openChannels=[];
+let tab='guide';
 const opened=new Set();
 
 function save(){
- try{
-  localStorage.setItem(KEY,JSON.stringify(data));
- }catch(e){
-  alert("Unable to save. Please keep your JSON backup.");
- }
-}
-
-function backupRecovery(){
- try{
-  if(!localStorage.getItem("comcast-recovery-clean-v2")){
-   localStorage.setItem("comcast-recovery-clean-v2",JSON.stringify(data));
-  }
- }catch(e){}
+ localStorage.setItem(KEY,JSON.stringify(data));
 }
 
 function children(parent){
@@ -139,89 +163,62 @@ function children(parent){
 }
 
 function findShow(title){
- return data.items.find(i=>i.type==="show"&&norm(i.title)===norm(title));
+ return data.items.find(i=>i.type==='show'&&norm(i.title)===norm(title));
 }
 
 function addChildRecord(parent,title,values={}){
- const existing=children(parent).find(c=>norm(c.title)===norm(title));
- if(existing)return existing;
-
- const child={
-  id:uid(),
-  parentId:parent.id,
-  title,
-  owned:!!values.owned,
-  ripped:!!values.ripped,
-  added:!!values.added
+ let c=children(parent).find(c=>norm(c.title)===norm(title));
+ if(c)return c;
+ c={
+  id:uid(),parentId:parent.id,title,
+  owned:!!values.owned,ripped:!!values.ripped,added:!!values.added
  };
- data.collectionChildren.push(child);
- return child;
+ data.collectionChildren.push(c);
+ return c;
 }
 
 function migrate(){
- backupRecovery();
-
- let syfy=data.channels.find(c=>String(c.num)==="74");
-
+ let syfy=data.channels.find(c=>String(c.num)==='74');
  if(!syfy){
-  syfy={id:uid(),num:"74",name:"SYFY"};
+  syfy={id:uid(),num:'74',name:'SYFY'};
   data.channels.push(syfy);
- }else{
-  syfy.name="SYFY";
  }
 
- let stargate=findShow("Stargate SG-1");
+ let sg=findShow('Stargate SG-1');
  const old=data.items.filter(i=>
-  i.type==="season"&&/^Stargate SG-1 Season\s*\d+$/i.test(i.title)
+  i.type==='season'&&/^Stargate SG-1 Season\s*\d+$/i.test(i.title)
  );
 
- if(!stargate){
-  stargate={
-   id:uid(),
-   channel:syfy.id,
-   title:"Stargate SG-1",
-   type:"show",
+ if(!sg){
+  sg={
+   id:uid(),channel:syfy.id,title:'Stargate SG-1',type:'show',
    owned:old.length?old.some(i=>i.owned):true,
-   ripped:false,
-   added:false
+   ripped:false,added:false
   };
-  data.items.push(stargate);
+  data.items.push(sg);
  }
 
- stargate.channel=syfy.id;
-
- for(const season of old){
-  addChildRecord(stargate,season.title,season);
- }
+ sg.channel=syfy.id;
+ for(const season of old)addChildRecord(sg,season.title,season);
 
  const oldIds=new Set(old.map(i=>String(i.id)));
  data.items=data.items.filter(i=>!oldIds.has(String(i.id)));
 
- if(!children(stargate).length){
+ if(!children(sg).length){
   for(let n=1;n<=10;n++){
-   addChildRecord(stargate,"Stargate SG-1 Season "+n,{
-    owned:!!stargate.owned
-   });
+   addChildRecord(sg,'Stargate SG-1 Season '+n,{owned:!!sg.owned});
   }
  }
 
- // Migrate older season entries for other shows.
- const remaining=data.items.filter(i=>i.type==="season");
+ for(const season of [...data.items.filter(i=>i.type==='season')]){
+  const m=season.title.match(/^(.*?)\s+Season\s+(\d+)$/i);
+  if(!m)continue;
 
- for(const season of remaining){
-  const match=season.title.match(/^(.*?)\s+Season\s+(\d+)$/i);
-  if(!match)continue;
-
-  let parent=findShow(match[1]);
-
+  let parent=findShow(m[1]);
   if(!parent){
    parent={
-    id:uid(),
-    title:match[1],
-    type:"show",
-    owned:!!season.owned,
-    ripped:!!season.ripped,
-    added:!!season.added
+    id:uid(),title:m[1],type:'show',
+    owned:!!season.owned,ripped:!!season.ripped,added:!!season.added
    };
    data.items.push(parent);
   }
@@ -230,18 +227,18 @@ function migrate(){
   data.items=data.items.filter(i=>String(i.id)!==String(season.id));
  }
 
- const movieCollections=[
-  ["Shrek Collection",[
-   "Shrek","Shrek 2","Shrek the Third","Shrek Forever After"
+ const collections=[
+  ['Shrek Collection',[
+   'Shrek','Shrek 2','Shrek the Third','Shrek Forever After'
   ]],
-  ["Pirates of the Caribbean Collection",[
+  ['Pirates of the Caribbean Collection',[
    "Pirates of the Caribbean: The Curse of the Black Pearl",
    "Pirates of the Caribbean: Dead Man's Chest",
    "Pirates of the Caribbean: At World's End",
    "Pirates of the Caribbean: On Stranger Tides",
    "Pirates of the Caribbean: Dead Men Tell No Tales"
   ]],
-  ["Harry Potter Collection",[
+  ['Harry Potter Collection',[
    "Harry Potter and the Sorcerer's Stone",
    "Harry Potter and the Chamber of Secrets",
    "Harry Potter and the Prisoner of Azkaban",
@@ -253,249 +250,299 @@ function migrate(){
   ]]
  ];
 
- for(const [name,titles] of movieCollections){
-  const parent=data.items.find(i=>
-   i.type==="movie"&&norm(i.title)===norm(name)
-  );
-  if(!parent)continue;
-
-  for(const title of titles){
-   addChildRecord(parent,title,{owned:parent.owned});
-  }
+ for(const [name,titles] of collections){
+  const p=data.items.find(i=>i.type==='movie'&&norm(i.title)===norm(name));
+  if(p)for(const title of titles)addChildRecord(p,title,{owned:p.owned});
  }
-
  save();
 }
 
-function element(tag,className,text){
- const e=document.createElement(tag);
- if(className)e.className=className;
- if(text!==undefined)e.textContent=text;
- return e;
+function el(tag,cls,text){
+ const x=document.createElement(tag);
+ if(cls)x.className=cls;
+ if(text!==undefined)x.textContent=String(text);
+ return x;
 }
 
-function makeCheck(item,field){
- const label=element("label","check");
- const input=document.createElement("input");
- input.type="checkbox";
+function check(item,field){
+ const label=el('label','center');
+ const input=el('input');
+ input.type='checkbox';
  input.checked=!!item[field];
- input.setAttribute("aria-label",field+" "+item.title);
-
- input.addEventListener("change",()=>{
+ input.setAttribute('aria-label',field+' '+item.title);
+ input.addEventListener('change',()=>{
   item[field]=input.checked;
   save();
   updateStats();
  });
-
  label.appendChild(input);
  return label;
 }
 
 function editTitle(item){
- const title=prompt("Edit title",item.title);
+ const title=prompt('Edit title',item.title);
  if(title===null||!title.trim())return;
  item.title=title.trim();
 
- if(item.type==="show"&&confirm("Move this show to another channel?")){
-  const current=data.channels.find(c=>String(c.id)===String(item.channel));
-  const number=prompt("Destination channel number",current?current.num:"");
-  if(number!==null){
-   const destination=data.channels.find(c=>String(c.num)===number.trim());
-   if(destination)item.channel=destination.id;
-   else alert("Channel not found.");
+ if(item.type==='show'){
+  const move=confirm('Move this show to another channel?');
+  if(move){
+   const num=prompt('Enter destination channel number');
+   if(num){
+    const ch=data.channels.find(c=>String(c.num)===num.trim());
+    if(ch)item.channel=ch.id;
+    else alert('Channel not found');
+   }
   }
  }
-
  save();
  render();
 }
 
 function addChild(parent){
  const title=prompt(
-  parent.type==="show"?"Season title?":"Movie title?",
-  parent.type==="show"?"Season "+(children(parent).length+1):""
+  parent.type==='show'?'Season name (example: Season 2)':'Movie title'
  );
  if(!title||!title.trim())return;
-
  addChildRecord(parent,title.trim());
- opened.add(String(parent.id));
  save();
+ opened.add(String(parent.id));
  render();
 }
 
-function childRow(child){
- const row=element("div","child");
- row.appendChild(element("span","childname",child.title));
-
- for(const field of fields){
-  row.appendChild(makeCheck(child,field));
- }
-
- const edit=element("button","mini","Edit");
- edit.addEventListener("click",()=>editTitle(child));
+function childRow(c){
+ const row=el('div','child');
+ row.appendChild(el('span','childname',c.title));
+ for(const f of fields)row.appendChild(check(c,f));
+ const edit=el('button','mini','Edit');
+ edit.onclick=()=>editTitle(c);
  row.appendChild(edit);
  return row;
 }
 
-function itemRow(item){
- const wrapper=element("div");
- const row=element("div","row");
+function posterFor(item){
+ const url=posters[String(item.id)];
+ let p;
+ if(url){
+  p=el('img','poster');
+  p.src=url;
+  p.alt=item.title+' poster';
+  p.loading='lazy';
+  p.onerror=()=>{p.style.opacity='.3'};
+ }else{
+  p=el('div','poster blank','No Poster');
+ }
+ return p;
+}
 
- const title=element("button","title");
+function itemRow(item){
+ const wrap=el('div','itemwrap');
+ const row=el('div','row');
+ const line=el('div','posterline');
+ const controls=el('div');
+ const title=el('button','title');
  const isOpen=opened.has(String(item.id));
 
  title.append(
-  element("span","arrow",isOpen?"▼ ":"▶ "),
-  element("strong","",item.title)
+  el('span','arrow',isOpen?'▼ ':'▶ '),
+  el('strong','',item.title)
  );
 
- title.addEventListener("click",()=>{
+ title.onclick=()=>{
   const id=String(item.id);
   if(opened.has(id))opened.delete(id);
   else opened.add(id);
   render();
- });
+ };
 
- row.appendChild(title);
+ const editPoster=el(
+  'button','posteredit',
+  posters[String(item.id)]?'Change Poster':'+ Poster'
+ );
 
- const isCollection=item.type==="movie"&&children(item).length>0;
+ editPoster.onclick=()=>{
+  const url=prompt(
+   'Paste a direct HTTPS image URL for '+item.title+
+   '\nLeave blank to remove.',
+   posters[String(item.id)]||''
+  );
+  if(url===null)return;
+  const cleaned=url.trim();
 
- for(const field of fields){
+  if(cleaned&&!cleaned.toLowerCase().startsWith('https://')){
+   alert('Please use an HTTPS image URL.');
+   return;
+  }
+
+  if(cleaned)posters[String(item.id)]=cleaned;
+  else delete posters[String(item.id)];
+
+  localStorage.setItem(POSTER_KEY,JSON.stringify(posters));
+  render();
+ };
+
+ controls.append(title,editPoster);
+ line.append(posterFor(item),controls);
+ row.appendChild(line);
+
+ const collection=item.type==='movie'&&children(item).length>0;
+ for(const f of fields){
   row.appendChild(
-   isCollection
-    ?element("span","center muted","—")
-    :makeCheck(item,field)
+   collection?el('span','center muted','—'):check(item,f)
   );
  }
 
- const edit=element("button","mini","Edit");
- edit.addEventListener("click",()=>editTitle(item));
+ const edit=el('button','mini','Edit');
+ edit.onclick=()=>editTitle(item);
  row.appendChild(edit);
- wrapper.appendChild(row);
+ wrap.appendChild(row);
 
  if(isOpen){
-  const body=element("div","children");
+  const body=el('div','children');
   const list=[...children(item)];
 
-  if(item.type==="show"){
+  if(item.type==='show'){
    list.sort((a,b)=>{
-    const number=s=>Number(s.title.match(/Season\s*(\d+)/i)?.[1]||0);
-    return number(a)-number(b);
+    const n=s=>Number(s.title.match(/Season\s*(\d+)/i)?.[1]||0);
+    return n(a)-n(b);
    });
   }
 
-  for(const child of list){
-   body.appendChild(childRow(child));
-  }
+  for(const child of list)body.appendChild(childRow(child));
 
   if(!list.length){
-   body.appendChild(element(
-    "div","empty",
-    item.type==="show"?"No seasons yet.":"No movies yet."
+   body.appendChild(el(
+    'div','empty',
+    item.type==='show'?'No seasons yet.':'No movies yet.'
    ));
   }
 
-  const actions=element("div","actions");
-  const add=element(
-   "button","",
-   item.type==="show"?"+ Add Season":"+ Add Movie"
+  const actions=el('div','actions');
+  const add=el(
+   'button','',
+   item.type==='show'?'+ Add Season':'+ Add Movie'
   );
-  add.addEventListener("click",()=>addChild(item));
+  add.onclick=()=>addChild(item);
   actions.appendChild(add);
   body.appendChild(actions);
-  wrapper.appendChild(body);
+  wrap.appendChild(body);
  }
 
- return wrapper;
+ return wrap;
 }
 
 function addItem(type,channel){
- const title=prompt(type==="show"?"Show title?":"Movie or collection title?");
+ const title=prompt(type==='show'?'TV show title':'Movie or collection title');
  if(!title||!title.trim())return;
 
  data.items.push({
-  id:uid(),
+  id:uid(),type,
+  channel:channel?channel.id:undefined,
   title:title.trim(),
-  type,
-  channel:channel?channel.id:null,
-  owned:false,
-  ripped:false,
-  added:false
+  owned:false,ripped:false,added:false
  });
-
  save();
  render();
 }
 
 function section(name,num,items,type,channel){
- const card=element("section","card");
- const head=element("div","cardhead");
+ const card=el('section','card');
+ const head=el('div','cardhead');
+ const arrow=el('span','arrow',channel?'▸':'');
+ head.append(arrow,el('span','channelnum',num));
 
- head.appendChild(element("span","channelnum",num));
-
- const grow=element("div","grow");
+ const grow=el('div','grow');
  grow.append(
-  element("h2","",name),
-  element("span","muted",items.length+" titles")
+  el('h2','',name),
+  el('span','muted',items.length+' titles')
  );
  head.appendChild(grow);
 
  if(channel){
-  const edit=element("button","mini","Edit");
-  edit.addEventListener("click",()=>{
-   const number=prompt("Channel number",channel.num);
+  const edit=el('button','mini','Edit');
+  edit.onclick=e=>{
+   e.stopPropagation();
+   const number=prompt('Channel number',channel.num);
    if(number===null||!number.trim())return;
-
-   const name=prompt("Channel name",channel.name);
-   if(name===null||!name.trim())return;
-
+   const newName=prompt('Channel name',channel.name);
+   if(newName===null||!newName.trim())return;
    channel.num=number.trim();
-   channel.name=name.trim();
+   channel.name=newName.trim();
    save();
    render();
-  });
+  };
   head.appendChild(edit);
  }
 
  card.appendChild(head);
+ const body=el('div');
+ card.appendChild(body);
 
- const headings=element("div","row heading");
- for(const label of ["Title","Owned","Ripped","Added","Edit"]){
-  headings.appendChild(element(
-   "span",label==="Title"?"":"center",label
-  ));
- }
- card.appendChild(headings);
+ const searching=!!$('search').value.trim();
+ let isOpen=!channel||searching||
+  openChannels.map(String).includes(String(channel.id));
 
- for(const item of items){
-  card.appendChild(itemRow(item));
+ function update(){
+  body.hidden=!isOpen;
+  arrow.textContent=isOpen?'▾':'▸';
  }
+
+ if(channel){
+  head.onclick=e=>{
+   if(e.target.closest('button'))return;
+   isOpen=!isOpen;
+   update();
+
+   if(!searching){
+    const ids=new Set(openChannels.map(String));
+    if(isOpen)ids.add(String(channel.id));
+    else ids.delete(String(channel.id));
+    openChannels=[...ids];
+    localStorage.setItem(OPEN_KEY,JSON.stringify(openChannels));
+   }
+  };
+ }
+
+ const headings=el('div','row heading');
+ for(const label of ['Title','Owned','Ripped','Added','Edit']){
+  headings.appendChild(
+   el('span',label==='Title'?'':'center',label)
+  );
+ }
+ if(view==='list')body.appendChild(headings);
+
+ const listing=el(
+  'div',view==='grid'?'grid-items':'list-items'
+ );
+
+ for(const item of items)listing.appendChild(itemRow(item));
+ body.appendChild(listing);
 
  if(!items.length){
-  card.appendChild(element("div","empty","No matching titles."));
+  body.appendChild(el('div','empty','No matching titles.'));
  }
 
- const actions=element("div","actions");
- const add=element(
-  "button","",
-  type==="show"?"+ Add Show":"+ Add Movie / Collection"
+ const actions=el('div','actions');
+ const add=el(
+  'button','',
+  type==='show'?'+ Add Show':'+ Add Movie / Collection'
  );
- add.addEventListener("click",()=>addItem(type,channel));
+ add.onclick=()=>addItem(type,channel);
  actions.appendChild(add);
- card.appendChild(actions);
-
+ body.appendChild(actions);
+ update();
  return card;
 }
 
 function updateStats(){
  const folders=new Set(
   data.items.filter(i=>
-   i.type==="movie"&&children(i).length>0
+   i.type==='movie'&&children(i).length>0
   ).map(i=>String(i.id))
  );
 
  const main=data.items.filter(i=>
-  i.type!=="season"&&!folders.has(String(i.id))
+  i.type!=='season'&&!folders.has(String(i.id))
  );
 
  const movies=data.collectionChildren.filter(i=>
@@ -503,141 +550,134 @@ function updateStats(){
  );
 
  const titles=[...main,...movies];
-
  const owned=titles.filter(i=>i.owned).length;
  const ripped=titles.filter(i=>i.ripped).length;
  const added=titles.filter(i=>i.added).length;
 
- $("stats").textContent=
-  owned+" owned / "+titles.length+
-  " titles • "+ripped+" ripped • "+added+" added";
+ $('stats').textContent=
+  owned+' owned / '+titles.length+
+  ' titles • '+ripped+' ripped • '+added+' added';
 
- $("bar").style.width=
-  (titles.length?owned/titles.length*100:0)+"%";
+ $('bar').style.width=
+  (titles.length?owned/titles.length*100:0)+'%';
 
  const showIds=new Set(
-  data.items.filter(i=>i.type==="show").map(i=>String(i.id))
+  data.items.filter(i=>i.type==='show').map(i=>String(i.id))
  );
 
  const seasons=data.collectionChildren.filter(i=>
   showIds.has(String(i.parentId))
  );
 
- $("seasonStats").textContent=
-  "Seasons: "+seasons.filter(i=>i.owned).length+
-  "/"+seasons.length+" owned • "+
-  seasons.filter(i=>i.ripped).length+" ripped • "+
-  seasons.filter(i=>i.added).length+" added";
+ $('seasonStats').textContent=
+  'Seasons: '+seasons.filter(i=>i.owned).length+
+  '/'+seasons.length+' owned • '+
+  seasons.filter(i=>i.ripped).length+' ripped • '+
+  seasons.filter(i=>i.added).length+' added';
 }
 
 function render(){
- const root=$("content");
+ const root=$('content');
  root.replaceChildren();
 
- $("guideTab").classList.toggle("active",tab==="guide");
- $("movieTab").classList.toggle("active",tab==="movies");
+ $('guideTab').classList.toggle('active',tab==='guide');
+ $('movieTab').classList.toggle('active',tab==='movies');
+ $('listView').classList.toggle('active',view==='list');
+ $('gridView').classList.toggle('active',view==='grid');
 
- const q=$("search").value.trim().toLowerCase();
- const searching=q.length>0;
+ const q=$('search').value.trim().toLowerCase();
+ const searching=!!q;
 
- const matches=item=>
-  item.title.toLowerCase().includes(q)||
-  children(item).some(c=>c.title.toLowerCase().includes(q));
+ const matches=i=>
+  i.title.toLowerCase().includes(q)||
+  children(i).some(c=>c.title.toLowerCase().includes(q));
 
- // Search both tabs at once when text is entered.
- if(searching||tab==="guide"){
-  for(const channel of data.channels){
+ if(searching||tab==='guide'){
+  for(const ch of data.channels){
    const all=data.items.filter(i=>
-    i.type==="show"&&String(i.channel)===String(channel.id)
+    i.type==='show'&&String(i.channel)===String(ch.id)
    );
 
-   const channelMatches=
-    String(channel.num).toLowerCase().includes(q)||
-    channel.name.toLowerCase().includes(q);
+   const chMatches=
+    String(ch.num).toLowerCase().includes(q)||
+    ch.name.toLowerCase().includes(q);
 
-   const filtered=!searching||channelMatches
-    ?all
-    :all.filter(matches);
+   const filtered=!searching||chMatches
+    ?all:all.filter(matches);
 
-   if(searching&&!channelMatches&&!filtered.length)continue;
+   if(searching&&!chMatches&&!filtered.length)continue;
 
-   root.appendChild(section(
-    channel.name,channel.num,filtered,"show",channel
-   ));
+   root.appendChild(
+    section(ch.name,ch.num,filtered,'show',ch)
+   );
   }
 
-  const unassigned=data.items.filter(i=>
-   i.type==="show"&&!data.channels.some(c=>
+  const other=data.items.filter(i=>
+   i.type==='show'&&!data.channels.some(c=>
     String(c.id)===String(i.channel)
    )
   );
 
-  const filtered=searching
-   ?unassigned.filter(matches)
-   :unassigned;
-
+  const filtered=searching?other.filter(matches):other;
   if(filtered.length){
-   root.appendChild(section(
-    "Other TV Series","📼",filtered,"show",null
-   ));
+   root.appendChild(
+    section('Other TV Series','📼',filtered,'show',null)
+   );
   }
  }
 
- if(searching||tab==="movies"){
-  const movies=data.items.filter(i=>i.type==="movie");
+ if(searching||tab==='movies'){
+  const movies=data.items.filter(i=>i.type==='movie');
   const filtered=searching?movies.filter(matches):movies;
 
   if(!searching||filtered.length){
-   root.appendChild(section(
-    "Movie Collection","🎬",filtered,"movie",null
-   ));
+   root.appendChild(
+    section('Movie Collection','🎬',filtered,'movie',null)
+   );
   }
  }
 
  if(!root.children.length){
-  root.appendChild(element(
-   "div","empty",
-   "No matching channels, shows, seasons, movies or collections."
+  root.appendChild(el(
+   'div','empty',
+   'No matching channels, shows, seasons, movies or collections.'
   ));
  }
 
  updateStats();
 }
 
-function downloadJSON(value,filename){
+function downloadJSON(obj,filename){
  const blob=new Blob(
-  [JSON.stringify(value,null,2)],
-  {type:"application/json"}
+  [JSON.stringify(obj,null,2)],
+  {type:'application/json'}
  );
  const url=URL.createObjectURL(blob);
- const a=document.createElement("a");
+ const a=el('a');
  a.href=url;
  a.download=filename;
  document.body.appendChild(a);
  a.click();
  a.remove();
- setTimeout(()=>URL.revokeObjectURL(url),3000);
+ setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 
 function backup(){
- downloadJSON(data,"comcast-backup.json");
+ downloadJSON({...data,posters},'comcast-backup.json');
 }
 
 async function restore(file){
  if(!file)return;
-
  try{
   const restored=JSON.parse(await file.text());
 
   if(!restored||
-     !Array.isArray(restored.items)||
-     !Array.isArray(restored.channels)){
-   throw Error("Invalid backup");
+   !Array.isArray(restored.items)||
+   !Array.isArray(restored.channels)){
+   throw Error('Invalid backup');
   }
 
-  if(!confirm("Restore backup? Current data will be downloaded first.")){
-   return;
-  }
+  if(!confirm('Restore backup? Download a copy of the current collection first?'))return;
 
   backup();
   data=restored;
@@ -646,466 +686,112 @@ async function restore(file){
    data.collectionChildren=[];
   }
 
+  if(restored.posters&&typeof restored.posters==='object'){
+   posters=restored.posters;
+   localStorage.setItem(POSTER_KEY,JSON.stringify(posters));
+  }
+
   migrate();
   render();
-  alert("Collection restored.");
+  alert('Collection restored.');
  }catch(e){
-  alert("Restore failed: "+e.message);
+  alert('Restore failed: '+e.message);
  }
 }
 
 async function importShows(file){
  if(!file)return;
-
  try{
-  const parsed=JSON.parse(await file.text());
-  const list=Array.isArray(parsed)
-   ?parsed
-   :parsed.shows||parsed.entries||parsed.items;
-
-  if(!Array.isArray(list)){
-   throw Error("Expected a list of shows");
-  }
-
+  const obj=JSON.parse(await file.text());
   let count=0;
 
-  for(const entry of list){
-   const title=typeof entry==="string"
-    ?entry.trim()
-    :String(entry.title||entry.name||"").trim();
+  const entries=Array.isArray(obj)?obj:
+   Array.isArray(obj.shows)?obj.shows:
+   Array.isArray(obj.items)?obj.items:[];
 
-   if(!title)continue;
+  for(const entry of entries){
+   const title=typeof entry==='string'
+    ?entry:(entry.title||entry.name||'');
 
-   const network=typeof entry==="object"
-    ?String(entry.network||entry.channelName||"").trim()
-    :"";
+   if(!title||findShow(title))continue;
 
-   const number=typeof entry==="object"
-    ?String(entry.channelNumber||entry.channel_number||entry.channelNum||"").trim()
-    :"";
-
-   let channel=data.channels.find(c=>
-    (network&&norm(c.name)===norm(network))||
-    (number&&String(c.num)===number)
-   );
-
-   if(!channel&&network){
-    channel={id:uid(),num:number||"?",name:network};
-    data.channels.push(channel);
+   let channel=null;
+   if(typeof entry==='object'){
+    const n=entry.channelNumber||entry.channel||entry.num;
+    channel=data.channels.find(c=>
+     String(c.num)===String(n)||
+     String(c.name).toLowerCase()===String(n).toLowerCase()
+    );
    }
 
-   const channelId=channel?channel.id:
-    (typeof entry==="object"&&entry.channel!=null
-     ?entry.channel:null);
-
-   if(data.items.some(i=>
-    i.type==="show"&&norm(i.title)===norm(title)&&
-    String(i.channel)===String(channelId)
-   ))continue;
-
    data.items.push({
-    id:uid(),
-    title,
-    type:"show",
-    channel:channelId,
-    owned:false,
-    ripped:false,
-    added:false
+    id:uid(),type:'show',title,
+    channel:channel?.id,
+    owned:!!entry.owned,
+    ripped:!!entry.ripped,
+    added:!!entry.added
    });
-
    count++;
   }
 
   save();
   render();
-  alert(count+" shows imported.");
+  alert('Imported '+count+' new shows.');
  }catch(e){
-  alert("Import failed: "+e.message);
+  alert('Import failed: '+e.message);
  }
 }
 
-$("guideTab").addEventListener("click",()=>{
- tab="guide";
+$('guideTab').onclick=()=>{
+ tab='guide';
  render();
-});
+};
 
-$("movieTab").addEventListener("click",()=>{
- tab="movies";
+$('movieTab').onclick=()=>{
+ tab='movies';
  render();
-});
+};
 
-$("search").addEventListener("input",render);
+$('listView').onclick=()=>{
+ view='list';
+ localStorage.setItem(VIEW_KEY,view);
+ render();
+};
 
-$("addChannel").addEventListener("click",()=>{
- const number=prompt("Channel number?");
- if(!number||!number.trim())return;
+$('gridView').onclick=()=>{
+ view='grid';
+ localStorage.setItem(VIEW_KEY,view);
+ render();
+};
 
- const name=prompt("Channel name?");
+$('search').oninput=render;
+
+$('addChannel').onclick=()=>{
+ const num=prompt('Channel number?');
+ if(!num||!num.trim())return;
+ const name=prompt('Channel name?');
  if(!name||!name.trim())return;
 
  data.channels.push({
-  id:uid(),
-  num:number.trim(),
-  name:name.trim()
+  id:uid(),num:num.trim(),name:name.trim()
  });
-
  save();
  render();
-});
+};
 
-$("backup").addEventListener("click",backup);
+$('backup').onclick=backup;
+$('restore').onclick=()=>$('restoreFile').click();
+$('import').onclick=()=>$('importFile').click();
 
-$("restore").addEventListener("click",()=>{
- $("restoreFile").click();
-});
-
-$("import").addEventListener("click",()=>{
- $("importFile").click();
-});
-
-$("restoreFile").addEventListener("change",async e=>{
+$('restoreFile').onchange=async e=>{
  await restore(e.target.files[0]);
- e.target.value="";
-});
+ e.target.value='';
+};
 
-$("importFile").addEventListener("change",async e=>{
+$('importFile').onchange=async e=>{
  await importShows(e.target.files[0]);
- e.target.value="";
-});
-
-/* Collapsible Comcast channels */
-const CHANNEL_OPEN_KEY = "comcast-open-channels-v1";
-
-let savedOpenChannels = [];
-try {
-  savedOpenChannels = JSON.parse(
-    localStorage.getItem(CHANNEL_OPEN_KEY) || "[]"
-  );
-  if (!Array.isArray(savedOpenChannels)) savedOpenChannels = [];
-} catch (e) {
-  savedOpenChannels = [];
-}
-
-const originalSection = section;
-
-section = function(name, num, items, type, channel) {
-  const card = originalSection(name, num, items, type, channel);
-
-  // Only TV channels collapse. Movies remain unchanged.
-  if (!channel) return card;
-
-  const channelId = String(channel.id);
-  const head = card.querySelector(".cardhead");
-
-  const body = document.createElement("div");
-
-  while (head.nextSibling) {
-    body.appendChild(head.nextSibling);
-  }
-
-  const arrow = document.createElement("span");
-  arrow.style.color = "#ffd35b";
-  arrow.style.fontSize = "20px";
-  arrow.style.marginRight = "6px";
-
-  head.insertBefore(arrow, head.firstChild);
-  head.style.cursor = "pointer";
-
-  const searching = !!document.getElementById("search").value.trim();
-  let isOpen = searching || savedOpenChannels.includes(channelId);
-
-  function update() {
-    body.hidden = !isOpen;
-    arrow.textContent = isOpen ? "▾" : "▸";
-  }
-
-  head.addEventListener("click", function(event) {
-    if (event.target.closest("button")) return;
-
-    isOpen = !isOpen;
-    update();
-
-    if (!searching) {
-      const ids = new Set(savedOpenChannels);
-
-      if (isOpen) ids.add(channelId);
-      else ids.delete(channelId);
-
-      savedOpenChannels = [...ids];
-
-      localStorage.setItem(
-        CHANNEL_OPEN_KEY,
-        JSON.stringify(savedOpenChannels)
-      );
-    }
-  });
-
-  card.appendChild(body);
-  update();
-
-  return card;
+ e.target.value='';
 };
-
-/* COMCAST POSTERS: LIST + GRID */
-
-const POSTER_KEY = "comcast-posters-v1";
-const VIEW_KEY = "comcast-poster-view-v1";
-
-let posterUrls = {};
-try {
-  posterUrls = JSON.parse(localStorage.getItem(POSTER_KEY) || "{}");
-} catch(e) {
-  posterUrls = {};
-}
-
-let posterView = localStorage.getItem(VIEW_KEY) || "list";
-
-const posterStyles = document.createElement("style");
-posterStyles.textContent = `
-.poster-switch {
-  display:flex;
-  gap:8px;
-  margin:12px 0;
-}
-.poster-switch button {
-  flex:1;
-  padding:12px;
-  border:1px solid #e5b94f;
-  border-radius:7px;
-}
-.poster-switch button.selected {
-  background:#e5b94f;
-  color:#061c40;
-  font-weight:bold;
-}
-.poster-image {
-  width:49px;
-  height:73px;
-  object-fit:cover;
-  border-radius:5px;
-  border:1px solid #5d8bb9;
-  flex-shrink:0;
-}
-.poster-placeholder {
-  width:49px;
-  height:73px;
-  border:1px dashed #8caed2;
-  border-radius:5px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:#a9c6e5;
-  font-size:10px;
-  text-align:center;
-  flex-shrink:0;
-}
-.poster-title-wrap {
-  display:flex;
-  align-items:center;
-  gap:9px;
-  min-width:0;
-}
-.poster-title-wrap .title {
-  min-width:0;
-  overflow-wrap:anywhere;
-}
-.poster-edit {
-  font-size:10px;
-  padding:4px;
-  margin-top:3px;
-}
-.poster-grid-items {
-  display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:10px;
-  padding:10px;
-}
-.poster-grid-items > div {
-  min-width:0;
-  border:1px solid #35699e;
-  border-radius:8px;
-  padding:8px;
-  background:#092957;
-}
-.poster-grid-items .row {
-  display:flex;
-  flex-wrap:wrap;
-  align-items:center;
-  gap:7px;
-}
-.poster-grid-items .poster-title-wrap {
-  width:100%;
-  display:flex;
-  flex-direction:column;
-  align-items:stretch;
-}
-.poster-grid-items .poster-image,
-.poster-grid-items .poster-placeholder {
-  width:100%;
-  height:auto;
-  aspect-ratio:2/3;
-  object-fit:cover;
-}
-.poster-grid-items .title {
-  text-align:left;
-  width:100%;
-}
-.poster-grid-items .center {
-  flex:1;
-  min-width:25px;
-}
-.poster-grid-items .children {
-  width:100%;
-  overflow-wrap:anywhere;
-}
-.poster-grid-items .mini {
-  font-size:11px;
-}
-#content.grid-mode .heading {
-  display:none;
-}
-@media(min-width:700px) {
-  .poster-grid-items {
-    grid-template-columns:repeat(4,minmax(0,1fr));
-  }
-}
-`;
-document.head.appendChild(posterStyles);
-
-/* Add a poster to each existing title */
-const originalPosterItemRow = itemRow;
-
-itemRow = function(item) {
-  const wrapper = originalPosterItemRow(item);
-  const row = wrapper.querySelector(".row");
-  const title = row.querySelector(".title");
-
-  const posterWrap = document.createElement("div");
-  posterWrap.className = "poster-title-wrap";
-
-  const imageUrl = posterUrls[String(item.id)];
-  let poster;
-
-  if (imageUrl) {
-    poster = document.createElement("img");
-    poster.className = "poster-image";
-    poster.src = imageUrl;
-    poster.alt = item.title + " poster";
-    poster.loading = "lazy";
-    poster.onerror = function() {
-      this.style.opacity = "0.25";
-    };
-  } else {
-    poster = document.createElement("div");
-    poster.className = "poster-placeholder";
-    poster.textContent = "No Poster";
-  }
-
-  const editPoster = document.createElement("button");
-  editPoster.className = "poster-edit";
-  editPoster.textContent = imageUrl ? "Change Poster" : "+ Poster";
-
-  editPoster.addEventListener("click", function() {
-    const url = prompt(
-      "Paste an image URL for " + item.title +
-      "\\nLeave blank to remove the poster.",
-      posterUrls[String(item.id)] || ""
-    );
-
-    if (url === null) return;
-
-    const cleaned = url.trim();
-
-    if (cleaned && !/^https:\\/\\//i.test(cleaned)) {
-      alert("Please use an HTTPS image URL.");
-      return;
-    }
-
-    if (cleaned) {
-      posterUrls[String(item.id)] = cleaned;
-    } else {
-      delete posterUrls[String(item.id)];
-    }
-
-    localStorage.setItem(
-      POSTER_KEY,
-      JSON.stringify(posterUrls)
-    );
-
-    render();
-  });
-
-  const controls = document.createElement("div");
-  controls.style.minWidth = "0";
-  controls.append(title, editPoster);
-
-  posterWrap.append(poster, controls);
-  row.insertBefore(posterWrap, row.firstChild);
-
-  return wrapper;
-};
-
-/* Group title rows for poster-grid layout */
-const originalPosterSection = section;
-
-section = function(name, num, items, type, channel) {
-  const card = originalPosterSection(name, num, items, type, channel);
-  const heading = card.querySelector(".heading");
-
-  if (!heading) return card;
-
-  const parent = heading.parentNode;
-  const grid = document.createElement("div");
-  grid.className =
-    posterView === "grid" ? "poster-grid-items" : "poster-list-items";
-
-  let node = heading.nextSibling;
-
-  while (node && !node.classList?.contains("actions")) {
-    const next = node.nextSibling;
-    grid.appendChild(node);
-    node = next;
-  }
-
-  heading.after(grid);
-
-  return card;
-};
-
-/* List / Grid switch */
-const posterSwitch = document.createElement("div");
-posterSwitch.className = "poster-switch";
-
-const listButton = document.createElement("button");
-listButton.textContent = "☰ List View";
-
-const gridButton = document.createElement("button");
-gridButton.textContent = "▦ Poster Grid";
-
-posterSwitch.append(listButton, gridButton);
-document.getElementById("content").before(posterSwitch);
-
-function setPosterView(view) {
-  posterView = view;
-  localStorage.setItem(VIEW_KEY, view);
-
-  listButton.classList.toggle("selected", view === "list");
-  gridButton.classList.toggle("selected", view === "grid");
-
-  document.getElementById("content")
-    .classList.toggle("grid-mode", view === "grid");
-
-  render();
-}
-
-listButton.addEventListener("click", () => setPosterView("list"));
-gridButton.addEventListener("click", () => setPosterView("grid"));
-
-/* Restore preferred view without resetting collection */
-listButton.classList.toggle("selected", posterView === "list");
-gridButton.classList.toggle("selected", posterView === "grid");
-document.getElementById("content")
-  .classList.toggle("grid-mode", posterView === "grid");
 
 migrate();
 render();
