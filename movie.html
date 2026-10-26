@@ -1,0 +1,689 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Classic Comcast — Movies</title>
+<style>
+:root{
+ --gold:#ffd15a;
+ --muted:#bfd8f4;
+ --blue:#10448b;
+ --deep:#082650
+}
+*{box-sizing:border-box}
+body{
+ margin:0;
+ background:linear-gradient(140deg,#061735,#10458b) fixed;
+ color:white;
+ font:15px system-ui,-apple-system,Arial,sans-serif
+}
+main{max-width:1050px;margin:auto;padding:14px 12px 75px}
+a{color:var(--gold)}
+h1,h2{color:var(--gold)}
+h1{font-size:clamp(23px,5vw,33px);margin:0 0 8px}
+h2{font-size:21px;margin:0 0 15px}
+.card{
+ background:linear-gradient(120deg,#092d63,#10448b);
+ border:1px solid var(--gold);
+ border-radius:16px;
+ padding:19px;
+ margin:15px 0
+}
+.hero{display:flex;gap:17px;align-items:flex-start}
+.poster{
+ width:clamp(95px,25vw,175px);
+ aspect-ratio:2/3;
+ object-fit:cover;
+ border-radius:9px;
+ background:var(--deep);
+ flex-shrink:0
+}
+.poster.blank{
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ text-align:center;
+ border:1px dashed #88b5e8;
+ color:var(--muted);
+ font-size:12px
+}
+.info{min-width:0;flex:1}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.description{line-height:1.6;margin:13px 0}
+button{
+ background:var(--gold);
+ color:#092650;
+ border:0;
+ border-radius:9px;
+ padding:10px 13px;
+ font:inherit;
+ font-weight:700;
+ cursor:pointer
+}
+.secondary{
+ background:#164f95;
+ color:white;
+ border:1px solid #73a9e5
+}
+.actions{
+ display:flex;
+ gap:9px;
+ flex-wrap:wrap;
+ margin:13px 0
+}
+.status{color:var(--gold);font-size:13px}
+.tracking{
+ display:grid;
+ grid-template-columns:repeat(3,minmax(0,1fr));
+ gap:9px
+}
+.track{
+ background:#082650;
+ border-radius:10px;
+ text-align:center;
+ padding:14px 5px
+}
+.track input{
+ width:22px;
+ height:22px;
+ accent-color:var(--gold)
+}
+.track label{
+ display:flex;
+ flex-direction:column;
+ align-items:center;
+ gap:8px;
+ font-size:12px
+}
+.movie{
+ display:flex;
+ gap:12px;
+ align-items:center;
+ padding:12px 0;
+ border-top:1px solid #326ba8
+}
+.movie:first-child{border-top:0}
+.movie img{
+ width:58px;
+ aspect-ratio:2/3;
+ object-fit:cover;
+ border-radius:6px;
+ background:#082650
+}
+.movie-info{flex:1;min-width:0}
+.movie-info strong{display:block;margin-bottom:5px}
+.movie-info p{
+ color:var(--muted);
+ font-size:12px;
+ line-height:1.45;
+ margin:5px 0
+}
+.movie .actions{margin:7px 0}
+.movie .actions button{padding:7px 9px;font-size:12px}
+textarea,input[type="text"]{
+ width:100%;
+ padding:12px;
+ border:1px solid #73a9e5;
+ border-radius:8px;
+ background:#082650;
+ color:white;
+ font:inherit
+}
+textarea{min-height:120px}
+.editor{margin-top:12px}
+[hidden]{display:none!important}
+.footer{text-align:center;color:var(--muted);font-size:12px}
+@media(max-width:480px){
+ .card{padding:13px}
+ .hero{gap:11px}
+ .poster{width:100px}
+ .description{font-size:13px}
+ .hero button{font-size:12px}
+ .movie{gap:8px}
+ .movie img{width:46px}
+}
+</style>
+</head>
+<body>
+<main>
+
+<a id="back" href="./index.html">← Back to Comcast Guide</a>
+
+<section class="card">
+ <div class="hero">
+  <div id="posterHolder"></div>
+  <div class="info">
+   <h1 id="title">Loading movie...</h1>
+   <p id="meta" class="muted small"></p>
+   <p id="description" class="description"></p>
+   <div class="actions">
+    <button id="loadInfo">↻ Find Movie Info</button>
+    <button id="editInfo" class="secondary">✎ Edit Details</button>
+    <button id="changePoster" class="secondary">Change Poster</button>
+   </div>
+  </div>
+ </div>
+
+ <div id="editor" class="editor" hidden>
+  <p class="muted small">Description</p>
+  <textarea id="descriptionInput"></textarea>
+  <p class="muted small">Release year</p>
+  <input id="yearInput" type="text" placeholder="Example: 2001">
+  <p class="muted small">Genres</p>
+  <input id="genresInput" type="text" placeholder="Animation, Comedy">
+  <p class="muted small">Runtime</p>
+  <input id="runtimeInput" type="text" placeholder="Example: 90 minutes">
+  <div class="actions">
+   <button id="saveInfo">Save Details</button>
+   <button id="cancelInfo" class="secondary">Cancel</button>
+  </div>
+ </div>
+
+ <p id="status" class="status" role="status"></p>
+</section>
+
+<section id="trackingCard" class="card">
+ <h2>My Collection</h2>
+ <div class="tracking" id="tracking"></div>
+</section>
+
+<section id="collectionCard" class="card" hidden>
+ <h2>Movies in This Collection</h2>
+ <p class="muted small">
+  Each movie has its own details and collection status.
+ </p>
+ <div id="movieList"></div>
+</section>
+
+<p class="footer">
+ Movie metadata and posters may be provided by TMDB.
+ This product uses the TMDB API but is not endorsed
+ or certified by TMDB.
+</p>
+
+</main>
+
+<script>
+'use strict';
+
+const KEY='comcast-collection-v1';
+const POSTER_KEY='comcast-posters-v1';
+const API='https://posters.thomasboydspam.workers.dev';
+
+const $=id=>document.getElementById(id);
+const params=new URLSearchParams(location.search);
+const id=params.get('id');
+const parentId=params.get('parent');
+
+function read(key,fallback){
+ try{
+  return JSON.parse(localStorage.getItem(key))??fallback;
+ }catch{
+  return fallback;
+ }
+}
+
+function norm(value){
+ return String(value||'')
+  .toLowerCase()
+  .replace(/[^a-z0-9]/g,'');
+}
+
+let data=read(KEY,null);
+let posters=read(POSTER_KEY,{});
+
+if(data){
+ data.collectionChildren ||= [];
+ data.movieDetails ||= {};
+}
+
+const topLevel=data?.items?.find(x=>
+ String(x.id)===String(id)&&x.type==='movie'
+);
+
+const child=data?.collectionChildren?.find(x=>
+ String(x.id)===String(id)&&
+ String(x.parentId)===String(parentId)
+);
+
+const parent=child?data.items.find(x=>
+ String(x.id)===String(parentId)&&x.type==='movie'
+):null;
+
+const item=topLevel||child;
+
+function save(){
+ localStorage.setItem(KEY,JSON.stringify(data));
+}
+
+function savePosters(){
+ localStorage.setItem(POSTER_KEY,JSON.stringify(posters));
+}
+
+function detailFor(target){
+ let key=String(target.id);
+ return data.movieDetails[key] ||= {};
+}
+
+function collectionChildren(target){
+ return data.collectionChildren.filter(x=>
+  String(x.parentId)===String(target.id)
+ );
+}
+
+function status(message){
+ $('status').textContent=message;
+}
+
+function el(tag,cls,text){
+ let node=document.createElement(tag);
+ if(cls)node.className=cls;
+ if(text!==undefined)node.textContent=text;
+ return node;
+}
+
+function button(label,cls,fn){
+ let node=el('button',cls,label);
+ node.type='button';
+ node.onclick=fn;
+ return node;
+}
+
+function posterUrl(target){
+ return posters[String(target.id)]||
+  detailFor(target).poster||
+  '';
+}
+
+function createPoster(target,large=false){
+ let url=posterUrl(target);
+
+ if(!url){
+  return el(
+   'div',
+   'poster blank',
+   'No Poster'
+  );
+ }
+
+ let img=el('img',large?'poster':'');
+ img.src=url;
+ img.alt=target.title+' poster';
+ img.loading='lazy';
+ img.onerror=()=>{
+  img.style.opacity='.3';
+ };
+ return img;
+}
+
+function updateHeader(){
+ let detail=detailFor(item);
+
+ $('title').textContent=item.title;
+ document.title=item.title+' — Classic Comcast';
+
+ $('description').textContent=
+  detail.description||
+  'No description available yet.';
+
+ $('meta').textContent=[
+  detail.year,
+  detail.genres,
+  detail.runtime
+ ].filter(Boolean).join(' · ');
+
+ $('posterHolder').replaceChildren(
+  createPoster(item,true)
+ );
+}
+
+function trackingControl(target,field,label){
+ let wrap=el('div','track');
+ let holder=el('label');
+ let check=el('input');
+
+ check.type='checkbox';
+ check.checked=!!target[field];
+
+ check.onchange=()=>{
+  target[field]=check.checked;
+  save();
+ };
+
+ holder.append(
+  check,
+  el('span','',label)
+ );
+
+ wrap.append(holder);
+ return wrap;
+}
+
+function renderTracking(){
+ let root=$('tracking');
+ root.replaceChildren();
+
+ root.append(
+  trackingControl(item,'owned','Owned'),
+  trackingControl(item,'ripped','Ripped'),
+  trackingControl(item,'added','In Jellyfin')
+ );
+}
+
+function movieRow(movie){
+ let row=el('div','movie');
+ let poster=posterUrl(movie);
+
+ if(poster){
+  let image=el('img');
+  image.src=poster;
+  image.alt=movie.title;
+  row.append(image);
+ }else{
+  let placeholder=el('div','poster blank','No Poster');
+  placeholder.style.width='58px';
+  row.append(placeholder);
+ }
+
+ let info=el('div','movie-info');
+ info.append(el('strong','',movie.title));
+
+ let d=detailFor(movie);
+
+ if(d.year){
+  info.append(el('p','',d.year));
+ }
+
+ if(d.description){
+  let short=d.description.length>160
+   ?d.description.slice(0,157)+'...'
+   :d.description;
+  info.append(el('p','',short));
+ }
+
+ let actions=el('div','actions');
+
+ actions.append(
+  button('View Details','',()=>{
+   location.href='./movie.html?id='+
+    encodeURIComponent(movie.id)+
+    '&parent='+encodeURIComponent(item.id);
+  })
+ );
+
+ info.append(actions);
+
+ let flags=el('div','actions');
+
+ for(let [field,label] of [
+  ['owned','Owned'],
+  ['ripped','Ripped'],
+  ['added','Jellyfin']
+ ]){
+  let control=el('label','small');
+  let input=el('input');
+  input.type='checkbox';
+  input.checked=!!movie[field];
+  input.style.accentColor='#ffd15a';
+
+  input.onchange=()=>{
+   movie[field]=input.checked;
+   save();
+  };
+
+  control.append(input,document.createTextNode(' '+label));
+  flags.append(control);
+ }
+
+ info.append(flags);
+ row.append(info);
+ return row;
+}
+
+function renderCollection(){
+ let children=topLevel?collectionChildren(item):[];
+ let card=$('collectionCard');
+
+ card.hidden=!children.length;
+
+ if(!children.length)return;
+
+ let list=$('movieList');
+ list.replaceChildren();
+
+ for(let movie of children){
+  list.append(movieRow(movie));
+ }
+}
+
+function render(){
+ if(!item)return;
+
+ updateHeader();
+ renderTracking();
+ renderCollection();
+}
+
+function openEditor(){
+ let detail=detailFor(item);
+
+ $('editor').hidden=false;
+ $('descriptionInput').value=detail.description||'';
+ $('yearInput').value=detail.year||'';
+ $('genresInput').value=detail.genres||'';
+ $('runtimeInput').value=detail.runtime||'';
+}
+
+function saveEditor(){
+ let detail=detailFor(item);
+
+ detail.description=$('descriptionInput').value.trim();
+ detail.year=$('yearInput').value.trim();
+ detail.genres=$('genresInput').value.trim();
+ detail.runtime=$('runtimeInput').value.trim();
+
+ save();
+ $('editor').hidden=true;
+ render();
+ status('Movie details saved.');
+}
+
+function changePoster(){
+ let url=prompt(
+  'Paste a direct HTTPS poster image URL.\n'+
+  'Leave blank to remove the poster.',
+  posterUrl(item)
+ );
+
+ if(url===null)return;
+
+ url=url.trim();
+
+ if(url&&!url.startsWith('https://')){
+  alert('Please use an HTTPS image URL.');
+  return;
+ }
+
+ if(url){
+  posters[String(item.id)]=url;
+ }else{
+  delete posters[String(item.id)];
+  delete detailFor(item).poster;
+ }
+
+ savePosters();
+ save();
+ render();
+}
+
+function resultsFrom(body){
+ if(Array.isArray(body))return body;
+ if(Array.isArray(body?.results))return body.results;
+ if(Array.isArray(body?.data?.results)){
+  return body.data.results;
+ }
+ return [];
+}
+
+function titleFrom(result){
+ return String(
+  result.title||
+  result.name||
+  result.original_title||
+  ''
+ );
+}
+
+function posterFrom(result){
+ let value=
+  result.poster||
+  result.posterUrl||
+  result.poster_path||
+  '';
+
+ if(typeof value!=='string')return '';
+
+ if(value.startsWith('https://'))return value;
+
+ if(value.startsWith('/')){
+  return 'https://image.tmdb.org/t/p/w500'+value;
+ }
+
+ return '';
+}
+
+function searchTerms(){
+ let terms=[item.title];
+
+ if(topLevel&&collectionChildren(item).length){
+  let base=item.title
+   .replace(/\s+(collection|box set|film collection)$/i,'')
+   .trim();
+
+  if(norm(base)!==norm(item.title)){
+   terms.push(base);
+  }
+
+  let first=collectionChildren(item)[0];
+
+  if(first)terms.push(first.title);
+ }
+
+ return [...new Set(terms)];
+}
+
+async function loadInfo(){
+ let control=$('loadInfo');
+ control.disabled=true;
+
+ status('Searching movie information...');
+
+ try{
+  let match=null;
+
+  for(let term of searchTerms()){
+   let url=new URL(API+'/poster');
+   url.searchParams.set('title',term);
+   url.searchParams.set('type','movie');
+
+   let response=await fetch(url);
+
+   if(!response.ok)continue;
+
+   let body=await response.json();
+
+   let results=resultsFrom(body);
+
+   match=results.find(x=>
+    norm(titleFrom(x))===norm(term)
+   );
+
+   if(match)break;
+  }
+
+  if(!match){
+   status(
+    'No reliable movie match found. '+
+    'You can add a description and poster manually.'
+   );
+   return;
+  }
+
+  let detail=detailFor(item);
+  let poster=posterFrom(match);
+
+  if(poster&&!posters[String(item.id)]){
+   posters[String(item.id)]=poster;
+   savePosters();
+  }
+
+  // Save fields only when the search service supplies them.
+  if(!detail.description){
+   detail.description=
+    match.overview||
+    match.description||
+    '';
+  }
+
+  if(!detail.year){
+   detail.year=String(
+    match.release_date||
+    match.releaseDate||
+    ''
+   ).slice(0,4);
+  }
+
+  save();
+  render();
+
+  status(
+   detail.description
+    ?'Movie information loaded.'
+    :'Poster found. The service did not return a description; you can edit it manually.'
+  );
+
+ }catch(error){
+  status('Movie lookup failed: '+error.message);
+ }finally{
+  control.disabled=false;
+ }
+}
+
+if(!item){
+ $('title').textContent='Movie not found';
+ status(
+  'Return to the Comcast Guide and open a movie from your collection.'
+ );
+ $('trackingCard').hidden=true;
+ $('loadInfo').disabled=true;
+ $('editInfo').disabled=true;
+ $('changePoster').disabled=true;
+}else{
+ $('editInfo').onclick=openEditor;
+ $('saveInfo').onclick=saveEditor;
+
+ $('cancelInfo').onclick=()=>{
+  $('editor').hidden=true;
+ };
+
+ $('changePoster').onclick=changePoster;
+ $('loadInfo').onclick=loadInfo;
+
+ if(parent){
+  $('back').textContent='← Back to '+parent.title;
+  $('back').href='./movie.html?id='+
+   encodeURIComponent(parent.id);
+ }
+
+ render();
+
+ if(!posterUrl(item)&&!detailFor(item).description){
+  loadInfo();
+ }
+}
+</script>
+</body>
+</html>
