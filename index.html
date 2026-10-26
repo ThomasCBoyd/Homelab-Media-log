@@ -846,6 +846,267 @@ section = function(name, num, items, type, channel) {
   return card;
 };
 
+/* COMCAST POSTERS: LIST + GRID */
+
+const POSTER_KEY = "comcast-posters-v1";
+const VIEW_KEY = "comcast-poster-view-v1";
+
+let posterUrls = {};
+try {
+  posterUrls = JSON.parse(localStorage.getItem(POSTER_KEY) || "{}");
+} catch(e) {
+  posterUrls = {};
+}
+
+let posterView = localStorage.getItem(VIEW_KEY) || "list";
+
+const posterStyles = document.createElement("style");
+posterStyles.textContent = `
+.poster-switch {
+  display:flex;
+  gap:8px;
+  margin:12px 0;
+}
+.poster-switch button {
+  flex:1;
+  padding:12px;
+  border:1px solid #e5b94f;
+  border-radius:7px;
+}
+.poster-switch button.selected {
+  background:#e5b94f;
+  color:#061c40;
+  font-weight:bold;
+}
+.poster-image {
+  width:49px;
+  height:73px;
+  object-fit:cover;
+  border-radius:5px;
+  border:1px solid #5d8bb9;
+  flex-shrink:0;
+}
+.poster-placeholder {
+  width:49px;
+  height:73px;
+  border:1px dashed #8caed2;
+  border-radius:5px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#a9c6e5;
+  font-size:10px;
+  text-align:center;
+  flex-shrink:0;
+}
+.poster-title-wrap {
+  display:flex;
+  align-items:center;
+  gap:9px;
+  min-width:0;
+}
+.poster-title-wrap .title {
+  min-width:0;
+  overflow-wrap:anywhere;
+}
+.poster-edit {
+  font-size:10px;
+  padding:4px;
+  margin-top:3px;
+}
+.poster-grid-items {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+  padding:10px;
+}
+.poster-grid-items > div {
+  min-width:0;
+  border:1px solid #35699e;
+  border-radius:8px;
+  padding:8px;
+  background:#092957;
+}
+.poster-grid-items .row {
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:7px;
+}
+.poster-grid-items .poster-title-wrap {
+  width:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+}
+.poster-grid-items .poster-image,
+.poster-grid-items .poster-placeholder {
+  width:100%;
+  height:auto;
+  aspect-ratio:2/3;
+  object-fit:cover;
+}
+.poster-grid-items .title {
+  text-align:left;
+  width:100%;
+}
+.poster-grid-items .center {
+  flex:1;
+  min-width:25px;
+}
+.poster-grid-items .children {
+  width:100%;
+  overflow-wrap:anywhere;
+}
+.poster-grid-items .mini {
+  font-size:11px;
+}
+#content.grid-mode .heading {
+  display:none;
+}
+@media(min-width:700px) {
+  .poster-grid-items {
+    grid-template-columns:repeat(4,minmax(0,1fr));
+  }
+}
+`;
+document.head.appendChild(posterStyles);
+
+/* Add a poster to each existing title */
+const originalPosterItemRow = itemRow;
+
+itemRow = function(item) {
+  const wrapper = originalPosterItemRow(item);
+  const row = wrapper.querySelector(".row");
+  const title = row.querySelector(".title");
+
+  const posterWrap = document.createElement("div");
+  posterWrap.className = "poster-title-wrap";
+
+  const imageUrl = posterUrls[String(item.id)];
+  let poster;
+
+  if (imageUrl) {
+    poster = document.createElement("img");
+    poster.className = "poster-image";
+    poster.src = imageUrl;
+    poster.alt = item.title + " poster";
+    poster.loading = "lazy";
+    poster.onerror = function() {
+      this.style.opacity = "0.25";
+    };
+  } else {
+    poster = document.createElement("div");
+    poster.className = "poster-placeholder";
+    poster.textContent = "No Poster";
+  }
+
+  const editPoster = document.createElement("button");
+  editPoster.className = "poster-edit";
+  editPoster.textContent = imageUrl ? "Change Poster" : "+ Poster";
+
+  editPoster.addEventListener("click", function() {
+    const url = prompt(
+      "Paste an image URL for " + item.title +
+      "\\nLeave blank to remove the poster.",
+      posterUrls[String(item.id)] || ""
+    );
+
+    if (url === null) return;
+
+    const cleaned = url.trim();
+
+    if (cleaned && !/^https:\\/\\//i.test(cleaned)) {
+      alert("Please use an HTTPS image URL.");
+      return;
+    }
+
+    if (cleaned) {
+      posterUrls[String(item.id)] = cleaned;
+    } else {
+      delete posterUrls[String(item.id)];
+    }
+
+    localStorage.setItem(
+      POSTER_KEY,
+      JSON.stringify(posterUrls)
+    );
+
+    render();
+  });
+
+  const controls = document.createElement("div");
+  controls.style.minWidth = "0";
+  controls.append(title, editPoster);
+
+  posterWrap.append(poster, controls);
+  row.insertBefore(posterWrap, row.firstChild);
+
+  return wrapper;
+};
+
+/* Group title rows for poster-grid layout */
+const originalPosterSection = section;
+
+section = function(name, num, items, type, channel) {
+  const card = originalPosterSection(name, num, items, type, channel);
+  const heading = card.querySelector(".heading");
+
+  if (!heading) return card;
+
+  const parent = heading.parentNode;
+  const grid = document.createElement("div");
+  grid.className =
+    posterView === "grid" ? "poster-grid-items" : "poster-list-items";
+
+  let node = heading.nextSibling;
+
+  while (node && !node.classList?.contains("actions")) {
+    const next = node.nextSibling;
+    grid.appendChild(node);
+    node = next;
+  }
+
+  heading.after(grid);
+
+  return card;
+};
+
+/* List / Grid switch */
+const posterSwitch = document.createElement("div");
+posterSwitch.className = "poster-switch";
+
+const listButton = document.createElement("button");
+listButton.textContent = "☰ List View";
+
+const gridButton = document.createElement("button");
+gridButton.textContent = "▦ Poster Grid";
+
+posterSwitch.append(listButton, gridButton);
+document.getElementById("content").before(posterSwitch);
+
+function setPosterView(view) {
+  posterView = view;
+  localStorage.setItem(VIEW_KEY, view);
+
+  listButton.classList.toggle("selected", view === "list");
+  gridButton.classList.toggle("selected", view === "grid");
+
+  document.getElementById("content")
+    .classList.toggle("grid-mode", view === "grid");
+
+  render();
+}
+
+listButton.addEventListener("click", () => setPosterView("list"));
+gridButton.addEventListener("click", () => setPosterView("grid"));
+
+/* Restore preferred view without resetting collection */
+listButton.classList.toggle("selected", posterView === "list");
+gridButton.classList.toggle("selected", posterView === "grid");
+document.getElementById("content")
+  .classList.toggle("grid-mode", posterView === "grid");
+
 migrate();
 render();
 </script>
