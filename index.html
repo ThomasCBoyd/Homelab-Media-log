@@ -773,6 +773,79 @@ $("importFile").addEventListener("change",async e=>{
  e.target.value="";
 });
 
+/* Collapsible Comcast channels */
+const CHANNEL_OPEN_KEY = "comcast-open-channels-v1";
+
+let savedOpenChannels = [];
+try {
+  savedOpenChannels = JSON.parse(
+    localStorage.getItem(CHANNEL_OPEN_KEY) || "[]"
+  );
+  if (!Array.isArray(savedOpenChannels)) savedOpenChannels = [];
+} catch (e) {
+  savedOpenChannels = [];
+}
+
+const originalSection = section;
+
+section = function(name, num, items, type, channel) {
+  const card = originalSection(name, num, items, type, channel);
+
+  // Only TV channels collapse. Movies remain unchanged.
+  if (!channel) return card;
+
+  const channelId = String(channel.id);
+  const head = card.querySelector(".cardhead");
+
+  const body = document.createElement("div");
+
+  while (head.nextSibling) {
+    body.appendChild(head.nextSibling);
+  }
+
+  const arrow = document.createElement("span");
+  arrow.style.color = "#ffd35b";
+  arrow.style.fontSize = "20px";
+  arrow.style.marginRight = "6px";
+
+  head.insertBefore(arrow, head.firstChild);
+  head.style.cursor = "pointer";
+
+  const searching = !!document.getElementById("search").value.trim();
+  let isOpen = searching || savedOpenChannels.includes(channelId);
+
+  function update() {
+    body.hidden = !isOpen;
+    arrow.textContent = isOpen ? "▾" : "▸";
+  }
+
+  head.addEventListener("click", function(event) {
+    if (event.target.closest("button")) return;
+
+    isOpen = !isOpen;
+    update();
+
+    if (!searching) {
+      const ids = new Set(savedOpenChannels);
+
+      if (isOpen) ids.add(channelId);
+      else ids.delete(channelId);
+
+      savedOpenChannels = [...ids];
+
+      localStorage.setItem(
+        CHANNEL_OPEN_KEY,
+        JSON.stringify(savedOpenChannels)
+      );
+    }
+  });
+
+  card.appendChild(body);
+  update();
+
+  return card;
+};
+
 migrate();
 render();
 </script>
