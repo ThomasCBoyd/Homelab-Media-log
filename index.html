@@ -7,70 +7,139 @@
 <title>Classic Comcast Collection</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;padding:12px 9px 90px;background:linear-gradient(135deg,#061739,#12458d);background-attachment:fixed;color:white;font:14px Arial,sans-serif}
+body{
+ margin:0;padding:12px 9px 90px;
+ background:linear-gradient(135deg,#061739,#12458d);
+ background-attachment:fixed;
+ color:white;font:14px Arial,sans-serif
+}
 main{max-width:1050px;margin:auto}
-header,.card{border:1px solid #e7bb4c;border-radius:12px;background:#10366e;margin-bottom:12px;overflow:hidden}
+header,.card{
+ border:1px solid #e7bb4c;border-radius:12px;
+ background:#10366e;margin-bottom:12px;overflow:hidden
+}
 header{padding:16px}
 h1{color:#ffd15a;margin:0 0 10px;font-size:27px}
 h2{font-size:16px;margin:0}
 .muted{color:#bed8ef;font-size:12px}
-.progress{height:10px;background:#051b3b;border-radius:20px;overflow:hidden}
-.progress>div{height:100%;background:#ffd15a;width:0}
 .tools{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0}
-.tools input{flex:1 0 100%;min-width:0;padding:12px;border-radius:7px;border:0;font-size:15px}
-button{background:#ffd15a;color:#072047;border:0;border-radius:7px;padding:10px;font-weight:bold;cursor:pointer}
+.tools input{
+ flex:1 0 100%;min-width:0;padding:12px;
+ border-radius:7px;border:0;font-size:15px
+}
+button{
+ background:#ffd15a;color:#072047;border:0;
+ border-radius:7px;padding:10px;font-weight:bold;cursor:pointer
+}
 button:focus-visible{outline:2px solid white;outline-offset:2px}
 .view-switch{display:flex;gap:8px;margin:12px 0}
-.view-switch button{flex:1;background:#10366e;color:white;border:1px solid #ffd15a}
+.view-switch button{
+ flex:1;background:#10366e;color:white;
+ border:1px solid #ffd15a
+}
 .view-switch button.active{background:#ffd15a;color:#061739}
-.cardhead{display:flex;align-items:center;gap:9px;padding:13px;background:#0a2a5d;cursor:pointer}
-.channelnum{font-size:23px;font-weight:bold;color:#ffd15a;min-width:35px}
+.cardhead{
+ display:flex;align-items:center;gap:9px;
+ padding:13px;background:#0a2a5d;cursor:pointer
+}
+.channelnum{
+ font-size:23px;font-weight:bold;
+ color:#ffd15a;min-width:35px
+}
 .grow{flex:1;min-width:0}
 .grow h2{margin:0 0 3px}
 .arrow{color:#ffd15a}
-.row,.child{display:grid;grid-template-columns:minmax(0,1fr) 38px 38px 38px 42px;gap:5px;align-items:center;padding:8px;border-top:1px solid #315b90}
+.row,.child{
+ display:grid;
+ grid-template-columns:minmax(0,1fr) 38px 38px 38px 42px;
+ gap:5px;align-items:center;padding:8px;
+ border-top:1px solid #315b90
+}
 .heading{font-size:10px;color:#c5def3;text-align:center}
 .heading span:first-child{text-align:left}
-.title{background:transparent;color:white;text-align:left;padding:2px;font-weight:normal;overflow-wrap:anywhere;min-width:0}
+.title{
+ background:transparent;color:white;text-align:left;
+ padding:2px;font-weight:normal;
+ overflow-wrap:anywhere;min-width:0
+}
 .title strong{font-size:13px}
 .center{text-align:center}
-.center input{width:17px;height:17px;accent-color:#ffd15a}
+.center input{
+ width:17px;height:17px;accent-color:#ffd15a
+}
 .mini{font-size:11px;padding:6px}
-.children{margin:3px 4px 8px 12px;border-left:2px solid #e7bb4c;background:#092751}
+.children{
+ margin:3px 4px 8px 12px;
+ border-left:2px solid #e7bb4c;background:#092751
+}
 .child{font-size:12px}
 .childname{overflow-wrap:anywhere}
 .actions{padding:10px;display:flex;gap:7px;flex-wrap:wrap}
 .empty{padding:14px;color:#c6dff5}
-.posterline{display:flex;align-items:center;gap:9px;min-width:0}
+.posterline{
+ display:flex;align-items:center;gap:9px;min-width:0
+}
 .posterline>div:last-child{min-width:0}
-.poster{width:48px;height:72px;object-fit:cover;border-radius:4px;border:1px solid #6e9cc7;flex-shrink:0}
-.poster.blank{display:flex;align-items:center;justify-content:center;text-align:center;font-size:10px;color:#b5cee9;border-style:dashed}
-.posteredit{display:block;background:transparent;color:#ffd15a;padding:3px 0;font-size:11px;text-align:left}
-.grid-items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:9px}
-.grid-items>.itemwrap{min-width:0;background:#092751;border:1px solid #376ba0;border-radius:8px;overflow:hidden}
+.poster{
+ width:48px;height:72px;object-fit:cover;
+ border-radius:4px;border:1px solid #6e9cc7;
+ flex-shrink:0
+}
+.poster.blank{
+ display:flex;align-items:center;justify-content:center;
+ text-align:center;font-size:10px;color:#b5cee9;
+ border-style:dashed
+}
+.posteredit{
+ display:block;background:transparent;color:#ffd15a;
+ padding:3px 0;font-size:11px;text-align:left
+}
+.grid-items{
+ display:grid;
+ grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:9px;padding:9px
+}
+.grid-items>.itemwrap{
+ min-width:0;background:#092751;
+ border:1px solid #376ba0;
+ border-radius:8px;overflow:hidden
+}
 .grid-items .row{display:flex;flex-wrap:wrap;gap:6px}
 .grid-items .posterline{width:100%;display:block}
-.grid-items .poster{width:100%;height:auto;aspect-ratio:2/3}
+.grid-items .poster{
+ width:100%;height:auto;aspect-ratio:2/3
+}
 .grid-items .posterline>div:last-child{padding-top:5px}
 .grid-items .center{flex:1}
 .grid-items .children{margin:4px}
 .grid-items .title{display:block;width:100%}
 .grid-items .mini{font-size:10px}
 .grid-items .itemwrap{align-self:start}
-.grid-items .child{grid-template-columns:minmax(0,1fr) repeat(3,25px) 32px;padding:5px;font-size:10px}
+.grid-items .child{
+ grid-template-columns:minmax(0,1fr) repeat(3,25px) 32px;
+ padding:5px;font-size:10px
+}
 .grid-items .child .mini{padding:3px;font-size:9px}
 .grid-items .child .center input{width:15px}
 .grid-items .actions{padding:6px}
 .grid-items .actions button{font-size:10px;padding:6px}
 .cardhead .mini{margin-left:auto}
-nav{position:fixed;bottom:0;left:0;right:0;display:flex;gap:8px;padding:10px;background:#041735;z-index:10}
+nav{
+ position:fixed;bottom:0;left:0;right:0;
+ display:flex;gap:8px;padding:10px;
+ background:#041735;z-index:10
+}
 nav button{flex:1}
 nav button.active{background:#8dd5f1}
 @media(min-width:700px){
-.grid-items{grid-template-columns:repeat(4,minmax(0,1fr))}
-.row,.child{grid-template-columns:minmax(0,1fr) 65px 65px 65px 65px}
-.heading{font-size:12px}
-.title strong{font-size:14px}
+ .grid-items{
+  grid-template-columns:repeat(4,minmax(0,1fr))
+ }
+ .row,.child{
+  grid-template-columns:minmax(0,1fr) 65px 65px 65px 65px
+ }
+ .heading{font-size:12px}
+ .title strong{font-size:14px}
 }
 </style>
 </head>
@@ -80,28 +149,36 @@ nav button.active{background:#8dd5f1}
 <h1>📺 Classic Comcast</h1>
 <div>DVD Research &amp; Collection Guide</div>
 <p id="stats"></p>
-<div class="progress"><div id="bar"></div></div>
 <p id="seasonStats" class="muted"></p>
 </header>
+
 <div class="tools">
-<input id="search" type="search" placeholder="Search channels, shows, movies, seasons...">
+<input id="search" type="search"
+ placeholder="Search channels, shows, movies, seasons...">
 <button id="addChannel">+ Channel</button>
 <button id="backup">Backup</button>
 <button id="restore">Restore</button>
 <button id="import">Import Shows</button>
 </div>
+
 <div class="view-switch">
 <button id="listView">☰ List View</button>
 <button id="gridView">▦ Poster Grid</button>
 </div>
+
 <div id="content"></div>
 </main>
+
 <nav>
 <button id="guideTab">📺 TV Guide</button>
 <button id="movieTab">🎬 Movies</button>
 </nav>
-<input id="restoreFile" type="file" accept=".json,application/json" hidden>
-<input id="importFile" type="file" accept=".json,application/json" hidden>
+
+<input id="restoreFile" type="file"
+ accept=".json,application/json" hidden>
+<input id="importFile" type="file"
+ accept=".json,application/json" hidden>
+
 <script>
 'use strict';
 
@@ -109,16 +186,23 @@ const KEY='comcast-collection-v1';
 const POSTER_KEY='comcast-posters-v1';
 const VIEW_KEY='comcast-poster-view-v1';
 const OPEN_KEY='comcast-open-channels-v1';
+const POSTER_API=
+ 'https://posters.thomasboydspam.workers.dev';
+
 const $=id=>document.getElementById(id);
-const uid=()=>Date.now()+'-'+Math.random().toString(36).slice(2,9);
-const norm=s=>String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+const uid=()=>Date.now()+'-'+
+ Math.random().toString(36).slice(2,9);
+const norm=s=>String(s||'')
+ .toLowerCase().replace(/[^a-z0-9]/g,'');
 const fields=['owned','ripped','added'];
 
 function getStored(key,fallback){
  try{
-  const v=JSON.parse(localStorage.getItem(key));
-  return v??fallback;
- }catch(e){return fallback}
+  const value=JSON.parse(localStorage.getItem(key));
+  return value??fallback;
+ }catch(error){
+  return fallback;
+ }
 }
 
 function initialData(){
@@ -131,26 +215,58 @@ function initialData(){
    {id:74,num:'74',name:'SYFY'}
   ],
   items:[
-   {id:10,channel:1,title:'Batman Beyond',type:'show',owned:false,ripped:true,added:false},
-   {id:11,title:'Shrek Collection',type:'movie',owned:true,ripped:false,added:false},
-   {id:12,title:'Pirates of the Caribbean Collection',type:'movie',owned:true,ripped:false,added:false},
-   {id:13,title:'Harry Potter Collection',type:'movie',owned:true,ripped:false,added:false},
-   {id:14,channel:74,title:'Stargate SG-1',type:'show',owned:true,ripped:false,added:false}
+   {
+    id:10,channel:1,title:'Batman Beyond',
+    type:'show',owned:false,ripped:true,added:false
+   },
+   {
+    id:11,title:'Shrek Collection',
+    type:'movie',owned:true,ripped:false,added:false
+   },
+   {
+    id:12,title:'Pirates of the Caribbean Collection',
+    type:'movie',owned:true,ripped:false,added:false
+   },
+   {
+    id:13,title:'Harry Potter Collection',
+    type:'movie',owned:true,ripped:false,added:false
+   },
+   {
+    id:14,channel:74,title:'Stargate SG-1',
+    type:'show',owned:true,ripped:false,added:false
+   }
   ],
   collectionChildren:[]
  };
 }
 
 let data=getStored(KEY,null);
-if(!data||!Array.isArray(data.items)||!Array.isArray(data.channels))data=initialData();
-if(!Array.isArray(data.collectionChildren))data.collectionChildren=[];
+
+if(
+ !data||
+ !Array.isArray(data.items)||
+ !Array.isArray(data.channels)
+){
+ data=initialData();
+}
+
+if(!Array.isArray(data.collectionChildren)){
+ data.collectionChildren=[];
+}
 
 let posters=getStored(POSTER_KEY,{});
-if(!posters||typeof posters!=='object')posters={};
+if(!posters||typeof posters!=='object'){
+ posters={};
+}
 
-let view=localStorage.getItem(VIEW_KEY)==='grid'?'grid':'list';
+let view=localStorage.getItem(VIEW_KEY)==='grid'
+ ?'grid':'list';
+
 let openChannels=getStored(OPEN_KEY,[]);
-if(!Array.isArray(openChannels))openChannels=[];
+if(!Array.isArray(openChannels)){
+ openChannels=[];
+}
+
 let tab='guide';
 const opened=new Set();
 
@@ -159,180 +275,291 @@ function save(){
 }
 
 function children(parent){
- return data.collectionChildren.filter(c=>String(c.parentId)===String(parent.id));
+ return data.collectionChildren.filter(child=>
+  String(child.parentId)===String(parent.id)
+ );
 }
 
 function findShow(title){
- return data.items.find(i=>i.type==='show'&&norm(i.title)===norm(title));
+ return data.items.find(item=>
+  item.type==='show'&&norm(item.title)===norm(title)
+ );
 }
 
 function addChildRecord(parent,title,values={}){
- let c=children(parent).find(c=>norm(c.title)===norm(title));
- if(c)return c;
- c={
-  id:uid(),parentId:parent.id,title,
-  owned:!!values.owned,ripped:!!values.ripped,added:!!values.added
+ let child=children(parent).find(item=>
+  norm(item.title)===norm(title)
+ );
+
+ if(child)return child;
+
+ child={
+  id:uid(),
+  parentId:parent.id,
+  title,
+  owned:!!values.owned,
+  ripped:!!values.ripped,
+  added:!!values.added
  };
- data.collectionChildren.push(c);
- return c;
+
+ data.collectionChildren.push(child);
+ return child;
 }
 
 function migrate(){
- let syfy=data.channels.find(c=>String(c.num)==='74');
+ let syfy=data.channels.find(channel=>
+  String(channel.num)==='74'
+ );
+
  if(!syfy){
   syfy={id:uid(),num:'74',name:'SYFY'};
   data.channels.push(syfy);
  }
 
  let sg=findShow('Stargate SG-1');
- const old=data.items.filter(i=>
-  i.type==='season'&&/^Stargate SG-1 Season\s*\d+$/i.test(i.title)
+
+ const old=data.items.filter(item=>
+  item.type==='season'&&
+  /^Stargate SG-1 Season\s*\d+$/i.test(item.title)
  );
 
  if(!sg){
   sg={
-   id:uid(),channel:syfy.id,title:'Stargate SG-1',type:'show',
-   owned:old.length?old.some(i=>i.owned):true,
-   ripped:false,added:false
+   id:uid(),
+   channel:syfy.id,
+   title:'Stargate SG-1',
+   type:'show',
+   owned:old.length?old.some(item=>item.owned):true,
+   ripped:false,
+   added:false
   };
   data.items.push(sg);
  }
 
  sg.channel=syfy.id;
- for(const season of old)addChildRecord(sg,season.title,season);
 
- const oldIds=new Set(old.map(i=>String(i.id)));
- data.items=data.items.filter(i=>!oldIds.has(String(i.id)));
+ for(const season of old){
+  addChildRecord(sg,season.title,season);
+ }
+
+ const oldIds=new Set(old.map(item=>String(item.id)));
+
+ data.items=data.items.filter(item=>
+  !oldIds.has(String(item.id))
+ );
 
  if(!children(sg).length){
   for(let n=1;n<=10;n++){
-   addChildRecord(sg,'Stargate SG-1 Season '+n,{owned:!!sg.owned});
+   addChildRecord(
+    sg,
+    'Stargate SG-1 Season '+n,
+    {owned:!!sg.owned}
+   );
   }
  }
 
- for(const season of [...data.items.filter(i=>i.type==='season')]){
-  const m=season.title.match(/^(.*?)\s+Season\s+(\d+)$/i);
-  if(!m)continue;
+ for(const season of [...data.items.filter(
+  item=>item.type==='season'
+ )]){
+  const match=season.title.match(
+   /^(.*?)\s+Season\s+(\d+)$/i
+  );
 
-  let parent=findShow(m[1]);
+  if(!match)continue;
+
+  let parent=findShow(match[1]);
+
   if(!parent){
    parent={
-    id:uid(),title:m[1],type:'show',
-    owned:!!season.owned,ripped:!!season.ripped,added:!!season.added
+    id:uid(),
+    title:match[1],
+    type:'show',
+    owned:!!season.owned,
+    ripped:!!season.ripped,
+    added:!!season.added
    };
    data.items.push(parent);
   }
 
   addChildRecord(parent,season.title,season);
-  data.items=data.items.filter(i=>String(i.id)!==String(season.id));
+
+  data.items=data.items.filter(item=>
+   String(item.id)!==String(season.id)
+  );
  }
 
  const collections=[
-  ['Shrek Collection',[
-   'Shrek','Shrek 2','Shrek the Third','Shrek Forever After'
-  ]],
-  ['Pirates of the Caribbean Collection',[
-   "Pirates of the Caribbean: The Curse of the Black Pearl",
-   "Pirates of the Caribbean: Dead Man's Chest",
-   "Pirates of the Caribbean: At World's End",
-   "Pirates of the Caribbean: On Stranger Tides",
-   "Pirates of the Caribbean: Dead Men Tell No Tales"
-  ]],
-  ['Harry Potter Collection',[
-   "Harry Potter and the Sorcerer's Stone",
-   "Harry Potter and the Chamber of Secrets",
-   "Harry Potter and the Prisoner of Azkaban",
-   "Harry Potter and the Goblet of Fire",
-   "Harry Potter and the Order of the Phoenix",
-   "Harry Potter and the Half-Blood Prince",
-   "Harry Potter and the Deathly Hallows – Part 1",
-   "Harry Potter and the Deathly Hallows – Part 2"
-  ]]
+  [
+   'Shrek Collection',
+   [
+    'Shrek',
+    'Shrek 2',
+    'Shrek the Third',
+    'Shrek Forever After'
+   ]
+  ],
+  [
+   'Pirates of the Caribbean Collection',
+   [
+    'Pirates of the Caribbean: The Curse of the Black Pearl',
+    "Pirates of the Caribbean: Dead Man's Chest",
+    "Pirates of the Caribbean: At World's End",
+    'Pirates of the Caribbean: On Stranger Tides',
+    'Pirates of the Caribbean: Dead Men Tell No Tales'
+   ]
+  ],
+  [
+   'Harry Potter Collection',
+   [
+    "Harry Potter and the Sorcerer's Stone",
+    'Harry Potter and the Chamber of Secrets',
+    'Harry Potter and the Prisoner of Azkaban',
+    'Harry Potter and the Goblet of Fire',
+    'Harry Potter and the Order of the Phoenix',
+    'Harry Potter and the Half-Blood Prince',
+    'Harry Potter and the Deathly Hallows – Part 1',
+    'Harry Potter and the Deathly Hallows – Part 2'
+   ]
+  ]
  ];
 
  for(const [name,titles] of collections){
-  const p=data.items.find(i=>i.type==='movie'&&norm(i.title)===norm(name));
-  if(p)for(const title of titles)addChildRecord(p,title,{owned:p.owned});
+  const parent=data.items.find(item=>
+   item.type==='movie'&&norm(item.title)===norm(name)
+  );
+
+  if(parent){
+   for(const title of titles){
+    addChildRecord(parent,title,{owned:parent.owned});
+   }
+  }
  }
+
  save();
 }
 
 function el(tag,cls,text){
- const x=document.createElement(tag);
- if(cls)x.className=cls;
- if(text!==undefined)x.textContent=String(text);
- return x;
+ const element=document.createElement(tag);
+
+ if(cls)element.className=cls;
+
+ if(text!==undefined){
+  element.textContent=String(text);
+ }
+
+ return element;
 }
 
 function check(item,field){
  const label=el('label','center');
  const input=el('input');
+
  input.type='checkbox';
  input.checked=!!item[field];
- input.setAttribute('aria-label',field+' '+item.title);
+ input.setAttribute(
+  'aria-label',
+  field+' '+item.title
+ );
+
  input.addEventListener('change',()=>{
   item[field]=input.checked;
   save();
   updateStats();
  });
+
  label.appendChild(input);
  return label;
 }
 
 function editTitle(item){
  const title=prompt('Edit title',item.title);
+
  if(title===null||!title.trim())return;
+
  item.title=title.trim();
 
  if(item.type==='show'){
-  const move=confirm('Move this show to another channel?');
+  const move=confirm(
+   'Move this show to another channel?'
+  );
+
   if(move){
    const num=prompt('Enter destination channel number');
+
    if(num){
-    const ch=data.channels.find(c=>String(c.num)===num.trim());
-    if(ch)item.channel=ch.id;
-    else alert('Channel not found');
+    const channel=data.channels.find(ch=>
+     String(ch.num)===num.trim()
+    );
+
+    if(channel){
+     item.channel=channel.id;
+    }else{
+     alert('Channel not found');
+    }
    }
   }
  }
+
  save();
  render();
 }
 
 function addChild(parent){
  const title=prompt(
-  parent.type==='show'?'Season name (example: Season 2)':'Movie title'
+  parent.type==='show'
+   ?'Season name (example: Season 2)'
+   :'Movie title'
  );
+
  if(!title||!title.trim())return;
+
  addChildRecord(parent,title.trim());
  save();
  opened.add(String(parent.id));
  render();
 }
 
-function childRow(c){
+function childRow(child){
  const row=el('div','child');
- row.appendChild(el('span','childname',c.title));
- for(const f of fields)row.appendChild(check(c,f));
+
+ row.appendChild(
+  el('span','childname',child.title)
+ );
+
+ for(const field of fields){
+  row.appendChild(check(child,field));
+ }
+
  const edit=el('button','mini','Edit');
- edit.onclick=()=>editTitle(c);
+ edit.onclick=()=>editTitle(child);
+
  row.appendChild(edit);
  return row;
 }
 
 function posterFor(item){
  const url=posters[String(item.id)];
- let p;
+
  if(url){
-  p=el('img','poster');
-  p.src=url;
-  p.alt=item.title+' poster';
-  p.loading='lazy';
-  p.onerror=()=>{p.style.opacity='.3'};
- }else{
-  p=el('div','poster blank','No Poster');
+  const image=el('img','poster');
+
+  image.src=url;
+  image.alt=item.title+' poster';
+  image.loading='lazy';
+
+  image.onerror=()=>{
+   image.style.opacity='.3';
+  };
+
+  return image;
  }
- return p;
+
+ return el('div','poster blank','No Poster');
+}
+
+function openShow(item){
+ window.location.href=
+  './show.html?id='+encodeURIComponent(item.id);
 }
 
 function itemRow(item){
@@ -341,22 +568,34 @@ function itemRow(item){
  const line=el('div','posterline');
  const controls=el('div');
  const title=el('button','title');
+
  const isOpen=opened.has(String(item.id));
 
  title.append(
-  el('span','arrow',isOpen?'▼ ':'▶ '),
+  el('span','arrow',item.type==='show'?'▶ ':isOpen?'▼ ':'▶ '),
   el('strong','',item.title)
  );
 
  title.onclick=()=>{
+  if(item.type==='show'){
+   openShow(item);
+   return;
+  }
+
   const id=String(item.id);
-  if(opened.has(id))opened.delete(id);
-  else opened.add(id);
+
+  if(opened.has(id)){
+   opened.delete(id);
+  }else{
+   opened.add(id);
+  }
+
   render();
  };
 
  const editPoster=el(
-  'button','posteredit',
+  'button',
+  'posteredit',
   posters[String(item.id)]?'Change Poster':'+ Poster'
  );
 
@@ -366,63 +605,80 @@ function itemRow(item){
    '\nLeave blank to remove.',
    posters[String(item.id)]||''
   );
+
   if(url===null)return;
+
   const cleaned=url.trim();
 
-  if(cleaned&&!cleaned.toLowerCase().startsWith('https://')){
+  if(
+   cleaned&&
+   !cleaned.toLowerCase().startsWith('https://')
+  ){
    alert('Please use an HTTPS image URL.');
    return;
   }
 
-  if(cleaned)posters[String(item.id)]=cleaned;
-  else delete posters[String(item.id)];
+  if(cleaned){
+   posters[String(item.id)]=cleaned;
+  }else{
+   delete posters[String(item.id)];
+  }
 
-  localStorage.setItem(POSTER_KEY,JSON.stringify(posters));
+  localStorage.setItem(
+   POSTER_KEY,
+   JSON.stringify(posters)
+  );
+
   render();
  };
 
+ const poster=posterFor(item);
+
+ if(item.type==='show'){
+  poster.style.cursor='pointer';
+  poster.onclick=()=>openShow(item);
+ }
+
  controls.append(title,editPoster);
- line.append(posterFor(item),controls);
+ line.append(poster,controls);
  row.appendChild(line);
 
- const collection=item.type==='movie'&&children(item).length>0;
- for(const f of fields){
+ const collection=
+  item.type==='movie'&&children(item).length>0;
+
+ for(const field of fields){
   row.appendChild(
-   collection?el('span','center muted','—'):check(item,f)
+   collection
+    ?el('span','center muted','—')
+    :check(item,field)
   );
  }
 
  const edit=el('button','mini','Edit');
  edit.onclick=()=>editTitle(item);
+
  row.appendChild(edit);
  wrap.appendChild(row);
 
- if(isOpen){
+ if(isOpen&&item.type==='movie'){
   const body=el('div','children');
   const list=[...children(item)];
 
-  if(item.type==='show'){
-   list.sort((a,b)=>{
-    const n=s=>Number(s.title.match(/Season\s*(\d+)/i)?.[1]||0);
-    return n(a)-n(b);
-   });
+  for(const child of list){
+   body.appendChild(childRow(child));
   }
 
-  for(const child of list)body.appendChild(childRow(child));
-
   if(!list.length){
-   body.appendChild(el(
-    'div','empty',
-    item.type==='show'?'No seasons yet.':'No movies yet.'
-   ));
+   body.appendChild(
+    el('div','empty','No movies yet.')
+   );
   }
 
   const actions=el('div','actions');
-  const add=el(
-   'button','',
-   item.type==='show'?'+ Add Season':'+ Add Movie'
-  );
+  const add=el('button','','+ Add Movie');
+
   add.onclick=()=>addChild(item);
+
   actions.appendChild(add);
   body.appendChild(actions);
   wrap.appendChild(body);
@@ -432,15 +688,24 @@ function itemRow(item){
 }
 
 function addItem(type,channel){
- const title=prompt(type==='show'?'TV show title':'Movie or collection title');
+ const title=prompt(
+  type==='show'
+   ?'TV show title'
+   :'Movie or collection title'
+ );
+
  if(!title||!title.trim())return;
 
  data.items.push({
-  id:uid(),type,
+  id:uid(),
+  type,
   channel:channel?channel.id:undefined,
   title:title.trim(),
-  owned:false,ripped:false,added:false
+  owned:false,
+  ripped:false,
+  added:false
  });
+
  save();
  render();
 }
@@ -449,37 +714,59 @@ function section(name,num,items,type,channel){
  const card=el('section','card');
  const head=el('div','cardhead');
  const arrow=el('span','arrow',channel?'▸':'');
- head.append(arrow,el('span','channelnum',num));
+ const number=el('span','channelnum',num);
+
+ head.append(arrow,number);
 
  const grow=el('div','grow');
+
  grow.append(
   el('h2','',name),
   el('span','muted',items.length+' titles')
  );
+
  head.appendChild(grow);
 
  if(channel){
   const edit=el('button','mini','Edit');
-  edit.onclick=e=>{
-   e.stopPropagation();
-   const number=prompt('Channel number',channel.num);
+
+  edit.onclick=event=>{
+   event.stopPropagation();
+
+   const number=prompt(
+    'Channel number',
+    channel.num
+   );
+
    if(number===null||!number.trim())return;
-   const newName=prompt('Channel name',channel.name);
+
+   const newName=prompt(
+    'Channel name',
+    channel.name
+   );
+
    if(newName===null||!newName.trim())return;
+
    channel.num=number.trim();
    channel.name=newName.trim();
+
    save();
    render();
   };
+
   head.appendChild(edit);
  }
 
  card.appendChild(head);
+
  const body=el('div');
  card.appendChild(body);
 
  const searching=!!$('search').value.trim();
- let isOpen=!channel||searching||
+
+ let isOpen=
+  !channel||
+  searching||
   openChannels.map(String).includes(String(channel.id));
 
  function update(){
@@ -488,160 +775,242 @@ function section(name,num,items,type,channel){
  }
 
  if(channel){
-  head.onclick=e=>{
-   if(e.target.closest('button'))return;
+  head.onclick=event=>{
+   if(event.target.closest('button'))return;
+
    isOpen=!isOpen;
    update();
 
    if(!searching){
     const ids=new Set(openChannels.map(String));
-    if(isOpen)ids.add(String(channel.id));
-    else ids.delete(String(channel.id));
+
+    if(isOpen){
+     ids.add(String(channel.id));
+    }else{
+     ids.delete(String(channel.id));
+    }
+
     openChannels=[...ids];
-    localStorage.setItem(OPEN_KEY,JSON.stringify(openChannels));
+
+    localStorage.setItem(
+     OPEN_KEY,
+     JSON.stringify(openChannels)
+    );
    }
   };
  }
 
  const headings=el('div','row heading');
- for(const label of ['Title','Owned','Ripped','Added','Edit']){
+
+ for(const label of [
+  'Title','Owned','Ripped','Added','Edit'
+ ]){
   headings.appendChild(
    el('span',label==='Title'?'':'center',label)
   );
  }
- if(view==='list')body.appendChild(headings);
+
+ if(view==='list'){
+  body.appendChild(headings);
+ }
 
  const listing=el(
-  'div',view==='grid'?'grid-items':'list-items'
+  'div',
+  view==='grid'?'grid-items':'list-items'
  );
 
- for(const item of items)listing.appendChild(itemRow(item));
+ for(const item of items){
+  listing.appendChild(itemRow(item));
+ }
+
  body.appendChild(listing);
 
  if(!items.length){
-  body.appendChild(el('div','empty','No matching titles.'));
+  body.appendChild(
+   el('div','empty','No matching titles.')
+  );
  }
 
  const actions=el('div','actions');
  const add=el(
-  'button','',
-  type==='show'?'+ Add Show':'+ Add Movie / Collection'
+  'button',
+  '',
+  type==='show'
+   ?'+ Add Show'
+   :'+ Add Movie / Collection'
  );
+
  add.onclick=()=>addItem(type,channel);
+
  actions.appendChild(add);
  body.appendChild(actions);
+
  update();
  return card;
 }
 
 function updateStats(){
  const folders=new Set(
-  data.items.filter(i=>
-   i.type==='movie'&&children(i).length>0
-  ).map(i=>String(i.id))
+  data.items.filter(item=>
+   item.type==='movie'&&children(item).length>0
+  ).map(item=>String(item.id))
  );
 
- const main=data.items.filter(i=>
-  i.type!=='season'&&!folders.has(String(i.id))
+ const main=data.items.filter(item=>
+  item.type!=='season'&&
+  !folders.has(String(item.id))
  );
 
- const movies=data.collectionChildren.filter(i=>
-  folders.has(String(i.parentId))
+ const movies=data.collectionChildren.filter(item=>
+  folders.has(String(item.parentId))
  );
 
  const titles=[...main,...movies];
- const owned=titles.filter(i=>i.owned).length;
- const ripped=titles.filter(i=>i.ripped).length;
- const added=titles.filter(i=>i.added).length;
+
+ const owned=titles.filter(item=>item.owned).length;
+ const ripped=titles.filter(item=>item.ripped).length;
+ const added=titles.filter(item=>item.added).length;
 
  $('stats').textContent=
   owned+' owned / '+titles.length+
   ' titles • '+ripped+' ripped • '+added+' added';
 
- $('bar').style.width=
-  (titles.length?owned/titles.length*100:0)+'%';
-
  const showIds=new Set(
-  data.items.filter(i=>i.type==='show').map(i=>String(i.id))
+  data.items.filter(item=>
+   item.type==='show'
+  ).map(item=>String(item.id))
  );
 
- const seasons=data.collectionChildren.filter(i=>
-  showIds.has(String(i.parentId))
+ const seasons=data.collectionChildren.filter(item=>
+  showIds.has(String(item.parentId))
  );
 
  $('seasonStats').textContent=
-  'Seasons: '+seasons.filter(i=>i.owned).length+
+  'Seasons: '+
+  seasons.filter(item=>item.owned).length+
   '/'+seasons.length+' owned • '+
-  seasons.filter(i=>i.ripped).length+' ripped • '+
-  seasons.filter(i=>i.added).length+' added';
+  seasons.filter(item=>item.ripped).length+
+  ' ripped • '+
+  seasons.filter(item=>item.added).length+
+  ' added';
 }
 
 function render(){
  const root=$('content');
  root.replaceChildren();
 
- $('guideTab').classList.toggle('active',tab==='guide');
- $('movieTab').classList.toggle('active',tab==='movies');
- $('listView').classList.toggle('active',view==='list');
- $('gridView').classList.toggle('active',view==='grid');
+ $('guideTab').classList.toggle(
+  'active',tab==='guide'
+ );
+
+ $('movieTab').classList.toggle(
+  'active',tab==='movies'
+ );
+
+ $('listView').classList.toggle(
+  'active',view==='list'
+ );
+
+ $('gridView').classList.toggle(
+  'active',view==='grid'
+ );
 
  const q=$('search').value.trim().toLowerCase();
  const searching=!!q;
 
- const matches=i=>
-  i.title.toLowerCase().includes(q)||
-  children(i).some(c=>c.title.toLowerCase().includes(q));
+ const matches=item=>
+  item.title.toLowerCase().includes(q)||
+  children(item).some(child=>
+   child.title.toLowerCase().includes(q)
+  );
 
  if(searching||tab==='guide'){
-  for(const ch of data.channels){
-   const all=data.items.filter(i=>
-    i.type==='show'&&String(i.channel)===String(ch.id)
+  for(const channel of data.channels){
+   const all=data.items.filter(item=>
+    item.type==='show'&&
+    String(item.channel)===String(channel.id)
    );
 
    const chMatches=
-    String(ch.num).toLowerCase().includes(q)||
-    ch.name.toLowerCase().includes(q);
+    String(channel.num).toLowerCase().includes(q)||
+    channel.name.toLowerCase().includes(q);
 
-   const filtered=!searching||chMatches
-    ?all:all.filter(matches);
+   const filtered=
+    !searching||chMatches
+     ?all
+     :all.filter(matches);
 
-   if(searching&&!chMatches&&!filtered.length)continue;
+   if(
+    searching&&
+    !chMatches&&
+    !filtered.length
+   )continue;
 
    root.appendChild(
-    section(ch.name,ch.num,filtered,'show',ch)
+    section(
+     channel.name,
+     channel.num,
+     filtered,
+     'show',
+     channel
+    )
    );
   }
 
-  const other=data.items.filter(i=>
-   i.type==='show'&&!data.channels.some(c=>
-    String(c.id)===String(i.channel)
+  const other=data.items.filter(item=>
+   item.type==='show'&&
+   !data.channels.some(channel=>
+    String(channel.id)===String(item.channel)
    )
   );
 
-  const filtered=searching?other.filter(matches):other;
+  const filtered=searching
+   ?other.filter(matches)
+   :other;
+
   if(filtered.length){
    root.appendChild(
-    section('Other TV Series','📼',filtered,'show',null)
+    section(
+     'Other TV Series',
+     '📼',
+     filtered,
+     'show',
+     null
+    )
    );
   }
  }
 
  if(searching||tab==='movies'){
-  const movies=data.items.filter(i=>i.type==='movie');
-  const filtered=searching?movies.filter(matches):movies;
+  const movies=data.items.filter(item=>
+   item.type==='movie'
+  );
+
+  const filtered=searching
+   ?movies.filter(matches)
+   :movies;
 
   if(!searching||filtered.length){
    root.appendChild(
-    section('Movie Collection','🎬',filtered,'movie',null)
+    section(
+     'Movie Collection',
+     '🎬',
+     filtered,
+     'movie',
+     null
+    )
    );
   }
  }
 
  if(!root.children.length){
-  root.appendChild(el(
-   'div','empty',
-   'No matching channels, shows, seasons, movies or collections.'
-  ));
+  root.appendChild(
+   el(
+    'div',
+    'empty',
+    'No matching channels, shows, seasons, movies or collections.'
+   )
+  );
  }
 
  updateStats();
@@ -652,32 +1021,44 @@ function downloadJSON(obj,filename){
   [JSON.stringify(obj,null,2)],
   {type:'application/json'}
  );
+
  const url=URL.createObjectURL(blob);
  const a=el('a');
+
  a.href=url;
  a.download=filename;
+
  document.body.appendChild(a);
  a.click();
  a.remove();
+
  setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 
 function backup(){
- downloadJSON({...data,posters},'comcast-backup.json');
+ downloadJSON(
+  {...data,posters},
+  'comcast-backup.json'
+ );
 }
 
 async function restore(file){
  if(!file)return;
+
  try{
   const restored=JSON.parse(await file.text());
 
-  if(!restored||
+  if(
+   !restored||
    !Array.isArray(restored.items)||
-   !Array.isArray(restored.channels)){
+   !Array.isArray(restored.channels)
+  ){
    throw Error('Invalid backup');
   }
 
-  if(!confirm('Restore backup? Download a copy of the current collection first?'))return;
+  if(!confirm(
+   'Restore backup? A copy of your current collection will download first.'
+  ))return;
 
   backup();
   data=restored;
@@ -686,59 +1067,83 @@ async function restore(file){
    data.collectionChildren=[];
   }
 
-  if(restored.posters&&typeof restored.posters==='object'){
+  if(
+   restored.posters&&
+   typeof restored.posters==='object'
+  ){
    posters=restored.posters;
-   localStorage.setItem(POSTER_KEY,JSON.stringify(posters));
+
+   localStorage.setItem(
+    POSTER_KEY,
+    JSON.stringify(posters)
+   );
   }
 
   migrate();
   render();
+
   alert('Collection restored.');
- }catch(e){
-  alert('Restore failed: '+e.message);
+ }catch(error){
+  alert('Restore failed: '+error.message);
  }
 }
 
 async function importShows(file){
  if(!file)return;
+
  try{
   const obj=JSON.parse(await file.text());
   let count=0;
 
-  const entries=Array.isArray(obj)?obj:
-   Array.isArray(obj.shows)?obj.shows:
-   Array.isArray(obj.items)?obj.items:[];
+  const entries=Array.isArray(obj)
+   ?obj
+   :Array.isArray(obj.shows)
+    ?obj.shows
+    :Array.isArray(obj.items)
+     ?obj.items
+     :[];
 
   for(const entry of entries){
    const title=typeof entry==='string'
-    ?entry:(entry.title||entry.name||'');
+    ?entry
+    :(entry.title||entry.name||'');
 
    if(!title||findShow(title))continue;
 
    let channel=null;
+
    if(typeof entry==='object'){
-    const n=entry.channelNumber||entry.channel||entry.num;
-    channel=data.channels.find(c=>
-     String(c.num)===String(n)||
-     String(c.name).toLowerCase()===String(n).toLowerCase()
+    const number=
+     entry.channelNumber||
+     entry.channel||
+     entry.num;
+
+    channel=data.channels.find(ch=>
+     String(ch.num)===String(number)||
+     String(ch.name).toLowerCase()===
+      String(number).toLowerCase()
     );
    }
 
    data.items.push({
-    id:uid(),type:'show',title,
+    id:uid(),
+    type:'show',
+    title,
     channel:channel?.id,
     owned:!!entry.owned,
     ripped:!!entry.ripped,
     added:!!entry.added
    });
+
    count++;
   }
 
   save();
   render();
+
   alert('Imported '+count+' new shows.');
- }catch(e){
-  alert('Import failed: '+e.message);
+ }catch(error){
+  alert('Import failed: '+error.message);
  }
 }
 
@@ -769,12 +1174,16 @@ $('search').oninput=render;
 $('addChannel').onclick=()=>{
  const num=prompt('Channel number?');
  if(!num||!num.trim())return;
+
  const name=prompt('Channel name?');
  if(!name||!name.trim())return;
 
  data.channels.push({
-  id:uid(),num:num.trim(),name:name.trim()
+  id:uid(),
+  num:num.trim(),
+  name:name.trim()
  });
+
  save();
  render();
 };
@@ -783,68 +1192,69 @@ $('backup').onclick=backup;
 $('restore').onclick=()=>$('restoreFile').click();
 $('import').onclick=()=>$('importFile').click();
 
-$('restoreFile').onchange=async e=>{
- await restore(e.target.files[0]);
- e.target.value='';
+$('restoreFile').onchange=async event=>{
+ await restore(event.target.files[0]);
+ event.target.value='';
 };
 
-$('importFile').onchange=async e=>{
- await importShows(e.target.files[0]);
- e.target.value='';
+$('importFile').onchange=async event=>{
+ await importShows(event.target.files[0]);
+ event.target.value='';
 };
 
-const POSTER_API =
-  'https://posters.thomasboydspam.workers.dev';
+async function loadAutomaticPosters(){
+ const items=data.items.filter(item=>
+  (item.type==='show'||item.type==='movie')&&
+  !posters[String(item.id)]
+ );
 
-async function loadAutomaticPosters() {
-  const items = data.items.filter(item =>
-    (item.type === 'show' || item.type === 'movie') &&
-    !posters[String(item.id)]
-  );
+ for(const item of items){
+  try{
+   const type=item.type==='movie'?'movie':'tv';
 
-  let found = 0;
+   const url=
+    POSTER_API+
+    '/poster?title='+
+    encodeURIComponent(item.title)+
+    '&type='+type;
 
-  for (const item of items) {
-    try {
-      const type = item.type === 'movie' ? 'movie' : 'tv';
+   const response=await fetch(url);
 
-      const url = POSTER_API + '/poster?title=' +
-        encodeURIComponent(item.title) +
-        '&type=' + type;
+   if(!response.ok)continue;
 
-      const response = await fetch(url);
+   const result=await response.json();
 
-      if (!response.ok) continue;
+   const match=(result.results||[]).find(entry=>
+    entry.poster&&
+    norm(entry.title)===norm(item.title)
+   );
 
-      const result = await response.json();
+   if(match&&!posters[String(item.id)]){
+    posters[String(item.id)]=match.poster;
 
-      const match = (result.results || []).find(entry =>
-        entry.poster &&
-        norm(entry.title) === norm(item.title)
-      );
+    localStorage.setItem(
+     POSTER_KEY,
+     JSON.stringify(posters)
+    );
 
-      if (match) {
-        posters[String(item.id)] = match.poster;
-        localStorage.setItem(
-          POSTER_KEY,
-          JSON.stringify(posters)
-        );
-        found++;
-        render();
-      }
-    } catch (error) {
-      console.warn('Poster lookup failed:', item.title);
-    }
-
-    await new Promise(resolve => setTimeout(resolve, 150));
+    render();
+   }
+  }catch(error){
+   console.warn(
+    'Poster lookup failed:',
+    item.title,
+    error
+   );
   }
 
-  console.log('Automatic posters found:', found);
+  await new Promise(resolve=>setTimeout(resolve,150));
+ }
 }
 
-window.addEventListener('load', () => {
-  loadAutomaticPosters();
-});
+window.addEventListener(
+ 'load',
+ loadAutomaticPosters
+);
 
 migrate();
 render();
