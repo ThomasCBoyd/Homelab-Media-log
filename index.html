@@ -793,6 +793,59 @@ $('importFile').onchange=async e=>{
  e.target.value='';
 };
 
+const POSTER_API =
+  'https://posters.thomasboydspam.workers.dev';
+
+async function loadAutomaticPosters() {
+  const items = data.items.filter(item =>
+    (item.type === 'show' || item.type === 'movie') &&
+    !posters[String(item.id)]
+  );
+
+  let found = 0;
+
+  for (const item of items) {
+    try {
+      const type = item.type === 'movie' ? 'movie' : 'tv';
+
+      const url = POSTER_API + '/poster?title=' +
+        encodeURIComponent(item.title) +
+        '&type=' + type;
+
+      const response = await fetch(url);
+
+      if (!response.ok) continue;
+
+      const result = await response.json();
+
+      const match = (result.results || []).find(entry =>
+        entry.poster &&
+        norm(entry.title) === norm(item.title)
+      );
+
+      if (match) {
+        posters[String(item.id)] = match.poster;
+        localStorage.setItem(
+          POSTER_KEY,
+          JSON.stringify(posters)
+        );
+        found++;
+        render();
+      }
+    } catch (error) {
+      console.warn('Poster lookup failed:', item.title);
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 150));
+  }
+
+  console.log('Automatic posters found:', found);
+}
+
+window.addEventListener('load', () => {
+  loadAutomaticPosters();
+});
+
 migrate();
 render();
 </script>
