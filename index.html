@@ -7,6 +7,7 @@
 <title>Classic Comcast Collection</title>
 <style>
 *{box-sizing:border-box}
+html{scroll-behavior:auto}
 body{margin:0;padding:12px 9px 90px;background:linear-gradient(135deg,#061739,#12458d) fixed;color:white;font:14px Arial,sans-serif}
 main{max-width:1050px;margin:auto}
 header,.card{border:1px solid #e7bb4c;border-radius:12px;background:#10366e;margin-bottom:12px;overflow:hidden}
@@ -36,7 +37,7 @@ button:focus-visible{outline:2px solid white;outline-offset:2px}
 .mini{font-size:11px;padding:6px}
 .children{margin:3px 4px 8px 12px;border-left:2px solid #e7bb4c;background:#092751}
 .child{font-size:12px}
-.childname{overflow-wrap:anywhere}
+.childname{background:transparent;color:white;text-align:left;padding:3px;overflow-wrap:anywhere;font-weight:600}
 .actions{padding:10px;display:flex;gap:7px;flex-wrap:wrap}
 .empty{padding:14px;color:#c6dff5}
 .posterline{display:flex;align-items:center;gap:9px;min-width:0}
@@ -65,11 +66,12 @@ nav{position:fixed;bottom:0;left:0;right:0;display:flex;gap:8px;padding:10px;bac
 nav button{flex:1}
 nav button.active{background:#8dd5f1}
 #posterStatus{color:#ffd15a;font-size:12px;line-height:1.5;margin:7px 0}
+.detailslink{background:#20569b;color:white;border:1px solid #74a6e1;font-size:11px;padding:7px 9px}
 @media(min-width:700px){
- .grid-items{grid-template-columns:repeat(4,minmax(0,1fr))}
- .row,.child{grid-template-columns:minmax(0,1fr) 65px 65px 65px 65px}
- .heading{font-size:12px}
- .title strong{font-size:14px}
+.grid-items{grid-template-columns:repeat(4,minmax(0,1fr))}
+.row,.child{grid-template-columns:minmax(0,1fr) 65px 65px 65px 65px}
+.heading{font-size:12px}
+.title strong{font-size:14px}
 }
 </style>
 </head>
@@ -115,13 +117,14 @@ const KEY='comcast-collection-v1';
 const POSTER_KEY='comcast-posters-v1';
 const VIEW_KEY='comcast-poster-view-v1';
 const OPEN_KEY='comcast-open-channels-v1';
-const POSTER_API='https://posters.thomasboydspam.workers.dev';
+const NAV_KEY='comcast-navigation-v2';
+const API='https://posters.thomasboydspam.workers.dev';
 
 const $=id=>document.getElementById(id);
 const uid=()=>Date.now()+'-'+Math.random().toString(36).slice(2,9);
 const norm=s=>String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
 const fields=['owned','ripped','added'];
-const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
 
 function stored(key,fallback){
  try{return JSON.parse(localStorage.getItem(key))??fallback}
@@ -152,20 +155,26 @@ let data=stored(KEY,null);
 if(!data||!Array.isArray(data.items)||!Array.isArray(data.channels)){
  data=initialData();
 }
-if(!Array.isArray(data.collectionChildren))data.collectionChildren=[];
-if(!data.showDetails)data.showDetails={};
+data.collectionChildren ||= [];
+data.showDetails ||= {};
+data.movieDetails ||= {};
 
 let posters=stored(POSTER_KEY,{});
 if(!posters||typeof posters!=='object')posters={};
 
-let view=localStorage.getItem(VIEW_KEY)==='grid'?'grid':'list';
+let previous=null;
+try{
+ previous=JSON.parse(sessionStorage.getItem(NAV_KEY)||'null');
+}catch{}
+
+let view=previous?.view||
+ (localStorage.getItem(VIEW_KEY)==='grid'?'grid':'list');
 let openChannels=stored(OPEN_KEY,[]);
 if(!Array.isArray(openChannels))openChannels=[];
 
-let tab='guide';
-const opened=new Set();
+let tab=previous?.tab==='movies'?'movies':'guide';
+const opened=new Set(Array.isArray(previous?.opened)?previous.opened:[]);
 let posterBusy=false;
-let posterGeneration=0;
 let posterStatus='';
 
 function save(){
@@ -174,18 +183,55 @@ function save(){
 function savePosters(){
  localStorage.setItem(POSTER_KEY,JSON.stringify(posters));
 }
+
+function rememberPlace(){
+ try{
+  sessionStorage.setItem(NAV_KEY,JSON.stringify({
+   tab,
+   view,
+   opened:[...opened],
+   search:$('search').value,
+   scrollY:window.scrollY
+  }));
+ }catch{}
+}
+
+function goToPage(url){
+ rememberPlace();
+ location.href=url;
+}
+
+window.addEventListener('pagehide',rememberPlace);
+
+let scrollTimer;
+window.addEventListener('scroll',()=>{
+ clearTimeout(scrollTimer);
+ scrollTimer=setTimeout(rememberPlace,180);
+},{passive:true});
+
 function children(parent){
- return data.collectionChildren.filter(child=>String(child.parentId)===String(parent.id));
+ return data.collectionChildren.filter(x=>
+  String(x.parentId)===String(parent.id)
+ );
 }
+
 function findShow(title){
- return data.items.find(item=>item.type==='show'&&norm(item.title)===norm(title));
+ return data.items.find(x=>
+  x.type==='show'&&norm(x.title)===norm(title)
+ );
 }
+
 function addChildRecord(parent,title,values={}){
  let child=children(parent).find(x=>norm(x.title)===norm(title));
  if(child)return child;
+
  child={
-  id:uid(),parentId:parent.id,title,
-  owned:!!values.owned,ripped:!!values.ripped,added:!!values.added
+  id:uid(),
+  parentId:parent.id,
+  title,
+  owned:!!values.owned,
+  ripped:!!values.ripped,
+  added:!!values.added
  };
  data.collectionChildren.push(child);
  return child;
@@ -197,10 +243,12 @@ function migrate(){
   syfy={id:uid(),num:'74',name:'SYFY'};
   data.channels.push(syfy);
  }
+
  let sg=findShow('Stargate SG-1');
  const old=data.items.filter(x=>
   x.type==='season'&&/^Stargate SG-1 Season\s*\d+$/i.test(x.title)
  );
+
  if(!sg){
   sg={
    id:uid(),channel:syfy.id,title:'Stargate SG-1',
@@ -209,8 +257,10 @@ function migrate(){
   };
   data.items.push(sg);
  }
+
  sg.channel=syfy.id;
  for(const season of old)addChildRecord(sg,season.title,season);
+
  const oldIds=new Set(old.map(x=>String(x.id)));
  data.items=data.items.filter(x=>!oldIds.has(String(x.id)));
 
@@ -223,14 +273,18 @@ function migrate(){
  for(const season of [...data.items.filter(x=>x.type==='season')]){
   const match=season.title.match(/^(.*?)\s+Season\s+(\d+)$/i);
   if(!match)continue;
+
   let parent=findShow(match[1]);
   if(!parent){
    parent={
     id:uid(),title:match[1],type:'show',
-    owned:!!season.owned,ripped:!!season.ripped,added:!!season.added
+    owned:!!season.owned,
+    ripped:!!season.ripped,
+    added:!!season.added
    };
    data.items.push(parent);
   }
+
   addChildRecord(parent,season.title,season);
   data.items=data.items.filter(x=>String(x.id)!==String(season.id));
  }
@@ -257,12 +311,15 @@ function migrate(){
    'Harry Potter and the Deathly Hallows – Part 2'
   ]]
  ];
+
  for(const [name,titles] of collections){
   const parent=data.items.find(x=>
    x.type==='movie'&&norm(x.title)===norm(name)
   );
   if(parent){
-   for(const title of titles)addChildRecord(parent,title,{owned:parent.owned});
+   for(const title of titles){
+    addChildRecord(parent,title,{owned:parent.owned});
+   }
   }
  }
  save();
@@ -275,12 +332,20 @@ function el(tag,cls,text){
  return node;
 }
 
+function button(label,cls,action){
+ const b=el('button',cls,label);
+ b.type='button';
+ b.onclick=action;
+ return b;
+}
+
 function check(item,field){
  const label=el('label','center');
  const input=el('input');
  input.type='checkbox';
  input.checked=!!item[field];
  input.setAttribute('aria-label',field+' '+item.title);
+
  input.onchange=()=>{
   item[field]=input.checked;
   save();
@@ -294,13 +359,16 @@ function editTitle(item){
  const oldTitle=item.title;
  const title=prompt('Edit title',oldTitle);
  if(title===null||!title.trim())return;
+
  item.title=title.trim();
 
  if(item.type==='show'){
   if(confirm('Move this show to another channel?')){
    const num=prompt('Enter destination channel number');
    if(num){
-    const channel=data.channels.find(ch=>String(ch.num)===num.trim());
+    const channel=data.channels.find(ch=>
+     String(ch.num)===num.trim()
+    );
     if(channel)item.channel=channel.id;
     else alert('Channel not found');
    }
@@ -311,8 +379,10 @@ function editTitle(item){
   delete posters[String(item.id)];
   savePosters();
  }
+
  save();
  render();
+
  if(oldTitle!==item.title)scanPosters();
 }
 
@@ -322,25 +392,51 @@ function addChild(parent){
   :'Movie title'
  );
  if(!title||!title.trim())return;
+
  addChildRecord(parent,title.trim());
  save();
  opened.add(String(parent.id));
  render();
- if(parent.type==='movie'&&!posters[String(parent.id)])scanPosters();
+ if(parent.type==='movie')scanPosters();
 }
 
-function childRow(child){
+function movieUrl(item,parent){
+ let url='./movie.html?id='+encodeURIComponent(item.id);
+ if(parent){
+  url+='&parent='+encodeURIComponent(parent.id);
+ }
+ return url;
+}
+
+function openShow(item){
+ goToPage('./show.html?id='+encodeURIComponent(item.id));
+}
+
+function openMovie(item,parent){
+ goToPage(movieUrl(item,parent));
+}
+
+function childRow(child,parent){
  const row=el('div','child');
- row.append(el('span','childname',child.title));
- for(const field of fields)row.append(check(child,field));
- const edit=el('button','mini','Edit');
- edit.onclick=()=>editTitle(child);
- row.append(edit);
+
+ const title=button(child.title,'childname',()=>{
+  openMovie(child,parent);
+ });
+ title.title='Open movie details';
+ row.append(title);
+
+ for(const field of fields){
+  row.append(check(child,field));
+ }
+
+ row.append(button('Edit','mini',()=>editTitle(child)));
  return row;
 }
 
 function posterFor(item){
- const url=posters[String(item.id)];
+ const url=posters[String(item.id)]||
+  data.movieDetails?.[String(item.id)]?.poster;
+
  if(url){
   const image=el('img','poster');
   image.src=url;
@@ -349,11 +445,8 @@ function posterFor(item){
   image.onerror=()=>image.style.opacity='.3';
   return image;
  }
- return el('div','poster blank','No Poster');
-}
 
-function openShow(item){
- location.href='./show.html?id='+encodeURIComponent(item.id);
+ return el('div','poster blank','No Poster');
 }
 
 function itemRow(item){
@@ -361,85 +454,119 @@ function itemRow(item){
  const row=el('div','row');
  const line=el('div','posterline');
  const controls=el('div');
- const title=el('button','title');
  const isOpen=opened.has(String(item.id));
 
- title.append(
-  el('span','arrow',item.type==='show'?'▶ ':isOpen?'▼ ':'▶ '),
-  el('strong','',item.title)
- );
+ const title=button(
+  (item.type==='show'?'▶ ':isOpen?'▼ ':'▶ ')+item.title,
+  'title',
+  ()=>{
+   if(item.type==='show')return openShow(item);
 
- title.onclick=()=>{
-  if(item.type==='show')return openShow(item);
-  const key=String(item.id);
-  if(opened.has(key))opened.delete(key);
-  else opened.add(key);
-  render();
- };
-
- const editPoster=el('button','posteredit',
-  posters[String(item.id)]?'Change Poster':'+ Poster'
- );
-
- editPoster.onclick=()=>{
-  const url=prompt(
-   'Paste a direct HTTPS image URL for '+item.title+
-   '\nLeave blank to remove.',
-   posters[String(item.id)]||''
-  );
-  if(url===null)return;
-  const cleaned=url.trim();
-  if(cleaned&&!cleaned.toLowerCase().startsWith('https://')){
-   alert('Please use an HTTPS image URL.');
-   return;
+   const key=String(item.id);
+   if(opened.has(key))opened.delete(key);
+   else opened.add(key);
+   render();
   }
-  if(cleaned)posters[String(item.id)]=cleaned;
-  else delete posters[String(item.id)];
-  savePosters();
-  render();
- };
+ );
 
  const poster=posterFor(item);
- if(item.type==='show'){
-  poster.style.cursor='pointer';
-  poster.onclick=()=>openShow(item);
- }
+ poster.style.cursor='pointer';
+ poster.onclick=()=>{
+  if(item.type==='show')openShow(item);
+  else openMovie(item);
+ };
+
+ const editPoster=button(
+  posters[String(item.id)]?'Change Poster':'+ Poster',
+  'posteredit',
+  ()=>{
+   const url=prompt(
+    'Paste a direct HTTPS image URL for '+item.title+
+    '\nLeave blank to remove.',
+    posters[String(item.id)]||''
+   );
+   if(url===null)return;
+
+   const cleaned=url.trim();
+   if(cleaned&&!cleaned.startsWith('https://')){
+    alert('Please use an HTTPS image URL.');
+    return;
+   }
+
+   if(cleaned)posters[String(item.id)]=cleaned;
+   else delete posters[String(item.id)];
+
+   savePosters();
+   render();
+  }
+ );
+
  controls.append(title,editPoster);
+
+ if(item.type==='movie'){
+  controls.append(button('View Details','detailslink',()=>{
+   openMovie(item);
+  }));
+ }
+
  line.append(poster,controls);
  row.append(line);
 
  const collection=item.type==='movie'&&children(item).length>0;
+
  for(const field of fields){
-  row.append(collection?el('span','center muted','—'):check(item,field));
+  row.append(
+   collection
+   ?el('span','center muted','—')
+   :check(item,field)
+  );
  }
 
- const edit=el('button','mini','Edit');
- edit.onclick=()=>editTitle(item);
- row.append(edit);
+ row.append(button('Edit','mini',()=>editTitle(item)));
  wrap.append(row);
 
  if(isOpen&&item.type==='movie'){
   const body=el('div','children');
-  const list=[...children(item)];
-  for(const child of list)body.append(childRow(child));
-  if(!list.length)body.append(el('div','empty','No movies yet.'));
+  const list=children(item);
+
+  for(const child of list){
+   body.append(childRow(child,item));
+  }
+
+  if(!list.length){
+   body.append(el('div','empty','No movies yet.'));
+  }
+
   const actions=el('div','actions');
-  const add=el('button','','+ Add Movie');
-  add.onclick=()=>addChild(item);
-  actions.append(add);
+
+  actions.append(
+   button('View Collection','detailslink',()=>openMovie(item)),
+   button('+ Add Movie','',()=>addChild(item))
+  );
+
   body.append(actions);
   wrap.append(body);
  }
+
  return wrap;
 }
 
 function addItem(type,channel){
- const title=prompt(type==='show'?'TV show title':'Movie or collection title');
+ const title=prompt(
+  type==='show'?'TV show title':'Movie or collection title'
+ );
  if(!title||!title.trim())return;
+
  data.items.push({
-  id:uid(),type,channel:channel?.id,title:title.trim(),
-  owned:false,ripped:false,added:false
+  id:uid(),
+  type,
+  channel:channel?.id,
+  title:title.trim(),
+  owned:false,
+  ripped:false,
+  added:false
  });
+
  save();
  render();
  scanPosters();
@@ -450,32 +577,39 @@ function section(name,num,items,type,channel){
  const head=el('div','cardhead');
  const arrow=el('span','arrow',channel?'▸':'');
  const number=el('span','channelnum',num);
+
  head.append(arrow,number);
 
  const grow=el('div','grow');
- grow.append(el('h2','',name),el('span','muted',items.length+' titles'));
+ grow.append(
+  el('h2','',name),
+  el('span','muted',items.length+' titles')
+ );
  head.append(grow);
 
  if(channel){
-  const edit=el('button','mini','Edit');
-  edit.onclick=event=>{
+  head.append(button('Edit','mini',event=>{
    event.stopPropagation();
    const n=prompt('Channel number',channel.num);
    if(n===null||!n.trim())return;
+
    const newName=prompt('Channel name',channel.name);
    if(newName===null||!newName.trim())return;
+
    channel.num=n.trim();
    channel.name=newName.trim();
    save();
    render();
-  };
-  head.append(edit);
+  }));
  }
 
  card.append(head);
+
  const body=el('div');
  card.append(body);
+
  const searching=!!$('search').value.trim();
+
  let isOpen=!channel||searching||
   openChannels.map(String).includes(String(channel.id));
 
@@ -487,12 +621,16 @@ function section(name,num,items,type,channel){
  if(channel){
   head.onclick=event=>{
    if(event.target.closest('button'))return;
+
    isOpen=!isOpen;
    update();
+
    if(!searching){
     const ids=new Set(openChannels.map(String));
+
     if(isOpen)ids.add(String(channel.id));
     else ids.delete(String(channel.id));
+
     openChannels=[...ids];
     localStorage.setItem(OPEN_KEY,JSON.stringify(openChannels));
    }
@@ -501,40 +639,60 @@ function section(name,num,items,type,channel){
 
  if(view==='list'){
   const headings=el('div','row heading');
-  for(const label of ['Title','Owned','Ripped','Added','Edit']){
-   headings.append(el('span',label==='Title'?'':'center',label));
+
+  for(const label of [
+   'Title','Owned','Ripped','Added','Edit'
+  ]){
+   headings.append(
+    el('span',label==='Title'?'':'center',label)
+   );
   }
   body.append(headings);
  }
 
- const listing=el('div',view==='grid'?'grid-items':'list-items');
- for(const item of items)listing.append(itemRow(item));
+ const listing=el(
+  'div',
+  view==='grid'?'grid-items':'list-items'
+ );
+
+ for(const item of items){
+  listing.append(itemRow(item));
+ }
+
  body.append(listing);
 
- if(!items.length)body.append(el('div','empty','No matching titles.'));
+ if(!items.length){
+  body.append(el('div','empty','No matching titles.'));
+ }
 
  const actions=el('div','actions');
- const add=el('button','',type==='show'
-  ?'+ Add Show':'+ Add Movie / Collection'
- );
- add.onclick=()=>addItem(type,channel);
- actions.append(add);
+ actions.append(button(
+  type==='show'?'+ Add Show':'+ Add Movie / Collection',
+  '',
+  ()=>addItem(type,channel)
+ ));
+
  body.append(actions);
  update();
+
  return card;
 }
 
 function updateStats(){
- const folders=new Set(data.items.filter(item=>
-  item.type==='movie'&&children(item).length>0
- ).map(item=>String(item.id)));
+ const folders=new Set(
+  data.items.filter(item=>
+   item.type==='movie'&&children(item).length>0
+  ).map(item=>String(item.id))
+ );
 
  const main=data.items.filter(item=>
   item.type!=='season'&&!folders.has(String(item.id))
  );
+
  const movies=data.collectionChildren.filter(item=>
   folders.has(String(item.parentId))
  );
+
  const titles=[...main,...movies];
 
  $('stats').textContent=
@@ -543,9 +701,11 @@ function updateStats(){
   titles.filter(x=>x.ripped).length+' ripped • '+
   titles.filter(x=>x.added).length+' added';
 
- const showIds=new Set(data.items.filter(x=>
-  x.type==='show'
- ).map(x=>String(x.id)));
+ const showIds=new Set(
+  data.items.filter(x=>x.type==='show')
+   .map(x=>String(x.id))
+ );
+
  const seasons=data.collectionChildren.filter(x=>
   showIds.has(String(x.parentId))
  );
@@ -568,20 +728,33 @@ function render(){
 
  const q=$('search').value.trim().toLowerCase();
  const searching=!!q;
+
  const matches=item=>
   item.title.toLowerCase().includes(q)||
-  children(item).some(child=>child.title.toLowerCase().includes(q));
+  children(item).some(child=>
+   child.title.toLowerCase().includes(q)
+  );
 
  if(searching||tab==='guide'){
   for(const channel of data.channels){
    const all=data.items.filter(item=>
-    item.type==='show'&&String(item.channel)===String(channel.id)
+    item.type==='show'&&
+    String(item.channel)===String(channel.id)
    );
-   const chMatches=String(channel.num).toLowerCase().includes(q)||
+
+   const channelMatches=
+    String(channel.num).toLowerCase().includes(q)||
     channel.name.toLowerCase().includes(q);
-   const filtered=!searching||chMatches?all:all.filter(matches);
-   if(searching&&!chMatches&&!filtered.length)continue;
-   root.append(section(channel.name,channel.num,filtered,'show',channel));
+
+   const filtered=!searching||channelMatches
+    ?all
+    :all.filter(matches);
+
+   if(searching&&!channelMatches&&!filtered.length)continue;
+
+   root.append(section(
+    channel.name,channel.num,filtered,'show',channel
+   ));
   }
 
   const other=data.items.filter(item=>
@@ -589,35 +762,52 @@ function render(){
     String(ch.id)===String(item.channel)
    )
   );
+
   const filtered=searching?other.filter(matches):other;
+
   if(filtered.length){
-   root.append(section('Other TV Series','📼',filtered,'show',null));
+   root.append(section(
+    'Other TV Series','📼',filtered,'show',null
+   ));
   }
  }
 
  if(searching||tab==='movies'){
   const movies=data.items.filter(item=>item.type==='movie');
   const filtered=searching?movies.filter(matches):movies;
+
   if(!searching||filtered.length){
-   root.append(section('Movie Collection','🎬',filtered,'movie',null));
+   root.append(section(
+    'Movie Collection','🎬',filtered,'movie',null
+   ));
   }
  }
 
  if(!root.children.length){
-  root.append(el('div','empty','No matching channels, shows, seasons, movies or collections.'));
+  root.append(el(
+   'div','empty',
+   'No matching channels, shows, seasons, movies or collections.'
+  ));
  }
+
  updateStats();
 }
 
 function downloadJSON(obj,filename){
- const blob=new Blob([JSON.stringify(obj,null,2)],{type:'application/json'});
+ const blob=new Blob(
+  [JSON.stringify(obj,null,2)],
+  {type:'application/json'}
+ );
+
  const url=URL.createObjectURL(blob);
  const link=el('a');
+
  link.href=url;
  link.download=filename;
  document.body.append(link);
  link.click();
  link.remove();
+
  setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 
@@ -627,21 +817,33 @@ function backup(){
 
 async function restore(file){
  if(!file)return;
+
  try{
   const restored=JSON.parse(await file.text());
-  if(!restored||!Array.isArray(restored.items)||
-     !Array.isArray(restored.channels)){
+
+  if(
+   !restored||
+   !Array.isArray(restored.items)||
+   !Array.isArray(restored.channels)
+  ){
    throw Error('Invalid backup');
   }
-  if(!confirm('Restore backup? A copy of your current collection will download first.'))return;
+
+  if(!confirm(
+   'Restore backup? A copy of your current collection will download first.'
+  ))return;
+
   backup();
   data=restored;
-  if(!Array.isArray(data.collectionChildren))data.collectionChildren=[];
-  if(!data.showDetails)data.showDetails={};
+  data.collectionChildren ||= [];
+  data.showDetails ||= {};
+  data.movieDetails ||= {};
+
   if(restored.posters&&typeof restored.posters==='object'){
    posters=restored.posters;
    savePosters();
   }
+
   migrate();
   render();
   scanPosters();
@@ -653,31 +855,48 @@ async function restore(file){
 
 async function importShows(file){
  if(!file)return;
+
  try{
   const obj=JSON.parse(await file.text());
   let count=0;
+
   const entries=Array.isArray(obj)?obj:
    Array.isArray(obj.shows)?obj.shows:
    Array.isArray(obj.items)?obj.items:[];
 
   for(const entry of entries){
-   const title=typeof entry==='string'?entry:
-    (entry.title||entry.name||'');
+   const title=typeof entry==='string'
+    ?entry
+    :(entry.title||entry.name||'');
+
    if(!title||findShow(title))continue;
+
    let channel=null;
+
    if(typeof entry==='object'){
-    const number=entry.channelNumber||entry.channel||entry.num;
+    const number=
+     entry.channelNumber||entry.channel||entry.num;
+
     channel=data.channels.find(ch=>
      String(ch.num)===String(number)||
-     String(ch.name).toLowerCase()===String(number).toLowerCase()
+     String(ch.name).toLowerCase()===
+     String(number).toLowerCase()
     );
    }
+
    data.items.push({
-    id:uid(),type:'show',title,channel:channel?.id,
-    owned:!!entry.owned,ripped:!!entry.ripped,added:!!entry.added
+    id:uid(),
+    type:'show',
+    title,
+    channel:channel?.id,
+    owned:!!entry.owned,
+    ripped:!!entry.ripped,
+    added:!!entry.added
    });
+
    count++;
   }
+
   save();
   render();
   scanPosters();
@@ -687,21 +906,12 @@ async function importShows(file){
  }
 }
 
-/*
- AUTOMATIC POSTER SYSTEM
-
- - Searches every show and movie without a saved poster.
- - Searches movie collections by their collection name.
- - Falls back to the first movie in the collection.
- - Uses exact or strong title matches.
- - Never overwrites a saved manual poster.
- - Never guesses artwork when the match is uncertain.
-*/
-
 function resultList(body){
  if(Array.isArray(body))return body;
  if(Array.isArray(body?.results))return body.results;
- if(Array.isArray(body?.data?.results))return body.data.results;
+ if(Array.isArray(body?.data?.results)){
+  return body.data.results;
+ }
  return [];
 }
 
@@ -716,7 +926,8 @@ function resultTitle(result){
 }
 
 function resultPoster(result){
- const value=result?.poster||
+ const value=
+  result?.poster||
   result?.posterUrl||
   result?.poster_url||
   result?.poster_path||
@@ -735,29 +946,31 @@ function resultPoster(result){
 
 function cleanCollectionTitle(title){
  return String(title)
-  .replace(/\s+(collection|movie collection|film collection|box set|complete series)$/i,'')
+  .replace(
+   /\s+(collection|movie collection|film collection|box set|complete series)$/i,
+   ''
+  )
   .trim();
 }
 
 function goodMatch(result,query){
  const actual=norm(resultTitle(result));
  const target=norm(query);
+
  if(!actual||!target)return false;
- if(actual===target)return true;
-
- // Allow collection searches to return their franchise collection.
- if(actual===target+'collection')return true;
-
- return false;
+ return actual===target||actual===target+'collection';
 }
 
 async function posterSearch(title,type){
- const url=new URL(POSTER_API+'/poster');
+ const url=new URL(API+'/poster');
  url.searchParams.set('title',title);
  url.searchParams.set('type',type);
 
  const response=await fetch(url);
- if(!response.ok)throw Error('Poster service returned '+response.status);
+
+ if(!response.ok){
+  throw Error('Poster service returned '+response.status);
+ }
 
  const body=await response.json();
  const results=resultList(body);
@@ -771,15 +984,17 @@ async function posterSearch(title,type){
 
 async function findPoster(item){
  const type=item.type==='show'?'tv':'movie';
- const queries=[];
+ const queries=[item.title];
+
  const isCollection=item.type==='movie'&&
   (children(item).length>0||/\bcollection\b/i.test(item.title));
 
- queries.push(item.title);
-
  if(isCollection){
   const base=cleanCollectionTitle(item.title);
-  if(norm(base)!==norm(item.title))queries.push(base);
+
+  if(norm(base)!==norm(item.title)){
+   queries.push(base);
+  }
 
   const first=children(item)[0];
   if(first?.title)queries.push(first.title);
@@ -810,7 +1025,7 @@ function setPosterStatus(message){
 async function scanPosters(){
  if(posterBusy)return;
  posterBusy=true;
- const generation=++posterGeneration;
+ $('scanPosters').disabled=true;
 
  const pending=data.items.filter(item=>
   (item.type==='show'||item.type==='movie')&&
@@ -820,16 +1035,13 @@ async function scanPosters(){
  let found=0;
  let processed=0;
 
- $('scanPosters').disabled=true;
-
  try{
   if(!pending.length){
-   setPosterStatus('All titles already have saved posters.');
+   setPosterStatus('All main titles have saved posters.');
    return;
   }
 
   for(const item of pending){
-   if(generation!==posterGeneration)break;
    if(posters[String(item.id)])continue;
 
    processed++;
@@ -841,7 +1053,6 @@ async function scanPosters(){
    const originalTitle=item.title;
    const poster=await findPoster(item);
 
-   // Protect against a title being renamed while the lookup runs.
    if(
     poster&&
     !posters[String(item.id)]&&
@@ -858,7 +1069,7 @@ async function scanPosters(){
 
   setPosterStatus(
    'Poster scan complete: '+found+' new posters saved. '+
-   'Titles without a reliable match can use + Poster.'
+   'Missing artwork can be set with + Poster.'
   );
  }finally{
   posterBusy=false;
@@ -867,29 +1078,51 @@ async function scanPosters(){
 }
 
 $('guideTab').onclick=()=>{
- tab='guide';render();
+ tab='guide';
+ render();
+ rememberPlace();
+ window.scrollTo(0,0);
 };
+
 $('movieTab').onclick=()=>{
- tab='movies';render();
+ tab='movies';
+ render();
+ rememberPlace();
+ window.scrollTo(0,0);
 };
+
 $('listView').onclick=()=>{
  view='list';
  localStorage.setItem(VIEW_KEY,view);
  render();
+ rememberPlace();
 };
+
 $('gridView').onclick=()=>{
  view='grid';
  localStorage.setItem(VIEW_KEY,view);
  render();
+ rememberPlace();
 };
-$('search').oninput=render;
+
+$('search').oninput=()=>{
+ render();
+ rememberPlace();
+};
 
 $('addChannel').onclick=()=>{
  const num=prompt('Channel number?');
  if(!num||!num.trim())return;
+
  const name=prompt('Channel name?');
  if(!name||!name.trim())return;
- data.channels.push({id:uid(),num:num.trim(),name:name.trim()});
+
+ data.channels.push({
+  id:uid(),
+  num:num.trim(),
+  name:name.trim()
+ });
+
  save();
  render();
 };
@@ -903,15 +1136,33 @@ $('restoreFile').onchange=async event=>{
  await restore(event.target.files[0]);
  event.target.value='';
 };
+
 $('importFile').onchange=async event=>{
  await importShows(event.target.files[0]);
  event.target.value='';
 };
 
 migrate();
+
+if(previous){
+ $('search').value=previous.search||'';
+}
+
 render();
 
-window.addEventListener('load',scanPosters);
+window.addEventListener('load',()=>{
+ if(previous){
+  const y=Number(previous.scrollY)||0;
+
+  requestAnimationFrame(()=>{
+   requestAnimationFrame(()=>window.scrollTo(0,y));
+  });
+
+  setTimeout(()=>window.scrollTo(0,y),300);
+ }
+
+ scanPosters();
+});
 </script>
 </body>
 </html>
