@@ -4,21 +4,20 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Classic Comcast — Movies</title>
+<title>Classic Comcast — Movie Details</title>
 <style>
-:root{--gold:#ffd15a;--muted:#bfd8f4;--deep:#082650}
+:root{--gold:#ffd15a;--muted:#bfd8f4;--deep:#082650;--line:#326ba8}
 *{box-sizing:border-box}
-body{margin:0;background:linear-gradient(140deg,#061735,#10458b) fixed;color:#fff;font:15px system-ui,-apple-system,Arial,sans-serif}
+body{margin:0;background:linear-gradient(140deg,#061735,#10458b) fixed;color:white;font:15px system-ui,Arial,sans-serif}
 main{max-width:1050px;margin:auto;padding:14px 12px 75px}
-a{color:var(--gold)}
-h1,h2{color:var(--gold)}
+a,h1,h2{color:var(--gold)}
 h1{font-size:clamp(23px,5vw,33px);margin:0 0 8px}
 h2{font-size:21px;margin:0 0 12px}
 .card{background:linear-gradient(120deg,#092d63,#10448b);border:1px solid var(--gold);border-radius:16px;padding:16px;margin:15px 0}
 .hero{display:flex;gap:15px;align-items:flex-start}
 .poster{width:clamp(95px,25vw,175px);aspect-ratio:2/3;object-fit:cover;border-radius:9px;background:var(--deep);flex-shrink:0}
 .blank{display:flex;align-items:center;justify-content:center;text-align:center;border:1px dashed #88b5e8;color:var(--muted);font-size:11px}
-.info{min-width:0;flex:1}
+.info,.movie-info{min-width:0;flex:1}
 .muted{color:var(--muted)}
 .small{font-size:13px}
 .description{line-height:1.6;margin:13px 0}
@@ -26,15 +25,14 @@ button{background:var(--gold);color:#092650;border:0;border-radius:9px;padding:1
 button:disabled{opacity:.5}
 .secondary{background:#164f95;color:white;border:1px solid #73a9e5}
 .actions{display:flex;gap:9px;flex-wrap:wrap;margin:12px 0}
-.status{color:var(--gold);font-size:13px}
+.status{color:var(--gold);font-size:13px;line-height:1.5}
 .tracking{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
 .track{background:var(--deep);border-radius:10px;text-align:center;padding:14px 5px}
 .track input{width:22px;height:22px;accent-color:var(--gold)}
 .track label{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:12px}
-.movie{display:flex;gap:10px;align-items:flex-start;padding:13px 0;border-top:1px solid #326ba8}
+.movie{display:flex;gap:10px;align-items:flex-start;padding:13px 0;border-top:1px solid var(--line)}
 .movie:first-child{border-top:0}
 .movie-poster{width:65px;height:98px;object-fit:cover;border-radius:6px;background:var(--deep);flex-shrink:0;cursor:pointer}
-.movie-info{flex:1;min-width:0}
 .movie-name{background:none;color:white;text-align:left;padding:0;font-size:15px}
 .movie-info p{color:var(--muted);font-size:12px;line-height:1.45;margin:6px 0}
 .movie .actions{margin:8px 0}
@@ -48,8 +46,7 @@ input[type=checkbox]{accent-color:var(--gold)}
 .undo{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;background:#082650;border:1px solid var(--gold);border-radius:9px;margin:12px 0}
 .cleanup{background:#082650;border:1px solid #73a9e5;border-radius:10px;padding:13px;margin:14px 0}
 .cleanup h3{color:var(--gold);margin:0 0 8px}
-.cleanup p{line-height:1.5}
-.cleanup-item{border-top:1px solid #326ba8;padding:10px 0;font-size:13px}
+.cleanup-item{border-top:1px solid var(--line);padding:10px 0;font-size:13px}
 .cleanup-item strong{color:var(--gold)}
 textarea,input[type=text]{width:100%;padding:12px;border:1px solid #73a9e5;border-radius:8px;background:#082650;color:white;font:inherit}
 textarea{min-height:120px}
@@ -80,13 +77,12 @@ textarea{min-height:120px}
 <p id="meta" class="muted small"></p>
 <p id="description" class="description"></p>
 <div class="actions">
-<button id="loadInfo">↻ Find Movie Info</button>
+<button id="loadInfo">↻ Refresh Movie Info</button>
 <button id="editInfo" class="secondary">✎ Edit Details</button>
 <button id="changePoster" class="secondary">Change Poster</button>
 </div>
 </div>
 </div>
-
 <div id="editor" class="editor" hidden>
 <p class="muted small">Description</p>
 <textarea id="descriptionInput"></textarea>
@@ -114,12 +110,10 @@ textarea{min-height:120px}
 <h2>Movies in This Collection</h2>
 <button id="addMovie" class="circle" aria-label="Add movie">+</button>
 </div>
-<p class="muted small">Tap any movie poster or title to open its details.</p>
-
+<p class="muted small">Tap a movie poster or title to open its details.</p>
 <div class="actions">
 <button id="cleanDuplicates" class="secondary">🧹 Clean Up Duplicates</button>
 </div>
-
 <div id="cleanupPanel" class="cleanup" hidden></div>
 <div id="undoArea"></div>
 <div id="movieList"></div>
@@ -128,10 +122,7 @@ textarea{min-height:120px}
 </div>
 </section>
 
-<p class="footer">
-Movie metadata and posters may be provided by TMDB.
-This product uses the TMDB API but is not endorsed or certified by TMDB.
-</p>
+<p class="footer">This product uses the TMDB API but is not endorsed or certified by TMDB. Metadata availability depends on the connected poster service.</p>
 </main>
 
 <script>
@@ -151,8 +142,7 @@ function read(key,fallback){
 }
 
 function norm(value){
- return String(value||'').toLowerCase()
-  .replace(/[^a-z0-9]/g,'');
+ return String(value||'').toLowerCase().replace(/[^a-z0-9]/g,'');
 }
 
 function uid(){
@@ -163,6 +153,7 @@ let data=read(KEY,null);
 let posters=read(POSTER_KEY,{});
 let lastDelete=null;
 let pendingCleanup=null;
+let loading=false;
 
 if(data){
  data.collectionChildren ||= [];
@@ -188,42 +179,50 @@ const item=topLevel||child;
 function save(){
  localStorage.setItem(KEY,JSON.stringify(data));
 }
+
 function savePosters(){
  localStorage.setItem(POSTER_KEY,JSON.stringify(posters));
 }
+
 function detailFor(target){
  return data.movieDetails[String(target.id)] ||= {};
 }
+
 function collectionChildren(target){
  return data.collectionChildren.filter(x=>
   String(x.parentId)===String(target.id)
  );
 }
+
 function status(message){
  $('status').textContent=message;
 }
+
 function el(tag,cls,text){
- let n=document.createElement(tag);
+ const n=document.createElement(tag);
  if(cls)n.className=cls;
  if(text!==undefined)n.textContent=text;
  return n;
 }
+
 function button(label,cls,fn){
- let b=el('button',cls,label);
+ const b=el('button',cls,label);
  b.type='button';
  b.onclick=fn;
  return b;
 }
+
 function posterUrl(target){
  return posters[String(target.id)]||
   detailFor(target).poster||'';
 }
+
 function createPoster(target,large=false){
- let url=posterUrl(target);
- let cls=large?'poster':'movie-poster';
+ const url=posterUrl(target);
+ const cls=large?'poster':'movie-poster';
 
  if(!url){
-  let blank=el('div',cls+' blank','No Poster');
+  const blank=el('div',cls+' blank','No Poster');
   if(!large){
    blank.style.display='flex';
    blank.style.alignItems='center';
@@ -232,7 +231,7 @@ function createPoster(target,large=false){
   return blank;
  }
 
- let img=el('img',cls);
+ const img=el('img',cls);
  img.src=url;
  img.alt=target.title+' poster';
  img.loading='lazy';
@@ -241,7 +240,7 @@ function createPoster(target,large=false){
 }
 
 function updateHeader(){
- let d=detailFor(item);
+ const d=detailFor(item);
  $('title').textContent=item.title;
  document.title=item.title+' — Classic Comcast';
  $('description').textContent=
@@ -253,9 +252,9 @@ function updateHeader(){
 }
 
 function trackingControl(target,field,label){
- let wrap=el('div','track');
- let holder=el('label');
- let check=el('input');
+ const wrap=el('div','track');
+ const holder=el('label');
+ const check=el('input');
  check.type='checkbox';
  check.checked=!!target[field];
  check.onchange=()=>{
@@ -276,13 +275,14 @@ function renderTracking(){
 }
 
 function movieUrl(movie){
- return './movie.html?id='+
-  encodeURIComponent(movie.id)+
+ return './movie.html?id='+encodeURIComponent(movie.id)+
   '&parent='+encodeURIComponent(item.id);
 }
+
 function openMovie(movie){
  location.href=movieUrl(movie);
 }
+
 function deletedNames(){
  return data.deletedMovieChildren[String(item.id)] ||= [];
 }
@@ -290,24 +290,27 @@ function deletedNames(){
 function addMovie(){
  if(!topLevel)return;
 
- let names=prompt('Add movie titles (one per line):');
+ const names=prompt('Add movie titles (one per line):');
  if(names===null)return;
 
  let added=0;
- for(let title of names.split('\n')
-  .map(s=>s.trim()).filter(Boolean)){
 
-  if(collectionChildren(item).some(m=>
-   norm(m.title)===norm(title)
-  ))continue;
+ for(const title of names.split('\n').map(s=>s.trim()).filter(Boolean)){
+  if(collectionChildren(item).some(m=>norm(m.title)===norm(title))){
+   continue;
+  }
 
   data.collectionChildren.push({
-   id:uid(),parentId:item.id,title,
-   owned:false,ripped:false,added:false
+   id:uid(),
+   parentId:item.id,
+   title,
+   owned:false,
+   ripped:false,
+   added:false
   });
 
-  let list=deletedNames();
-  let i=list.indexOf(norm(title));
+  const list=deletedNames();
+  const i=list.indexOf(norm(title));
   if(i>=0)list.splice(i,1);
   added++;
  }
@@ -320,20 +323,21 @@ function addMovie(){
 
 function removeMovie(movie){
  if(!confirm(
-  'Remove "'+movie.title+
-  '" from this collection?\n\nNo video files will be deleted.'
+  'Remove "'+movie.title+'" from this collection?\n'+
+  'No video files will be deleted.'
  ))return;
 
- let index=data.collectionChildren.findIndex(x=>
+ const index=data.collectionChildren.findIndex(x=>
   String(x.id)===String(movie.id)&&
   String(x.parentId)===String(item.id)
  );
+
  if(index<0)return;
 
  lastDelete={movie:{...movie},index};
  data.collectionChildren.splice(index,1);
 
- let names=deletedNames();
+ const names=deletedNames();
  if(!names.includes(norm(movie.title))){
   names.push(norm(movie.title));
  }
@@ -346,18 +350,17 @@ function removeMovie(movie){
 
 function undoDelete(){
  if(!lastDelete)return;
- let {movie,index}=lastDelete;
 
- if(!data.collectionChildren.some(x=>
-  String(x.id)===String(movie.id)
- )){
+ const {movie,index}=lastDelete;
+
+ if(!data.collectionChildren.some(x=>String(x.id)===String(movie.id))){
   data.collectionChildren.splice(
    Math.min(index,data.collectionChildren.length),0,movie
   );
  }
 
- let names=deletedNames();
- let i=names.indexOf(norm(movie.title));
+ const names=deletedNames();
+ const i=names.indexOf(norm(movie.title));
  if(i>=0)names.splice(i,1);
 
  lastDelete=null;
@@ -367,11 +370,11 @@ function undoDelete(){
 }
 
 function movieRow(movie){
- let row=el('div','movie');
- let poster=createPoster(movie);
- let info=el('div','movie-info');
+ const row=el('div','movie');
+ const poster=createPoster(movie);
+ const info=el('div','movie-info');
 
- let name=button(movie.title,'movie-name',()=>openMovie(movie));
+ const name=button(movie.title,'movie-name',()=>openMovie(movie));
 
  poster.setAttribute('role','link');
  poster.setAttribute('tabindex','0');
@@ -383,7 +386,8 @@ function movieRow(movie){
  row.append(poster);
  info.append(name);
 
- let d=detailFor(movie);
+ const d=detailFor(movie);
+
  if(d.year)info.append(el('p','',d.year));
 
  if(d.description){
@@ -394,24 +398,29 @@ function movieRow(movie){
   ));
  }
 
- let actions=el('div','actions');
+ const actions=el('div','actions');
  actions.append(
   button('View Details','secondary',()=>openMovie(movie))
  );
  info.append(actions);
 
- let flags=el('div','movie-checks');
- for(let [field,label] of [
-  ['owned','Owned'],['ripped','Ripped'],['added','Jellyfin']
+ const flags=el('div','movie-checks');
+
+ for(const [field,label] of [
+  ['owned','Owned'],
+  ['ripped','Ripped'],
+  ['added','Jellyfin']
  ]){
-  let control=el('label');
-  let input=el('input');
+  const control=el('label');
+  const input=el('input');
   input.type='checkbox';
   input.checked=!!movie[field];
+
   input.onchange=()=>{
    movie[field]=input.checked;
    save();
   };
+
   control.append(input,document.createTextNode(' '+label));
   flags.append(control);
  }
@@ -419,17 +428,19 @@ function movieRow(movie){
  info.append(flags);
  row.append(info);
  row.append(button('−','circle minus',()=>removeMovie(movie)));
+
  return row;
 }
 
 function renderCollection(){
  if(!topLevel)return;
+
  $('collectionCard').hidden=false;
 
- let list=$('movieList');
+ const list=$('movieList');
  list.replaceChildren();
 
- for(let movie of collectionChildren(item)){
+ for(const movie of collectionChildren(item)){
   list.append(movieRow(movie));
  }
 
@@ -437,10 +448,11 @@ function renderCollection(){
   list.append(el('p','muted','No movies yet. Tap + to add one.'));
  }
 
- let undo=$('undoArea');
+ const undo=$('undoArea');
  undo.replaceChildren();
+
  if(lastDelete){
-  let wrap=el('div','undo');
+  const wrap=el('div','undo');
   wrap.append(
    el('span','small','Removed: '+lastDelete.movie.title),
    button('↶ Undo','',undoDelete)
@@ -457,29 +469,45 @@ function render(){
 }
 
 function openEditor(){
- let d=detailFor(item);
+ const d=detailFor(item);
  $('editor').hidden=false;
  $('descriptionInput').value=d.description||'';
  $('yearInput').value=d.year||'';
  $('genresInput').value=d.genres||'';
  $('runtimeInput').value=d.runtime||'';
 }
+
 function saveEditor(){
- let d=detailFor(item);
- d.description=$('descriptionInput').value.trim();
- d.year=$('yearInput').value.trim();
- d.genres=$('genresInput').value.trim();
- d.runtime=$('runtimeInput').value.trim();
+ const d=detailFor(item);
+ const values={
+  description:$('descriptionInput').value.trim(),
+  year:$('yearInput').value.trim(),
+  genres:$('genresInput').value.trim(),
+  runtime:$('runtimeInput').value.trim()
+ };
+
+ const manual=new Set(d.manualFields||[]);
+
+ for(const [field,value] of Object.entries(values)){
+  if(value!==String(d[field]||'')){
+   manual.add(field);
+  }
+  d[field]=value;
+ }
+
+ d.manualFields=[...manual];
  save();
  $('editor').hidden=true;
  render();
  status('Movie details saved.');
 }
+
 function changePoster(){
  let url=prompt(
   'Paste a direct HTTPS poster URL.\nLeave blank to remove.',
   posterUrl(item)
  );
+
  if(url===null)return;
  url=url.trim();
 
@@ -487,104 +515,285 @@ function changePoster(){
   alert('Please use an HTTPS image URL.');
   return;
  }
- if(url)posters[String(item.id)]=url;
- else{
+
+ if(url){
+  posters[String(item.id)]=url;
+ }else{
   delete posters[String(item.id)];
   delete detailFor(item).poster;
  }
 
+ detailFor(item).manualPoster=true;
  savePosters();
  save();
  render();
 }
 
-function resultsFrom(body){
+function resultList(body){
  if(Array.isArray(body))return body;
- if(Array.isArray(body?.results))return body.results;
- if(Array.isArray(body?.data?.results))return body.data.results;
+ for(const x of [
+  body?.results,
+  body?.data?.results,
+  body?.movies,
+  body?.data
+ ]){
+  if(Array.isArray(x))return x;
+ }
  return [];
 }
-function titleFrom(r){
- return String(r.title||r.name||r.original_title||'');
+
+function resultTitle(r){
+ return String(
+  r?.title||r?.name||r?.original_title||''
+ );
 }
+
 function posterFrom(r){
- let v=r.poster||r.posterUrl||r.poster_path||'';
+ const v=r?.poster||
+  r?.posterUrl||
+  r?.poster_url||
+  r?.poster_path||'';
+
  if(typeof v!=='string')return '';
  if(v.startsWith('https://'))return v;
- if(v.startsWith('/'))return 'https://image.tmdb.org/t/p/w500'+v;
+ if(v.startsWith('/')){
+  return 'https://image.tmdb.org/t/p/w500'+v;
+ }
  return '';
 }
+
+function releaseYear(r){
+ return String(
+  r?.release_date||r?.releaseDate||r?.year||''
+ ).slice(0,4);
+}
+
+function genreText(r){
+ const g=r?.genres||r?.genre_names;
+
+ if(Array.isArray(g)){
+  return g.map(x=>
+   typeof x==='string'?x:x?.name
+  ).filter(Boolean).join(', ');
+ }
+
+ return typeof g==='string'?g:'';
+}
+
+function runtimeText(r){
+ const n=r?.runtime||r?.runtime_minutes;
+ if(!n)return '';
+ if(typeof n==='number')return n+' minutes';
+ return String(n);
+}
+
+function mergeMetadata(r){
+ const d=detailFor(item);
+ const manual=new Set(d.manualFields||[]);
+ let changed=false;
+
+ const values={
+  description:r?.overview||r?.description||'',
+  year:releaseYear(r),
+  genres:genreText(r),
+  runtime:runtimeText(r)
+ };
+
+ for(const [field,value] of Object.entries(values)){
+  if(value&&!d[field]&&!manual.has(field)){
+   d[field]=value;
+   changed=true;
+  }
+ }
+
+ const poster=posterFrom(r);
+
+ if(poster&&!posterUrl(item)&&!d.manualPoster){
+  posters[String(item.id)]=poster;
+  savePosters();
+  changed=true;
+ }
+
+ if(changed){
+  save();
+  render();
+ }
+
+ return changed;
+}
+
+function isCollection(){
+ return !!topLevel&&(
+  collectionChildren(item).length>0||
+  /\b(collection|box set)\b/i.test(item.title)
+ );
+}
+
 function searchTerms(){
- let terms=[item.title];
- if(topLevel&&collectionChildren(item).length){
-  let base=item.title.replace(
+ const terms=[item.title];
+
+ if(isCollection()){
+  const base=item.title.replace(
    /\s+(collection|box set|film collection)$/i,''
   ).trim();
-  if(norm(base)!==norm(item.title))terms.push(base);
-  let first=collectionChildren(item)[0];
+
+  if(norm(base)!==norm(item.title)){
+   terms.push(base);
+  }
+
+  const first=collectionChildren(item)[0];
   if(first)terms.push(first.title);
  }
+
  return [...new Set(terms)];
 }
 
-async function loadInfo(){
- let control=$('loadInfo');
- control.disabled=true;
- status('Searching movie information...');
+async function getJSON(path,parameters){
+ const url=new URL(API+path);
+
+ for(const [key,value] of Object.entries(parameters)){
+  url.searchParams.set(key,String(value));
+ }
+
+ const controller=new AbortController();
+ const timeout=setTimeout(()=>controller.abort(),8000);
 
  try{
-  let match=null;
-  for(let term of searchTerms()){
-   let url=new URL(API+'/poster');
-   url.searchParams.set('title',term);
-   url.searchParams.set('type','movie');
-
-   let response=await fetch(url);
-   if(!response.ok)continue;
-   let body=await response.json();
-
-   match=resultsFrom(body).find(x=>
-    norm(titleFrom(x))===norm(term)
-   );
-   if(match)break;
-  }
-
-  if(!match){
-   status('No reliable match found. You can edit details manually.');
-   return;
-  }
-
-  let d=detailFor(item);
-  let poster=posterFrom(match);
-
-  if(poster&&!posters[String(item.id)]){
-   posters[String(item.id)]=poster;
-   savePosters();
-  }
-  if(!d.description){
-   d.description=match.overview||match.description||'';
-  }
-  if(!d.year){
-   d.year=String(
-    match.release_date||match.releaseDate||''
-   ).slice(0,4);
-  }
-
-  save();
-  render();
-  status('Available movie information loaded.');
- }catch(e){
-  status('Movie lookup failed: '+e.message);
+  const response=await fetch(url,{signal:controller.signal});
+  if(!response.ok)return null;
+  return await response.json();
+ }catch{
+  return null;
  }finally{
-  control.disabled=false;
+  clearTimeout(timeout);
  }
 }
 
-/*
- Duplicate detection is intentionally conservative.
- It only merges titles with identical normalized names,
- or the five explicitly mapped Pirates movie aliases.
-*/
+function bestMatch(results,term){
+ return results.find(r=>
+  norm(resultTitle(r))===norm(term)
+ )||null;
+}
+
+async function loadInfo(force=false){
+ if(!item||loading)return;
+
+ const d=detailFor(item);
+
+ if(
+  !force&&
+  d.lastLookup&&
+  Date.now()-d.lastLookup<7*86400000
+ )return;
+
+ loading=true;
+ $('loadInfo').disabled=true;
+ status('Looking up movie information...');
+
+ let matched=null;
+ let changed=false;
+ let hadResponse=false;
+
+ try{
+  for(const term of searchTerms()){
+   const body=await getJSON('/poster',{
+    title:term,
+    type:'movie'
+   });
+
+   if(!body)continue;
+   hadResponse=true;
+
+   const candidates=resultList(body);
+   const direct=body?.result||
+    body?.movie||
+    body?.data||
+    body;
+
+   matched=bestMatch(candidates,term)||
+    (
+     resultTitle(direct)&&
+     norm(resultTitle(direct))===norm(term)
+      ?direct:null
+    );
+
+   if(matched)break;
+  }
+
+  if(!matched){
+   for(const term of searchTerms()){
+    const body=await getJSON('/movie/search',{query:term});
+    if(!body)continue;
+
+    hadResponse=true;
+    matched=bestMatch(resultList(body),term);
+    if(matched)break;
+   }
+  }
+
+  if(matched){
+   changed=mergeMetadata(matched);
+
+   const tmdbId=matched.id||
+    matched.tmdb_id||
+    matched.tmdbId;
+
+   if(tmdbId){
+    for(const path of [
+     '/movie/details',
+     '/movie/'+encodeURIComponent(tmdbId)
+    ]){
+     const full=await getJSON(
+      path,
+      path.endsWith('/details')?{id:tmdbId}:{}
+     );
+
+     if(!full)continue;
+
+     const result=full.movie||
+      full.result||
+      full.data||
+      full;
+
+     if(result&&typeof result==='object'){
+      changed=mergeMetadata(result)||changed;
+      break;
+     }
+    }
+   }
+  }
+
+  d.lastLookup=Date.now();
+  save();
+
+  const missing=[
+   'description','year','genres','runtime'
+  ].filter(field=>!d[field]);
+
+  if(changed){
+   status(
+    'Movie information updated.'+
+    (missing.length?
+     ' Still missing: '+missing.join(', ')+'.':'')
+   );
+  }else if(matched){
+   status(
+    'Lookup finished. No new details available.'+
+    (missing.length?
+     ' Missing: '+missing.join(', ')+'.':'')
+   );
+  }else{
+   status(
+    hadResponse
+     ?'No exact movie match was returned. Use Edit Details if needed.'
+     :'Movie service did not return information. Your saved data is unchanged.'
+   );
+  }
+ }finally{
+  loading=false;
+  $('loadInfo').disabled=false;
+ }
+}
 
 const PIRATES_ALIASES=[
  ['thecurseoftheblackpearl',
@@ -600,24 +809,25 @@ const PIRATES_ALIASES=[
 ];
 
 function duplicateKey(movie){
- let n=norm(movie.title);
- let isPirates=norm(item.title).includes('piratesofthecaribbean');
+ const n=norm(movie.title);
 
- if(isPirates){
-  for(let pair of PIRATES_ALIASES){
+ if(norm(item.title).includes('piratesofthecaribbean')){
+  for(const pair of PIRATES_ALIASES){
    if(pair.includes(n))return pair[1];
   }
  }
+
  return n;
 }
 
 function findDuplicateGroups(){
  if(!topLevel)return [];
 
- let groups=new Map();
+ const groups=new Map();
 
- for(let movie of collectionChildren(item)){
-  let key=duplicateKey(movie);
+ for(const movie of collectionChildren(item)){
+  const key=duplicateKey(movie);
+
   if(!groups.has(key))groups.set(key,[]);
   groups.get(key).push(movie);
  }
@@ -626,7 +836,7 @@ function findDuplicateGroups(){
 }
 
 function movieQuality(movie){
- let d=detailFor(movie);
+ const d=detailFor(movie);
  let score=0;
 
  if(posterUrl(movie))score+=100;
@@ -634,15 +844,17 @@ function movieQuality(movie){
  if(d.year)score+=5;
  if(d.genres)score+=5;
  if(d.runtime)score+=5;
+
  if(norm(movie.title).startsWith('piratesofthecaribbean')){
   score+=10;
  }
+
  return score;
 }
 
 function planCleanup(){
  return findDuplicateGroups().map(group=>{
-  let ranked=[...group].sort((a,b)=>
+  const ranked=[...group].sort((a,b)=>
    movieQuality(b)-movieQuality(a)
   );
 
@@ -654,33 +866,36 @@ function planCleanup(){
 }
 
 function downloadBackup(){
- let snapshot={
+ const snapshot={
   ...data,
   posters:{...posters},
   backupDate:new Date().toISOString(),
   backupReason:'Before duplicate cleanup'
  };
 
- let blob=new Blob(
+ const blob=new Blob(
   [JSON.stringify(snapshot,null,2)],
   {type:'application/json'}
  );
- let url=URL.createObjectURL(blob);
- let a=el('a');
+
+ const url=URL.createObjectURL(blob);
+ const a=el('a');
+
  a.href=url;
  a.download='comcast-before-cleanup.json';
  document.body.append(a);
  a.click();
  a.remove();
+
  setTimeout(()=>URL.revokeObjectURL(url),2000);
 }
 
 function showCleanup(){
- let panel=$('cleanupPanel');
+ const panel=$('cleanupPanel');
  panel.replaceChildren();
  panel.hidden=false;
 
- let plan=planCleanup();
+ const plan=planCleanup();
  pendingCleanup=plan;
 
  panel.append(el('h3','','Duplicate Cleanup Preview'));
@@ -689,6 +904,7 @@ function showCleanup(){
   panel.append(el('p','small',
    'No recognized duplicates were found in this collection.'
   ));
+
   panel.append(button('Close','secondary',()=>{
    panel.hidden=true;
   }));
@@ -696,29 +912,27 @@ function showCleanup(){
  }
 
  panel.append(el('p','small',
-  'Review these merges. The listed movie to keep will retain its ID, poster, and page. Tracking and missing details from removed entries will be combined into it.'
+  'Review each merge. The kept movie retains its page, poster, and ID. Tracking and missing details are combined.'
  ));
 
- for(let group of plan){
-  let row=el('div','cleanup-item');
-
+ for(const group of plan){
+  const row=el('div','cleanup-item');
   row.append(el('strong','','KEEP: '+group.keep.title));
 
-  for(let old of group.remove){
-   row.append(el('div','',
-    'MERGE: '+old.title
-   ));
+  for(const old of group.remove){
+   row.append(el('div','','MERGE: '+old.title));
   }
+
   panel.append(row);
  }
 
- let count=plan.reduce((n,g)=>n+g.remove.length,0);
+ const count=plan.reduce((n,g)=>n+g.remove.length,0);
 
  panel.append(el('p','small',
-  count+' duplicate record(s) will be merged. A JSON backup will download before changes.'
+  count+' duplicate record(s) will be merged. A JSON backup downloads before changes.'
  ));
 
- let actions=el('div','actions');
+ const actions=el('div','actions');
 
  actions.append(
   button('Confirm & Clean Up','',confirmCleanup),
@@ -729,13 +943,16 @@ function showCleanup(){
  );
 
  panel.append(actions);
- panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+ panel.scrollIntoView({
+  behavior:'smooth',
+  block:'nearest'
+ });
 }
 
 function confirmCleanup(){
  if(!pendingCleanup?.length)return;
 
- let fresh=planCleanup();
+ const fresh=planCleanup();
 
  if(JSON.stringify(fresh)!==JSON.stringify(pendingCleanup)){
   pendingCleanup=null;
@@ -744,32 +961,30 @@ function confirmCleanup(){
   return;
  }
 
+ const count=fresh.reduce((n,g)=>n+g.remove.length,0);
+
  if(!confirm(
-  'Merge '+fresh.reduce((n,g)=>n+g.remove.length,0)+
-  ' duplicate movie entries?\n\n'+
+  'Merge '+count+' duplicate entries?\n'+
   'A backup will download first. No video files will be deleted.'
  ))return;
 
- // The backup is downloaded before any saved records are changed.
  downloadBackup();
 
  let removedCount=0;
- let removedIds=new Set();
+ const removedIds=new Set();
 
- for(let group of fresh){
-  let keep=group.keep;
-  let keptDetail=detailFor(keep);
+ for(const group of fresh){
+  const keep=group.keep;
+  const keptDetail=detailFor(keep);
 
-  for(let old of group.remove){
-   // Combine positive tracking flags.
-   for(let field of ['owned','ripped','added']){
+  for(const old of group.remove){
+   for(const field of ['owned','ripped','added']){
     keep[field]=!!keep[field]||!!old[field];
    }
 
-   // Preserve existing keeper details, fill missing fields.
-   let oldDetail=detailFor(old);
+   const oldDetail=detailFor(old);
 
-   for(let field of [
+   for(const field of [
     'description','year','genres','runtime',
     'tmdb','tmdbId','release_date'
    ]){
@@ -782,8 +997,6 @@ function confirmCleanup(){
     posters[String(keep.id)]=posterUrl(old);
    }
 
-   // Retain original metadata under the old ID in the backup.
-   // Live data keeps the original metadata too, for safety.
    removedIds.add(String(old.id));
    removedCount++;
   }
@@ -793,12 +1006,11 @@ function confirmCleanup(){
   !removedIds.has(String(x.id))
  );
 
- // Record removed names so older homepage versions cannot
- // accidentally recreate these entries during migration.
- for(let group of fresh){
-  let list=deletedNames();
-  for(let old of group.remove){
-   let key=norm(old.title);
+ for(const group of fresh){
+  const list=deletedNames();
+
+  for(const old of group.remove){
+   const key=norm(old.title);
    if(!list.includes(key))list.push(key);
   }
  }
@@ -809,7 +1021,7 @@ function confirmCleanup(){
  }catch(e){
   alert(
    'Could not save cleanup: '+e.message+
-   '. Keep the downloaded backup.'
+   '. Keep your downloaded backup.'
   );
   return;
  }
@@ -818,14 +1030,15 @@ function confirmCleanup(){
  pendingCleanup=null;
  $('cleanupPanel').hidden=true;
  render();
+
  status(
   'Cleanup complete: '+removedCount+
-  ' duplicate(s) merged. Your movie tracking was preserved.'
+  ' duplicates merged. Tracking preserved.'
  );
 }
 
 function configureBack(){
- let back=$('back');
+ const back=$('back');
 
  if(parent){
   back.textContent='← Back to '+parent.title;
@@ -834,14 +1047,16 @@ function configureBack(){
 
  back.addEventListener('click',e=>{
   try{
-   let u=new URL(document.referrer);
-   let folder=location.pathname.replace(/[^/]+$/,'');
+   const u=new URL(document.referrer);
+   const folder=location.pathname.replace(/[^/]+$/,'');
 
    if(
     u.origin===location.origin&&
     u.pathname.startsWith(folder)&&
-    (u.pathname===folder||
-     /\/(?:index|movie)\.html$/.test(u.pathname))
+    (
+     u.pathname===folder||
+     /\/(?:index|movie)\.html$/.test(u.pathname)
+    )
    ){
     e.preventDefault();
     history.back();
@@ -865,15 +1080,25 @@ if(!item){
  $('cancelInfo').onclick=()=>{
   $('editor').hidden=true;
  };
+
  $('changePoster').onclick=changePoster;
- $('loadInfo').onclick=loadInfo;
+ $('loadInfo').onclick=()=>loadInfo(true);
  $('addMovie').onclick=addMovie;
  $('addMovieBottom').onclick=addMovie;
  $('cleanDuplicates').onclick=showCleanup;
 
  render();
 
- if(!posterUrl(item)&&!detailFor(item).description){
+ if(
+  !isCollection()&&
+  (
+   !posterUrl(item)||
+   !detailFor(item).description||
+   !detailFor(item).year||
+   !detailFor(item).genres||
+   !detailFor(item).runtime
+  )
+ ){
   loadInfo();
  }
 }
