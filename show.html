@@ -6,44 +6,87 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Classic Comcast — Show</title>
 <style>
+:root{--navy:#061d42;--panel:#0d3975;--deep:#082850;--gold:#ffd15a;--line:#2475b9;--muted:#bed6f2}
 *{box-sizing:border-box}
-body{margin:0;background:linear-gradient(135deg,#061739,#12458d) fixed;color:#fff;font:15px Arial,sans-serif}
-main{max-width:1000px;margin:auto;padding:15px 12px 80px}
-a{color:#ffd15a}
+body{margin:0;background:linear-gradient(140deg,#061735,#10458b) fixed;color:white;font:15px system-ui,-apple-system,Arial,sans-serif}
+main{max-width:1100px;margin:auto;padding:14px 12px 80px}
+a{color:var(--gold)}
 button,input,textarea{font:inherit}
-button{background:#ffd15a;color:#092751;border:0;border-radius:7px;padding:9px 12px;font-weight:bold;cursor:pointer}
-button:disabled{opacity:.55}
-button.secondary{background:#1b4b85;color:#fff;border:1px solid #6a9bd2}
-button.danger{background:#8d2940;color:#fff}
-.card{background:#10366e;border:1px solid #e7bb4c;border-radius:12px;padding:15px;margin:12px 0}
-.hero{display:flex;gap:15px}
-.poster{width:110px;aspect-ratio:2/3;object-fit:cover;background:#092751;border-radius:8px}
-.muted{color:#c5dcef;font-size:13px}
-.gold{color:#ffd15a}
-h1{margin:0 0 8px}
-h2{font-size:19px}
-.season{border:1px solid #4677a7;border-radius:9px;margin:12px 0;overflow:hidden}
-.season-head{background:#092751;padding:12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
-.season-body{padding:10px}
-.episode{border-top:1px solid #365f92;padding:12px 2px}
-.episode-title{font-weight:bold;overflow-wrap:anywhere}
-.episode small{display:block;color:#bcd8ee;margin-top:4px}
-.episode-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
-.episode-buttons{display:flex;gap:5px;flex-shrink:0}
-.episode-buttons button{padding:6px 8px;font-size:12px}
-.episode-checks{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px}
-.episode-checks label{display:flex;align-items:center;gap:5px;font-size:13px}
-.episode-checks input{width:19px;height:19px;accent-color:#ffd15a}
-.actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
-.counts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.count{background:#092751;border-radius:8px;text-align:center;padding:12px 4px}
-.count b{font-size:21px;display:block}
-.count small{color:#bed8ef}
-textarea{width:100%;min-height:85px;border-radius:7px;padding:10px;background:#092751;color:#fff;border:1px solid #4677a7}
-input[type=text]{width:100%;padding:10px;background:#092751;color:#fff;border:1px solid #6a9bd2;border-radius:7px}
-#notice,#status{color:#ffd15a}
-.undo{background:#092751;border:1px solid #ffd15a;border-radius:8px;padding:12px;margin:10px 0}
-@media(min-width:700px){.poster{width:160px}}
+button{border:0;border-radius:9px;background:var(--gold);color:#092650;font-weight:700;padding:11px 14px;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid white;outline-offset:2px}
+button:disabled{opacity:.5}
+.secondary{background:#164f95;color:white;border:1px solid #73a9e5}
+.danger{background:#a12846;color:white}
+.card{background:linear-gradient(120deg,#092d63,#10448b);border:1px solid var(--gold);border-radius:16px;padding:20px;margin:16px 0;box-shadow:0 8px 30px #04132935}
+.gold,h1,h2{color:var(--gold)}
+h1{font-size:clamp(23px,5vw,32px);margin:0 0 8px}
+h2{font-size:22px;margin:0 0 18px}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.hero{display:flex;align-items:flex-start;gap:18px}
+.poster{width:clamp(90px,23vw,170px);aspect-ratio:2/3;object-fit:cover;border-radius:10px;background:var(--deep);flex-shrink:0}
+.hero-content{min-width:0}
+.description{line-height:1.55;margin:12px 0}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0}
+.counts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.count{background:#082752;border-radius:12px;text-align:center;padding:17px 5px}
+.count b{display:block;font-size:clamp(20px,4vw,30px)}
+.count span{display:block;font-size:12px;color:#d4e6ff;margin-top:4px}
+.season{border:1px solid #2385c9;border-radius:12px;margin:12px 0;overflow:hidden;background:#082b5b}
+.season-head{display:flex;gap:12px;align-items:center;padding:15px;background:#082650;cursor:pointer}
+.season-head strong{flex:1;font-size:17px}
+.season-meta{color:#bed6f2;font-size:12px}
+.chevron{color:white;font-size:20px}
+.pill{border:1px solid var(--gold);color:var(--gold);border-radius:20px;padding:4px 9px;font-size:12px}
+.season-body{padding:12px}
+.season-body[hidden],.editor[hidden],.episode-detail[hidden]{display:none}
+.season-tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:13px}
+.season-tools button{font-size:13px}
+.episode-heading,.episode-row{display:grid;grid-template-columns:minmax(0,1fr) 40px 40px 46px 32px 32px;gap:5px;align-items:center}
+.episode-heading{font-size:11px;color:var(--muted);padding:10px 6px;text-align:center}
+.episode-heading span:first-child{text-align:left}
+.episode-row{border-top:1px solid #23629d;padding:11px 6px;min-height:66px}
+.ep-name{min-width:0;cursor:pointer}
+.ep-name strong{display:block;font-size:13px;overflow-wrap:anywhere}
+.ep-name small{display:block;color:#bcd6f3;margin-top:4px;font-size:11px}
+.tick{display:flex;justify-content:center}
+.tick input{width:19px;height:19px;accent-color:var(--gold);margin:0}
+.circle{border-radius:50%;height:30px;width:30px;display:grid;place-items:center;padding:0;font-size:22px;line-height:1;background:#216bd0;color:white;border:1px solid #6ea8f5}
+.circle.minus{background:#9a2343;border-color:#fa637e}
+.episode-detail{grid-column:1/-1;background:#071f45;border-radius:8px;padding:12px;margin:5px 0 2px;font-size:13px;line-height:1.5;color:#d7e9ff}
+.editor{grid-column:1/-1;background:#071f45;border-radius:8px;padding:12px;margin:5px 0}
+.editor label{display:block;color:var(--gold);margin-bottom:7px;font-size:12px}
+.editor input{width:100%;padding:11px;background:#0b3772;color:white;border:1px solid #6b9fdb;border-radius:8px}
+.editor .actions{margin:9px 0 0}
+.show-more{display:block;width:100%;background:transparent;color:var(--muted);border-top:1px solid #23629d;border-radius:0}
+.undo{background:#082650;border:1px solid var(--gold);border-radius:10px;padding:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.undo button{padding:8px 12px}
+.status{color:var(--gold);font-size:13px}
+.footer{text-align:center;color:#b8cfea;font-size:12px;margin:25px auto}
+textarea{width:100%;min-height:100px;padding:10px;border:1px solid #6b9fdb;background:#082650;color:white;border-radius:8px}
+#descriptionEditor[hidden]{display:none}
+@media(max-width:480px){
+main{padding:10px 8px 60px}
+.card{padding:14px;margin:12px 0}
+.hero{gap:11px}
+.poster{width:92px}
+.description{font-size:13px}
+.hero .actions button{font-size:12px;padding:9px}
+.season-head{padding:12px 9px;gap:7px}
+.season-head strong{font-size:14px}
+.season-meta{font-size:11px}
+.pill{font-size:10px;padding:3px 6px}
+.season-body{padding:7px}
+.episode-heading,.episode-row{grid-template-columns:minmax(0,1fr) 30px 30px 35px 29px 29px;gap:3px}
+.episode-heading{font-size:9px}
+.ep-name strong{font-size:12px}
+.circle{width:27px;height:27px;font-size:20px}
+.tick input{width:17px;height:17px}
+.count{padding:14px 3px}
+.count span{font-size:10px}
+.season-tools button{font-size:11px;padding:9px}
+.episode-row{padding:10px 3px}
+}
 </style>
 </head>
 <body>
@@ -52,48 +95,50 @@ input[type=text]{width:100%;padding:10px;background:#092751;color:#fff;border:1p
 
 <section class="card">
 <div class="hero">
-<img class="poster" id="poster" alt="TV series poster">
-<div>
-<h1 id="title">Loading show...</h1>
-<div id="channel" class="gold"></div>
-<p id="description" class="muted"></p>
-<div id="details" class="muted"></div>
-</div>
-</div>
+<img class="poster" id="poster" alt="Series poster">
+<div class="hero-content">
+<h1 id="title">Loading...</h1>
+<div id="channel" class="muted small"></div>
+<div id="meta" class="small" style="margin-top:7px"></div>
+<p id="description" class="description muted"></p>
 <div class="actions">
-<button id="loadMetadata">↻ Load TMDB Show Information</button>
-<button class="secondary" id="editDescription">Edit Description</button>
+<button id="loadMetadata">↻ Load TMDB Info</button>
+<button class="secondary" id="editDescription">✎ Edit Description</button>
 </div>
-<div id="editor" hidden>
+</div>
+</div>
+<div id="descriptionEditor" hidden>
 <textarea id="descriptionInput"></textarea>
+<div class="actions">
 <button id="saveDescription">Save Description</button>
+<button class="secondary" id="cancelDescription">Cancel</button>
 </div>
-<p id="status" role="status"></p>
+</div>
+<p id="status" class="status" role="status"></p>
 </section>
 
 <section class="card">
-<h2 class="gold">My Collection</h2>
+<h2>My Collection</h2>
 <div class="counts">
-<div class="count"><b id="ownedCount">0/0</b><small>Episodes Owned</small></div>
-<div class="count"><b id="rippedCount">0/0</b><small>Episodes Ripped</small></div>
-<div class="count"><b id="addedCount">0/0</b><small>In Jellyfin</small></div>
+<div class="count"><b id="ownedCount">0/0</b><span>Episodes Owned</span></div>
+<div class="count"><b id="rippedCount">0/0</b><span>Episodes Ripped</span></div>
+<div class="count"><b id="addedCount">0/0</b><span>In Jellyfin</span></div>
 </div>
-<p id="notice"></p>
+<p id="notice" class="muted small"></p>
 <div id="undoArea"></div>
 </section>
 
 <section class="card">
-<h2 class="gold">Seasons &amp; Episodes</h2>
-<p class="muted">Tap Edit to rename an episode, or Delete to remove it from your tracker. You can undo your most recent deletion.</p>
+<h2>Seasons &amp; Episodes</h2>
+<p class="muted small">Tap + to edit an episode or − to remove it. Your Owned, Ripped and Jellyfin selections are saved.</p>
 <div id="seasons"></div>
 <div class="actions">
 <button id="addSeason">+ Add Season Manually</button>
 </div>
 </section>
 
-<p class="muted">Metadata provided by TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
+<p class="footer">Show and episode metadata provided by TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
 </main>
-
 <script>
 'use strict';
 
@@ -106,14 +151,19 @@ const read=(k,f)=>{
  try{return JSON.parse(localStorage.getItem(k))??f}
  catch{return f}
 };
+const norm=s=>String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+const uid=()=>Date.now()+'-'+Math.random().toString(36).slice(2,9);
 
 let data=read(KEY,null);
 let posters=read(POSTER_KEY,{});
+let openSeasons=new Set();
+let expandedEpisodes=new Set();
+let showAll=new Set();
+let lastDelete=null;
 
 if(data){
  if(!data.showDetails)data.showDetails={};
- if(!Array.isArray(data.collectionChildren))
-  data.collectionChildren=[];
+ if(!Array.isArray(data.collectionChildren))data.collectionChildren=[];
 }
 
 const id=new URLSearchParams(location.search).get('id');
@@ -121,67 +171,69 @@ const show=data?.items?.find(x=>
  String(x.id)===String(id)&&x.type==='show'
 );
 
-const uid=()=>Date.now()+'-'+Math.random().toString(36).slice(2,9);
-const norm=s=>String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
-
-let lastDelete=null;
-let openSeasons=new Set();
-let editingId=null;
-
 function save(){
  localStorage.setItem(KEY,JSON.stringify(data));
 }
 
-function showDetails(){
- const d=data.showDetails[String(id)]||
+function details(){
+ let d=data.showDetails[String(id)]||
  (data.showDetails[String(id)]={});
- if(!d.episodes)d.episodes={};
- if(!d.deletedEpisodes)d.deletedEpisodes={};
+ d.episodes ||= {};
+ d.deletedEpisodes ||= {};
  return d;
 }
 
 function seasonNum(s){
- return Number(s.title.match(/Season\s*(\d+)/i)?.[1]||0);
+ return Number(String(s.title).match(/Season\s*(\d+)/i)?.[1]||0);
 }
 
 function seasons(){
- return (data.collectionChildren||[])
+ return data.collectionChildren
  .filter(s=>String(s.parentId)===String(id))
  .sort((a,b)=>seasonNum(a)-seasonNum(b));
 }
 
 function episodes(s){
- return showDetails().episodes[String(s.id)]||[];
+ return details().episodes[String(s.id)]||[];
 }
 
-function deletedFor(s){
- const d=showDetails();
- const key=String(s.id);
- if(!Array.isArray(d.deletedEpisodes[key]))
-  d.deletedEpisodes[key]=[];
- return d.deletedEpisodes[key];
+function tombs(s){
+ let d=details(),k=String(s.id);
+ return d.deletedEpisodes[k] ||= [];
 }
 
-function episodeKey(e){
- if(e.number!=null)return 'n:'+Number(e.number);
- return 't:'+norm(e.title);
+function epKey(ep){
+ return ep.number!=null
+ ?'n:'+Number(ep.number)
+ :'t:'+norm(ep.title);
 }
 
-function status(message){
- $('status').textContent=message;
+function status(t){
+ $('status').textContent=t;
+}
+
+function el(tag,cls,text){
+ let x=document.createElement(tag);
+ if(cls)x.className=cls;
+ if(text!=null)x.textContent=text;
+ return x;
+}
+
+function btn(label,cls,fn){
+ let x=el('button',cls,label);
+ x.type='button';
+ x.onclick=fn;
+ return x;
 }
 
 async function api(path,params){
- const u=new URL(API+path);
- for(const [k,v] of Object.entries(params)){
-  u.searchParams.set(k,String(v));
- }
- const response=await fetch(u);
- const body=await response.json();
- if(!response.ok||body.error){
-  throw Error(body.error||'Request failed');
- }
- return body;
+ let u=new URL(API+path);
+ Object.entries(params).forEach(([k,v])=>
+  u.searchParams.set(k,String(v))
+ );
+ let r=await fetch(u),b=await r.json();
+ if(!r.ok||b.error)throw Error(b.error||'Request failed');
+ return b;
 }
 
 function ensureSeason(n){
@@ -200,487 +252,433 @@ function ensureSeason(n){
  return s;
 }
 
-function updateCounts(){
- const all=seasons().flatMap(episodes);
- for(const f of ['owned','ripped','added']){
-  $(f+'Count').textContent=
-   all.filter(e=>e[f]).length+'/'+all.length;
- }
- $('notice').textContent=all.length
- ?'Tracking '+all.length+' episodes across '+
-  seasons().filter(s=>episodes(s).length).length+' seasons.'
- :'Load or add episodes to begin tracking your collection.';
-}
-
-function refreshHeader(){
- const d=showDetails();
- const m=d.tmdb||{};
+function header(){
+ let d=details(),m=d.tmdb||{};
  $('description').textContent=
-  d.description||m.overview||'No description available yet.';
- $('details').textContent=[
+ d.description||m.overview||'No description available yet.';
+ $('meta').textContent=[
   m.firstAirDate?.slice(0,4),
   ...(m.genres||[]),
   m.status
- ].filter(Boolean).join(' · ')||
- seasons().length+' tracked seasons';
+ ].filter(Boolean).join(' · ');
 
- const poster=posters[String(id)]||m.poster;
- if(poster){
-  $('poster').src=poster;
+ let p=posters[String(id)]||m.poster;
+ if(p){
+  $('poster').src=p;
   $('poster').hidden=false;
  }else{
   $('poster').hidden=true;
  }
 }
 
-function renderUndo(){
- const root=$('undoArea');
- root.replaceChildren();
- if(!lastDelete)return;
-
- const wrap=document.createElement('div');
- wrap.className='undo';
-
- const message=document.createElement('div');
- message.textContent='Deleted: '+lastDelete.episode.title;
-
- const btn=document.createElement('button');
- btn.textContent='↶ Undo Delete';
- btn.onclick=undoDelete;
-
- wrap.append(message,btn);
- root.append(wrap);
+function counts(){
+ let a=seasons().flatMap(episodes);
+ for(let f of ['owned','ripped','added']){
+  $(f+'Count').textContent=
+  a.filter(e=>e[f]).length+'/'+a.length;
+ }
+ $('notice').textContent=a.length
+ ?`Tracking ${a.length} episodes across ${seasons().filter(s=>episodes(s).length).length} seasons.`
+ :'Load Episodes in a season to populate your collection.';
 }
 
-function deleteEpisode(s,ep){
+function undoUI(){
+ let r=$('undoArea');
+ r.replaceChildren();
+ if(!lastDelete)return;
+ let w=el('div','undo');
+ let t=el('span','small','Removed: '+lastDelete.episode.title);
+ w.append(t,btn('↶ Undo Delete','',undoDelete));
+ r.append(w);
+}
+
+function removeEpisode(s,ep){
  if(!confirm(
-  'Delete "'+ep.title+'" from your tracker?\n\n'+
-  'This will not delete a Jellyfin file.'
+  'Remove "'+ep.title+'" from your tracker?\n\n'+
+  'This will NOT delete your video file.'
  ))return;
 
- const arr=episodes(s);
- const index=arr.findIndex(x=>String(x.id)===String(ep.id));
- if(index<0)return;
+ let a=episodes(s);
+ let i=a.findIndex(x=>String(x.id)===String(ep.id));
+ if(i<0)return;
 
  lastDelete={
   seasonId:String(s.id),
-  episode:{...arr[index]},
-  index
+  episode:{...a[i]},
+  index:i
  };
+ a.splice(i,1);
 
- arr.splice(index,1);
-
- const tombstones=deletedFor(s);
- const key=episodeKey(ep);
- if(!tombstones.includes(key))tombstones.push(key);
+ let d=tombs(s),key=epKey(ep);
+ if(!d.includes(key))d.push(key);
 
  save();
  render();
- status('Episode deleted. Use Undo Delete to restore it.');
+ status('Episode removed. Use Undo Delete to restore it.');
 }
 
 function undoDelete(){
  if(!lastDelete)return;
-
- const record=lastDelete;
- const s=seasons().find(x=>
-  String(x.id)===record.seasonId
- );
+ let r=lastDelete;
+ let s=seasons().find(x=>String(x.id)===r.seasonId);
  if(!s)return;
 
- const arr=episodes(s);
- if(!arr.some(x=>String(x.id)===String(record.episode.id))){
-  arr.splice(
-   Math.min(record.index,arr.length),
-   0,
-   record.episode
-  );
+ let a=episodes(s);
+ if(!a.some(e=>String(e.id)===String(r.episode.id))){
+  a.splice(Math.min(r.index,a.length),0,r.episode);
  }
-
- const deleted=deletedFor(s);
- const key=episodeKey(record.episode);
- const pos=deleted.indexOf(key);
- if(pos>=0)deleted.splice(pos,1);
+ let d=tombs(s),i=d.indexOf(epKey(r.episode));
+ if(i>=0)d.splice(i,1);
 
  lastDelete=null;
  save();
  render();
- status('Episode restored with its tracking information.');
-}
-
-function editEpisode(s,ep){
- const input=prompt('Edit episode title:',ep.title);
- if(input===null)return;
- const title=input.trim();
- if(!title){
-  alert('Episode title cannot be empty.');
-  return;
- }
- ep.title=title;
- save();
- render();
- status('Episode title updated.');
+ status('Episode restored.');
 }
 
 async function importSeason(s){
- const d=showDetails();
+ let d=details();
  if(!d.tmdb?.id){
   status('Load TMDB show information first.');
   return;
  }
 
- const n=seasonNum(s);
+ let n=seasonNum(s);
  status('Loading Season '+n+'...');
 
  try{
-  const response=await api('/tv/season',{
+  let response=await api('/tv/season',{
    id:d.tmdb.id,
    season:n
   });
-
-  const existing=episodes(s);
-  const deleted=deletedFor(s);
-
-  const byNumber=new Map(
-   existing.filter(e=>e.number!=null)
+  let old=episodes(s);
+  let deleted=tombs(s);
+  let byNumber=new Map(
+   old.filter(e=>e.number!=null)
    .map(e=>[Number(e.number),e])
   );
-
-  const byTitle=new Map(
-   existing.map(e=>[norm(e.title),e])
+  let byTitle=new Map(
+   old.map(e=>[norm(e.title),e])
   );
+  let used=new Set(),result=[];
 
-  const used=new Set();
-  const result=[];
+  for(let item of response.episodes||[]){
+   if(deleted.includes('n:'+Number(item.number))||
+      deleted.includes('t:'+norm(item.title)))continue;
 
-  for(const item of response.episodes){
-   const old=
-    byNumber.get(Number(item.number))||
-    byTitle.get(norm(item.title));
-
-   const key='n:'+Number(item.number);
-
-   if(deleted.includes(key)||
-      deleted.includes('t:'+norm(item.title))){
-    continue;
-   }
-
-   if(old)used.add(String(old.id));
+   let prev=byNumber.get(Number(item.number))||
+            byTitle.get(norm(item.title));
+   if(prev)used.add(String(prev.id));
 
    result.push({
-    ...old,
-    id:old?.id||uid(),
+    ...prev,
+    id:prev?.id||uid(),
     number:item.number,
-    title:old?.customTitle?old.title:item.title,
-    customTitle:!!old?.customTitle,
+    title:prev?.customTitle?prev.title:item.title,
+    customTitle:!!prev?.customTitle,
     overview:item.overview,
     airDate:item.airDate,
-    owned:!!old?.owned,
-    ripped:!!old?.ripped,
-    added:!!old?.added
+    owned:!!prev?.owned,
+    ripped:!!prev?.ripped,
+    added:!!prev?.added
    });
   }
 
-  for(const old of existing){
-   if(!used.has(String(old.id))){
-    result.push(old);
-   }
+  for(let ep of old){
+   if(!used.has(String(ep.id)))result.push(ep);
   }
 
   d.episodes[String(s.id)]=result;
   openSeasons.add(String(s.id));
   save();
   render();
-  status('Season '+n+' loaded. Your inventory selections were preserved.');
+  status('Season '+n+' loaded. Your checkboxes were preserved.');
  }catch(e){
   status('Could not load season: '+e.message);
  }
 }
 
 async function loadMetadata(){
- if(!show)return;
-
- const btn=$('loadMetadata');
- btn.disabled=true;
- status('Searching TMDB for '+show.title+'...');
+ let b=$('loadMetadata');
+ b.disabled=true;
+ status('Searching TMDB...');
 
  try{
-  const d=showDetails();
+  let d=details();
   let match=d.tmdb?.id?{id:d.tmdb.id}:null;
 
   if(!match){
-   const found=await api('/tv/search',{title:show.title});
-   const exact=found.results.filter(x=>
+   let found=await api('/tv/search',{title:show.title});
+   let exact=(found.results||[]).find(x=>
     norm(x.title)===norm(show.title)
    );
-   match=exact[0]||found.results[0];
-
+   match=exact||found.results?.[0];
    if(!match)throw Error('No matching show found');
 
-   if(norm(match.title)!==norm(show.title)){
-    if(!confirm(
-     'TMDB found "'+match.title+'". Is this correct?'
-    )){
-     status('Search cancelled.');
-     return;
-    }
+   if(norm(match.title)!==norm(show.title)&&
+      !confirm('TMDB found "'+match.title+'". Use this show?')){
+    status('Search cancelled.');
+    return;
    }
   }
 
-  const info=await api('/tv/details',{id:match.id});
+  let info=await api('/tv/details',{id:match.id});
   d.tmdb=info;
 
-  for(const season of info.seasons){
-   ensureSeason(season.number);
+  for(let s of info.seasons||[]){
+   ensureSeason(s.number);
   }
 
   save();
-  refreshHeader();
+  header();
   render();
-  status('Show information loaded. Expand a season and tap Load Episodes.');
+  status('Show info loaded. Open a season and tap Load Episodes.');
  }catch(e){
-  status('Could not load show information: '+e.message);
+  status('Could not load show info: '+e.message);
  }finally{
-  btn.disabled=false;
+  b.disabled=false;
  }
+}
+
+function editPanel(row,s,ep){
+ let old=row.querySelector('.editor');
+ if(old){
+  old.remove();
+  return;
+ }
+
+ let panel=el('div','editor');
+ let label=el('label','','Edit episode title');
+ let input=el('input');
+ input.type='text';
+ input.value=ep.title;
+ let acts=el('div','actions');
+
+ acts.append(
+  btn('Save Changes','',()=>{
+   let v=input.value.trim();
+   if(!v)return alert('Episode title cannot be empty.');
+   ep.title=v;
+   ep.customTitle=true;
+   save();
+   render();
+   status('Episode updated.');
+  }),
+  btn('Cancel','secondary',()=>panel.remove())
+ );
+
+ panel.append(label,input,acts);
+ row.append(panel);
+ input.focus();
+}
+
+function episodeRow(s,ep,i){
+ let row=el('div','episode-row');
+ let name=el('div','ep-name');
+ let title=el('strong','',(ep.number??i+1)+'. '+ep.title);
+ name.append(title);
+
+ if(ep.airDate)name.append(el('small','',ep.airDate));
+
+ name.onclick=()=>{
+  let key=String(ep.id);
+  expandedEpisodes.has(key)
+  ?expandedEpisodes.delete(key)
+  :expandedEpisodes.add(key);
+  render();
+ };
+
+ row.append(name);
+
+ for(let [field,label] of [
+  ['owned','Owned'],
+  ['ripped','Ripped'],
+  ['added','Jellyfin']
+ ]){
+  let wrap=el('label','tick');
+  let check=el('input');
+  check.type='checkbox';
+  check.checked=!!ep[field];
+  check.setAttribute('aria-label',label+' '+ep.title);
+  check.onchange=()=>{
+   ep[field]=check.checked;
+   save();
+   counts();
+  };
+  wrap.append(check);
+  row.append(wrap);
+ }
+
+ let plus=btn('+','circle',()=>editPanel(row,s,ep));
+ plus.title='Edit episode';
+ plus.setAttribute('aria-label','Edit '+ep.title);
+
+ let minus=btn('−','circle minus',()=>removeEpisode(s,ep));
+ minus.title='Remove episode';
+ minus.setAttribute('aria-label','Remove '+ep.title);
+
+ row.append(plus,minus);
+
+ if(expandedEpisodes.has(String(ep.id))&&ep.overview){
+  row.append(el('div','episode-detail',ep.overview));
+ }
+ return row;
 }
 
 function render(){
  if(!show)return;
-
- const root=$('seasons');
+ let root=$('seasons');
  root.replaceChildren();
 
- for(const s of seasons()){
-  const arr=episodes(s);
+ for(let s of seasons()){
+  let arr=episodes(s),key=String(s.id);
+  let wrap=el('section','season');
+  let head=el('div','season-head');
+  let chev=el('span','chevron',openSeasons.has(key)?'⌄':'›');
+  let name=el('strong','',`Season ${seasonNum(s)}`);
+  let year=details().tmdb?.seasons?.find(x=>
+   Number(x.number)===seasonNum(s)
+  )?.airDate?.slice(0,4);
 
-  const wrap=document.createElement('section');
-  wrap.className='season';
+  if(year)name.textContent+=` (${year})`;
 
-  const head=document.createElement('div');
-  head.className='season-head';
+  let count=el('span','season-meta',arr.length+' episodes');
+  let pill=el('span','pill',openSeasons.has(key)?'Open':'Closed');
 
-  const name=document.createElement('strong');
-  name.textContent=s.title;
-
-  const toggle=document.createElement('button');
-  toggle.className='secondary';
-
-  const body=document.createElement('div');
-  body.className='season-body';
-
-  function syncOpen(){
-   const open=openSeasons.has(String(s.id));
-   body.hidden=!open;
-   toggle.textContent=arr.length+' episodes · '+
-    (open?'Close':'Open');
-  }
-
-  toggle.onclick=()=>{
-   const key=String(s.id);
-   if(openSeasons.has(key))openSeasons.delete(key);
-   else openSeasons.add(key);
-   syncOpen();
+  head.append(chev,name,count,pill);
+  head.onclick=()=>{
+   openSeasons.has(key)
+   ?openSeasons.delete(key)
+   :openSeasons.add(key);
+   render();
   };
+  wrap.append(head);
 
-  head.append(name,toggle);
+  if(openSeasons.has(key)){
+   let body=el('div','season-body');
+   let tools=el('div','season-tools');
 
-  const controls=document.createElement('div');
-  controls.className='actions';
+   tools.append(
+    btn('↓ Load Episodes','',()=>importSeason(s)),
+    btn('+ Add Episode','secondary',()=>{
+     let input=prompt('Enter episode titles, one per line.');
+     if(!input)return;
 
-  const load=document.createElement('button');
-  load.textContent='↓ Load Episodes';
-  load.onclick=()=>importSeason(s);
+     let list=episodes(s);
+     let names=input.split('\n').map(x=>x.trim()).filter(Boolean);
 
-  const add=document.createElement('button');
-  add.className='secondary';
-  add.textContent='+ Add Episodes';
+     for(let title of names){
+      if(list.some(e=>norm(e.title)===norm(title)))continue;
+      list.push({
+       id:uid(),
+       title,
+       customTitle:true,
+       owned:false,
+       ripped:false,
+       added:false
+      });
+      let d=tombs(s),i=d.indexOf('t:'+norm(title));
+      if(i>=0)d.splice(i,1);
+     }
 
-  add.onclick=()=>{
-   const input=prompt(
-    'Enter episode titles, one per line.'
+     details().episodes[String(s.id)]=list;
+     save();
+     render();
+    }),
+    btn('Mark All Owned','secondary',()=>{
+     if(!arr.length)return alert('Load or add episodes first.');
+     for(let ep of arr)ep.owned=true;
+     save();
+     render();
+    })
    );
-   if(!input)return;
 
-   const list=episodes(s);
-   const names=input.split('\n')
-    .map(x=>x.trim()).filter(Boolean);
+   body.append(tools);
 
-   for(const title of names){
-    if(list.some(e=>norm(e.title)===norm(title)))continue;
-
-    list.push({
-     id:uid(),
-     title,
-     customTitle:true,
-     owned:false,
-     ripped:false,
-     added:false
-    });
-
-    const deleted=deletedFor(s);
-    const key='t:'+norm(title);
-    const pos=deleted.indexOf(key);
-    if(pos>=0)deleted.splice(pos,1);
-   }
-
-   showDetails().episodes[String(s.id)]=list;
-   openSeasons.add(String(s.id));
-   save();
-   render();
-  };
-
-  const mark=document.createElement('button');
-  mark.className='secondary';
-  mark.textContent='Mark All Owned';
-  mark.onclick=()=>{
-   if(!arr.length){
-    alert('Load or add episodes first.');
-    return;
-   }
-   for(const ep of arr)ep.owned=true;
-   save();
-   render();
-  };
-
-  controls.append(load,add,mark);
-  body.append(controls);
-
-  arr.forEach((ep,i)=>{
-   const row=document.createElement('div');
-   row.className='episode';
-
-   const top=document.createElement('div');
-   top.className='episode-top';
-
-   const info=document.createElement('div');
-   const title=document.createElement('div');
-   title.className='episode-title';
-   title.textContent=(ep.number??i+1)+'. '+ep.title;
-   info.append(title);
-
-   if(ep.airDate){
-    const date=document.createElement('small');
-    date.textContent=ep.airDate;
-    info.append(date);
-   }
-
-   if(ep.overview){
-    const overview=document.createElement('small');
-    overview.textContent=ep.overview;
-    info.append(overview);
-   }
-
-   const buttons=document.createElement('div');
-   buttons.className='episode-buttons';
-
-   const edit=document.createElement('button');
-   edit.className='secondary';
-   edit.textContent='✎ Edit';
-   edit.onclick=()=>{
-    const original=ep.title;
-    editEpisode(s,ep);
-    if(ep.title!==original){
-     ep.customTitle=true;
-     save();
+   if(arr.length){
+    let heading=el('div','episode-heading');
+    for(let t of ['Episode','Own','Rip','Jellyfin','+','−']){
+     heading.append(el('span','',t));
     }
-   };
+    body.append(heading);
 
-   const remove=document.createElement('button');
-   remove.className='danger';
-   remove.textContent='Delete';
-   remove.onclick=()=>deleteEpisode(s,ep);
+    let visible=showAll.has(key)?arr:arr.slice(0,5);
+    visible.forEach((ep,i)=>body.append(episodeRow(s,ep,i)));
 
-   buttons.append(edit,remove);
-   top.append(info,buttons);
-   row.append(top);
-
-   const checks=document.createElement('div');
-   checks.className='episode-checks';
-
-   for(const [field,label] of [
-    ['owned','Owned'],
-    ['ripped','Ripped'],
-    ['added','Jellyfin']
-   ]){
-    const cell=document.createElement('label');
-    const check=document.createElement('input');
-    check.type='checkbox';
-    check.checked=!!ep[field];
-
-    check.onchange=()=>{
-     ep[field]=check.checked;
-     save();
-     updateCounts();
-    };
-
-    cell.append(check,document.createTextNode(label));
-    checks.append(cell);
+    if(arr.length>5){
+     body.append(
+      btn(
+       showAll.has(key)
+       ?'Show Fewer Episodes ↑'
+       :`Show All ${arr.length} Episodes ↓`,
+       'show-more',
+       ()=>{
+        showAll.has(key)?showAll.delete(key):showAll.add(key);
+        render();
+       }
+      )
+     );
+    }
+   }else{
+    body.append(el('p','muted small',
+     'No episodes yet. Tap Load Episodes to import them from TMDB.'
+    ));
    }
-
-   row.append(checks);
-   body.append(row);
-  });
-
-  wrap.append(head,body);
+   wrap.append(body);
+  }
   root.append(wrap);
-  syncOpen();
  }
-
- updateCounts();
- renderUndo();
+ counts();
+ undoUI();
 }
 
 if(!show){
  $('title').textContent='Show not found';
  status('Open a show from your Comcast Guide in the same browser.');
- $('addSeason').disabled=true;
  $('loadMetadata').disabled=true;
+ $('addSeason').disabled=true;
 }else{
  $('title').textContent=show.title;
  document.title=show.title+' — Classic Comcast';
 
- const channel=data.channels?.find(c=>
-  String(c.id)===String(show.channel)
+ let c=data.channels?.find(x=>
+  String(x.id)===String(show.channel)
  );
+ $('channel').textContent=c
+ ?`Channel ${c.num} · ${c.name}`
+ :'TV Series';
 
- $('channel').textContent=channel
-  ?'Channel '+channel.num+' · '+channel.name
-  :'TV Series';
-
- refreshHeader();
+ header();
 
  $('editDescription').onclick=()=>{
-  $('editor').hidden=!$('editor').hidden;
+  $('descriptionEditor').hidden=false;
   $('descriptionInput').value=
-   showDetails().description||
-   showDetails().tmdb?.overview||'';
+   details().description||details().tmdb?.overview||'';
+ };
+
+ $('cancelDescription').onclick=()=>{
+  $('descriptionEditor').hidden=true;
  };
 
  $('saveDescription').onclick=()=>{
-  showDetails().description=
-   $('descriptionInput').value.trim();
+  details().description=$('descriptionInput').value.trim();
   save();
-  refreshHeader();
-  $('editor').hidden=true;
+  header();
+  $('descriptionEditor').hidden=true;
  };
 
  $('loadMetadata').onclick=loadMetadata;
 
  $('addSeason').onclick=()=>{
-  const n=prompt('Season number?');
+  let n=prompt('Season number?');
   if(!n||!/^[1-9]\d*$/.test(n.trim()))return;
-
   ensureSeason(Number(n));
   save();
   render();
  };
 
  render();
-
- if(!showDetails().tmdb){
-  loadMetadata();
- }
+ if(!details().tmdb)loadMetadata();
 }
 </script>
 </body>
