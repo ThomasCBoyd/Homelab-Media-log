@@ -1,39 +1,490 @@
+
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Classic Comcast — Show</title>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Classic Comcast — Show</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:linear-gradient(135deg,#061739,#12458d) fixed;color:white;font:15px Arial,sans-serif}main{max-width:1000px;margin:auto;padding:15px 12px 80px}a{color:#ffd15a}button,input,textarea{font:inherit}button{background:#ffd15a;color:#092751;border:0;border-radius:7px;padding:9px 12px;font-weight:bold;cursor:pointer}button.secondary{background:#1b4b85;color:white;border:1px solid #6a9bd2}.card{background:#10366e;border:1px solid #e7bb4c;border-radius:12px;padding:15px;margin:12px 0}.hero{display:flex;gap:15px}.poster{width:110px;aspect-ratio:2/3;object-fit:cover;background:#092751;border-radius:8px}.muted{color:#c5dcef;font-size:13px}.gold{color:#ffd15a}h1{margin:0 0 8px}h2{font-size:19px}.season{border:1px solid #4677a7;border-radius:9px;margin:12px 0;overflow:hidden}.season-head{background:#092751;padding:12px;display:flex;align-items:center;justify-content:space-between;gap:8px}.season-body{padding:10px}.episode{display:grid;grid-template-columns:minmax(0,1fr) repeat(3,45px);gap:5px;align-items:center;border-top:1px solid #365f92;padding:10px 2px}.episode label{text-align:center}.episode input{width:19px;height:19px;accent-color:#ffd15a}.episode small{display:block;color:#bcd8ee;margin-top:4px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.counts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.count{background:#092751;border-radius:8px;text-align:center;padding:12px 4px}.count b{font-size:21px;display:block}.count small{color:#bed8ef}.headerrow{display:grid;grid-template-columns:minmax(0,1fr) repeat(3,45px);font-size:11px;color:#c5dcef;text-align:center;gap:5px}textarea{width:100%;min-height:85px;border-radius:7px;padding:10px;background:#092751;color:white;border:1px solid #4677a7}#notice{color:#ffd15a}.episode .name{overflow-wrap:anywhere}@media(min-width:700px){.poster{width:160px}.episode{grid-template-columns:minmax(0,1fr) repeat(3,80px)}.headerrow{grid-template-columns:minmax(0,1fr) repeat(3,80px)}}
-</style></head><body><main>
-<a href="./index.html" id="back">← Back to Comcast Guide</a>
-<section class="card"><div class="hero"><img class="poster" id="poster" alt="TV series poster"><div><h1 id="title">Loading show...</h1><div id="channel" class="gold"></div><p id="description" class="muted">Add a description below, or connect the expanded metadata service later.</p><div id="details" class="muted"></div></div></div><div class="actions"><button class="secondary" id="editDescription">Edit Description</button></div><div id="editor" hidden><textarea id="descriptionInput" placeholder="Describe this show..."></textarea><button id="saveDescription">Save Description</button></div></section>
-<section class="card"><h2 class="gold">My Collection</h2><div class="counts"><div class="count"><b id="ownedCount">0/0</b><small>Episodes Owned</small></div><div class="count"><b id="rippedCount">0/0</b><small>Episodes Ripped</small></div><div class="count"><b id="addedCount">0/0</b><small>In Jellyfin</small></div></div><p id="notice" class="muted"></p></section>
-<section class="card"><h2 class="gold">Seasons & Episodes</h2><p class="muted">Open a season to manage individual episodes. You can add an episode title or paste several titles, one per line.</p><div id="seasons"></div><div class="actions"><button id="addSeason">+ Add Season</button></div></section>
-</main><script>
-'use strict';
-const KEY='comcast-collection-v1',POSTER_KEY='comcast-posters-v1';
-const $=id=>document.getElementById(id);
-const read=(k,f)=>{try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}};
-let data=read(KEY,null),posters=read(POSTER_KEY,{});
-if(data&&!data.showDetails)data.showDetails={};
-let details=data?.showDetails||{};
-const id=new URLSearchParams(location.search).get('id');
-const show=data?.items?.find(x=>String(x.id)===String(id)&&x.type==='show');
-const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const uid=()=>Date.now()+'-'+Math.random().toString(36).slice(2,8);
-function save(){localStorage.setItem(KEY,JSON.stringify(data))}
-function showDetails(){return details[String(id)]||(details[String(id)]={description:'',episodes:{}})}
-function seasons(){return data.collectionChildren.filter(x=>String(x.parentId)===String(id)).sort((a,b)=>Number(a.title.match(/Season\s*(\d+)/i)?.[1]||0)-Number(b.title.match(/Season\s*(\d+)/i)?.[1]||0))}
-function episodes(s){return showDetails().episodes[String(s.id)]||[]}
-function update(){const all=seasons().flatMap(episodes);for(const f of ['owned','ripped','added'])$(f+'Count').textContent=all.filter(e=>e[f]).length+'/'+all.length;const tracked=seasons().filter(s=>episodes(s).length).length;$('notice').textContent=all.length?'Tracking '+all.length+' episodes across '+tracked+' seasons.':'Add episode titles to start tracking partial seasons.'}
-function render(){if(!show)return;const root=$('seasons');root.replaceChildren();for(const season of seasons()){
- const arr=episodes(season),wrap=document.createElement('section');wrap.className='season';const head=document.createElement('div');head.className='season-head';const name=document.createElement('strong');name.textContent=season.title;const toggle=document.createElement('button');toggle.className='secondary';toggle.textContent=arr.length+' episodes · Open';head.append(name,toggle);const body=document.createElement('div');body.className='season-body';body.hidden=true;toggle.onclick=()=>{body.hidden=!body.hidden;toggle.textContent=arr.length+' episodes · '+(body.hidden?'Open':'Close')};
- const controls=document.createElement('div');controls.className='actions';const add=document.createElement('button');add.textContent='+ Add Episodes';add.onclick=()=>{const input=prompt('Enter episode titles, one per line. You can also enter a single title.');if(!input)return;const names=input.split('\n').map(x=>x.trim()).filter(Boolean);const list=episodes(season);for(const title of names)if(!list.some(e=>e.title.toLowerCase()===title.toLowerCase()))list.push({id:uid(),title,owned:false,ripped:false,added:false});showDetails().episodes[String(season.id)]=list;save();render();};controls.append(add);
- const mark=document.createElement('button');mark.className='secondary';mark.textContent='Mark All Owned';mark.onclick=()=>{if(!arr.length)return alert('Add episodes first.');for(const e of arr)e.owned=true;save();render()};controls.append(mark);
- const header=document.createElement('div');header.className='headerrow';header.innerHTML='<span style="text-align:left">Episode</span><span>Own</span><span>Rip</span><span>Jellyfin</span>';body.append(controls,header);
- arr.forEach((ep,i)=>{const row=document.createElement('div');row.className='episode';const label=document.createElement('div');label.className='name';label.textContent=(i+1)+'. '+ep.title;row.append(label);for(const field of ['owned','ripped','added']){const cell=document.createElement('label');const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.checked=!!ep[field];checkbox.setAttribute('aria-label',field+' '+ep.title);checkbox.onchange=()=>{ep[field]=checkbox.checked;save();update()};cell.append(checkbox);row.append(cell)}body.append(row)});
- const edit=document.createElement('button');edit.className='secondary';edit.textContent='Edit Episode List';edit.onclick=()=>{const input=prompt('Edit titles, one per line. Keep the same order to preserve checkbox states.',arr.map(e=>e.title).join('\n'));if(input===null)return;const names=input.split('\n').map(x=>x.trim()).filter(Boolean);showDetails().episodes[String(season.id)]=names.map((title,i)=>({...arr[i],id:arr[i]?.id||uid(),title,owned:!!arr[i]?.owned,ripped:!!arr[i]?.ripped,added:!!arr[i]?.added}));save();render()};body.append(edit);wrap.append(head,body);root.append(wrap)}update()}
-if(!show){$('title').textContent='Show not found';$('notice').textContent='Open a show from your Comcast Guide. Your saved collection must be in this browser.';$('addSeason').disabled=true}else{
- $('title').textContent=show.title;document.title=show.title+' — Classic Comcast';$('poster').src=posters[String(id)]||'';$('poster').onerror=()=>{$('poster').style.display='none'};const channel=data.channels.find(c=>String(c.id)===String(show.channel));$('channel').textContent=channel?'Channel '+channel.num+' · '+channel.name:'TV Series';$('description').textContent=showDetails().description||'No description saved yet. Tap Edit Description to add one.';$('details').textContent=seasons().length+' tracked seasons';
- $('editDescription').onclick=()=>{$('editor').hidden=!$('editor').hidden;$('descriptionInput').value=showDetails().description};$('saveDescription').onclick=()=>{showDetails().description=$('descriptionInput').value.trim();save();$('description').textContent=showDetails().description||'No description saved yet.';$('editor').hidden=true};
- $('addSeason').onclick=()=>{const n=prompt('Season number?');if(!n||!/^\d+$/.test(n.trim()))return;const title=show.title+' Season '+Number(n);if(seasons().some(s=>s.title===title))return alert('That season already exists.');data.collectionChildren.push({id:uid(),parentId:show.id,title,owned:false,ripped:false,added:false});save();render()};render();
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(135deg,#061739,#12458d) fixed;color:white;font:15px Arial,sans-serif}
+main{max-width:1000px;margin:auto;padding:15px 12px 80px}
+a{color:#ffd15a}
+button,input,textarea{font:inherit}
+button{background:#ffd15a;color:#092751;border:0;border-radius:7px;padding:9px 12px;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.55}
+button.secondary{background:#1b4b85;color:white;border:1px solid #6a9bd2}
+.card{background:#10366e;border:1px solid #e7bb4c;border-radius:12px;padding:15px;margin:12px 0}
+.hero{display:flex;gap:15px}
+.poster{width:110px;aspect-ratio:2/3;object-fit:cover;background:#092751;border-radius:8px}
+.muted{color:#c5dcef;font-size:13px}
+.gold{color:#ffd15a}
+h1{margin:0 0 8px}
+h2{font-size:19px}
+.season{border:1px solid #4677a7;border-radius:9px;margin:12px 0;overflow:hidden}
+.season-head{background:#092751;padding:12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.season-body{padding:10px}
+.episode{display:grid;grid-template-columns:minmax(0,1fr) repeat(3,45px);gap:5px;align-items:center;border-top:1px solid #365f92;padding:10px 2px}
+.episode label{text-align:center}
+.episode input{width:19px;height:19px;accent-color:#ffd15a}
+.episode small{display:block;color:#bcd8ee;margin-top:4px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.counts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.count{background:#092751;border-radius:8px;text-align:center;padding:12px 4px}
+.count b{font-size:21px;display:block}
+.count small{color:#bed8ef}
+.headerrow{display:grid;grid-template-columns:minmax(0,1fr) repeat(3,45px);font-size:11px;color:#c5dcef;text-align:center;gap:5px}
+textarea{width:100%;min-height:85px;border-radius:7px;padding:10px;background:#092751;color:white;border:1px solid #4677a7}
+#notice,#status{color:#ffd15a}
+.episode .name{overflow-wrap:anywhere}
+@media(min-width:700px){
+.poster{width:160px}
+.episode{grid-template-columns:minmax(0,1fr) repeat(3,80px)}
+.headerrow{grid-template-columns:minmax(0,1fr) repeat(3,80px)}
 }
-</script></body></html>
+</style>
+</head>
+<body>
+<main>
+<a href="./index.html" id="back">← Back to Comcast Guide</a>
+<section class="card">
+<div class="hero">
+<img class="poster" id="poster" alt="TV series poster">
+<div>
+<h1 id="title">Loading show...</h1>
+<div id="channel" class="gold"></div>
+<p id="description" class="muted"></p>
+<div id="details" class="muted"></div>
+</div>
+</div>
+<div class="actions">
+<button id="loadMetadata">↻ Load TMDB Show Information</button>
+<button class="secondary" id="editDescription">Edit Description</button>
+</div>
+<div id="editor" hidden>
+<textarea id="descriptionInput" placeholder="Describe this show..."></textarea>
+<button id="saveDescription">Save Description</button>
+</div>
+<p id="status" role="status"></p>
+</section>
+<section class="card">
+<h2 class="gold">My Collection</h2>
+<div class="counts">
+<div class="count"><b id="ownedCount">0/0</b><small>Episodes Owned</small></div>
+<div class="count"><b id="rippedCount">0/0</b><small>Episodes Ripped</small></div>
+<div class="count"><b id="addedCount">0/0</b><small>In Jellyfin</small></div>
+</div>
+<p id="notice" class="muted"></p>
+</section>
+<section class="card">
+<h2 class="gold">Seasons &amp; Episodes</h2>
+<p class="muted">Expand a season to see its episode guide. TMDB imports never reset your Owned, Ripped or Jellyfin checkboxes.</p>
+<div id="seasons"></div>
+<div class="actions">
+<button id="addSeason">+ Add Season Manually</button>
+</div>
+</section>
+<p class="muted">Show and episode metadata provided by TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
+</main>
+<script>
+'use strict';
+
+const KEY='comcast-collection-v1';
+const POSTER_KEY='comcast-posters-v1';
+const API='https://posters.thomasboydspam.workers.dev';
+
+const $=id=>document.getElementById(id);
+const read=(k,f)=>{
+ try{return JSON.parse(localStorage.getItem(k))??f}
+ catch{return f}
+};
+
+let data=read(KEY,null);
+let posters=read(POSTER_KEY,{});
+
+if(data&&!data.showDetails)data.showDetails={};
+if(data&&!Array.isArray(data.collectionChildren))data.collectionChildren=[];
+
+let details=data?.showDetails||{};
+
+const id=new URLSearchParams(location.search).get('id');
+const show=data?.items?.find(x=>
+ String(x.id)===String(id)&&x.type==='show'
+);
+
+const uid=()=>Date.now()+'-'+Math.random().toString(36).slice(2,8);
+const norm=s=>String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+
+function save(){
+ localStorage.setItem(KEY,JSON.stringify(data));
+}
+
+function showDetails(){
+ return details[String(id)]||
+ (details[String(id)]={description:'',episodes:{}});
+}
+
+function seasons(){
+ return (data.collectionChildren||[])
+  .filter(x=>String(x.parentId)===String(id))
+  .sort((a,b)=>seasonNum(a)-seasonNum(b));
+}
+
+function seasonNum(s){
+ return Number(s.title.match(/Season\s*(\d+)/i)?.[1]||0);
+}
+
+function episodes(s){
+ const d=showDetails();
+ if(!d.episodes)d.episodes={};
+ return d.episodes[String(s.id)]||[];
+}
+
+function status(s){
+ $('status').textContent=s;
+}
+
+async function api(path,params){
+ const u=new URL(API+path);
+ for(const [k,v] of Object.entries(params)){
+  u.searchParams.set(k,String(v));
+ }
+ const response=await fetch(u);
+ const body=await response.json();
+ if(!response.ok||body.error){
+  throw Error(body.error||'Request failed');
+ }
+ return body;
+}
+
+function ensureSeason(n){
+ let s=seasons().find(x=>seasonNum(x)===n);
+ if(!s){
+  s={
+   id:uid(),
+   parentId:show.id,
+   title:show.title+' Season '+n,
+   owned:false,
+   ripped:false,
+   added:false
+  };
+  data.collectionChildren.push(s);
+ }
+ return s;
+}
+
+function update(){
+ const all=seasons().flatMap(episodes);
+ for(const f of ['owned','ripped','added']){
+  $(f+'Count').textContent=
+   all.filter(e=>e[f]).length+'/'+all.length;
+ }
+ const tracked=seasons().filter(s=>episodes(s).length).length;
+ $('notice').textContent=all.length
+  ?'Tracking '+all.length+' episodes across '+tracked+' seasons.'
+  :'Import episode information or add titles manually to track partial seasons.';
+}
+
+function refreshHeader(){
+ const d=showDetails();
+ const m=d.tmdb||{};
+ $('description').textContent=
+  d.description||m.overview||'No description available yet.';
+ const extra=[
+  m.firstAirDate?.slice(0,4),
+  ...(m.genres||[]),
+  m.status
+ ].filter(Boolean);
+ $('details').textContent=
+  extra.join(' · ')||seasons().length+' tracked seasons';
+ const poster=posters[String(id)]||m.poster;
+ if(poster){
+  $('poster').src=poster;
+  $('poster').hidden=false;
+ }else{
+  $('poster').hidden=true;
+ }
+}
+
+async function importSeason(s){
+ const d=showDetails();
+ const tmdb=d.tmdb;
+ if(!tmdb?.id){
+  status('Load show information first.');
+  return;
+ }
+ const n=seasonNum(s);
+ status('Loading Season '+n+'...');
+ try{
+  const response=await api('/tv/season',{
+   id:tmdb.id,season:n
+  });
+  const existing=episodes(s);
+  const byNumber=new Map(
+   existing.filter(e=>e.number!=null)
+    .map(e=>[Number(e.number),e])
+  );
+  const byTitle=new Map(
+   existing.map(e=>[norm(e.title),e])
+  );
+  const used=new Set();
+  const result=response.episodes.map(item=>{
+   const old=
+    byNumber.get(Number(item.number))||
+    byTitle.get(norm(item.title));
+   if(old)used.add(old.id);
+   return {
+    ...old,
+    id:old?.id||uid(),
+    number:item.number,
+    title:item.title,
+    overview:item.overview,
+    airDate:item.airDate,
+    owned:!!old?.owned,
+    ripped:!!old?.ripped,
+    added:!!old?.added
+   };
+  });
+  for(const old of existing){
+   if(!used.has(old.id))result.push(old);
+  }
+  d.episodes[String(s.id)]=result;
+  save();
+  render();
+  status('Season '+n+' loaded. Existing collection checkboxes preserved.');
+ }catch(e){
+  status('Could not load season: '+e.message);
+ }
+}
+
+async function loadMetadata(){
+ if(!show)return;
+ const btn=$('loadMetadata');
+ btn.disabled=true;
+ status('Searching TMDB for '+show.title+'...');
+ try{
+  const d=showDetails();
+  let match=d.tmdb?.id?{id:d.tmdb.id}:null;
+  if(!match){
+   const found=await api('/tv/search',{title:show.title});
+   const exact=found.results.filter(x=>
+    norm(x.title)===norm(show.title)
+   );
+   match=exact[0]||found.results[0];
+   if(!match)throw Error('No matching show found');
+   if(norm(match.title)!==norm(show.title)){
+    if(!confirm('TMDB found "'+match.title+'". Is that the correct show?')){
+     status('Search cancelled.');
+     return;
+    }
+   }
+  }
+  const info=await api('/tv/details',{id:match.id});
+  d.tmdb=info;
+  for(const season of info.seasons){
+   ensureSeason(season.number);
+  }
+  save();
+  refreshHeader();
+  render();
+  status('Show information loaded. Tap "Load Episodes" inside each season to import its episode guide.');
+ }catch(e){
+  status('Could not load show information: '+e.message);
+ }finally{
+  btn.disabled=false;
+ }
+}
+
+function render(){
+ if(!show)return;
+ const root=$('seasons');
+ root.replaceChildren();
+ const d=showDetails();
+
+ for(const season of seasons()){
+  const arr=episodes(season);
+  const wrap=document.createElement('section');
+  wrap.className='season';
+
+  const head=document.createElement('div');
+  head.className='season-head';
+  const name=document.createElement('strong');
+  name.textContent=season.title;
+
+  const toggle=document.createElement('button');
+  toggle.className='secondary';
+  toggle.textContent=arr.length+' episodes · Open';
+  head.append(name,toggle);
+
+  const body=document.createElement('div');
+  body.className='season-body';
+  body.hidden=true;
+  toggle.onclick=()=>{
+   body.hidden=!body.hidden;
+   toggle.textContent=arr.length+' episodes · '+
+    (body.hidden?'Open':'Close');
+  };
+
+  const controls=document.createElement('div');
+  controls.className='actions';
+
+  const load=document.createElement('button');
+  load.textContent='↓ Load Episodes';
+  load.onclick=()=>importSeason(season);
+  controls.append(load);
+
+  const add=document.createElement('button');
+  add.className='secondary';
+  add.textContent='+ Add Episodes';
+  add.onclick=()=>{
+   const input=prompt('Enter episode titles, one per line.');
+   if(!input)return;
+   const names=input.split('\n').map(x=>x.trim()).filter(Boolean);
+   const list=episodes(season);
+   for(const title of names){
+    if(!list.some(e=>norm(e.title)===norm(title))){
+     list.push({
+      id:uid(),title,
+      owned:false,ripped:false,added:false
+     });
+    }
+   }
+   d.episodes[String(season.id)]=list;
+   save();
+   render();
+  };
+  controls.append(add);
+
+  const mark=document.createElement('button');
+  mark.className='secondary';
+  mark.textContent='Mark All Owned';
+  mark.onclick=()=>{
+   if(!arr.length)return alert('Load or add episodes first.');
+   for(const e of arr)e.owned=true;
+   save();
+   render();
+  };
+  controls.append(mark);
+
+  const header=document.createElement('div');
+  header.className='headerrow';
+  header.innerHTML=
+   '<span style="text-align:left">Episode</span>'+
+   '<span>Own</span><span>Rip</span><span>Jellyfin</span>';
+  body.append(controls,header);
+
+  arr.forEach((ep,i)=>{
+   const row=document.createElement('div');
+   row.className='episode';
+   const label=document.createElement('div');
+   label.className='name';
+   const title=document.createElement('strong');
+   title.textContent=(ep.number??i+1)+'. '+ep.title;
+   label.append(title);
+
+   if(ep.airDate){
+    const small=document.createElement('small');
+    small.textContent=ep.airDate;
+    label.append(small);
+   }
+   if(ep.overview){
+    const small=document.createElement('small');
+    small.textContent=ep.overview;
+    label.append(small);
+   }
+
+   row.append(label);
+   for(const field of ['owned','ripped','added']){
+    const cell=document.createElement('label');
+    const checkbox=document.createElement('input');
+    checkbox.type='checkbox';
+    checkbox.checked=!!ep[field];
+    checkbox.setAttribute('aria-label',field+' '+ep.title);
+    checkbox.onchange=()=>{
+     ep[field]=checkbox.checked;
+     save();
+     update();
+    };
+    cell.append(checkbox);
+    row.append(cell);
+   }
+   body.append(row);
+  });
+
+  const edit=document.createElement('button');
+  edit.className='secondary';
+  edit.textContent='Edit Episode List';
+  edit.onclick=()=>{
+   const input=prompt(
+    'Edit titles, one per line. Keep the same order to preserve checkbox states.',
+    arr.map(e=>e.title).join('\n')
+   );
+   if(input===null)return;
+   const names=input.split('\n').map(x=>x.trim()).filter(Boolean);
+   d.episodes[String(season.id)]=names.map((title,i)=>({
+    ...arr[i],
+    id:arr[i]?.id||uid(),
+    title,
+    owned:!!arr[i]?.owned,
+    ripped:!!arr[i]?.ripped,
+    added:!!arr[i]?.added
+   }));
+   save();
+   render();
+  };
+  body.append(edit);
+
+  wrap.append(head,body);
+  root.append(wrap);
+ }
+ update();
+}
+
+if(!show){
+ $('title').textContent='Show not found';
+ status('Open a show from your Comcast Guide in the same browser.');
+ $('addSeason').disabled=true;
+ $('loadMetadata').disabled=true;
+}else{
+ $('title').textContent=show.title;
+ document.title=show.title+' — Classic Comcast';
+ const channel=data.channels.find(c=>
+  String(c.id)===String(show.channel)
+ );
+ $('channel').textContent=channel
+  ?'Channel '+channel.num+' · '+channel.name
+  :'TV Series';
+
+ refreshHeader();
+
+ $('editDescription').onclick=()=>{
+  $('editor').hidden=!$('editor').hidden;
+  $('descriptionInput').value=
+   showDetails().description||
+   showDetails().tmdb?.overview||'';
+ };
+
+ $('saveDescription').onclick=()=>{
+  showDetails().description=
+   $('descriptionInput').value.trim();
+  save();
+  refreshHeader();
+  $('editor').hidden=true;
+ };
+
+ $('loadMetadata').onclick=loadMetadata;
+
+ $('addSeason').onclick=()=>{
+  const n=prompt('Season number?');
+  if(!n||!/^[1-9]\d*$/.test(n.trim()))return;
+  ensureSeason(Number(n));
+  save();
+  render();
+ };
+
+ render();
+ if(!showDetails().tmdb)loadMetadata();
+}
+</script>
+</body>
+</html>
