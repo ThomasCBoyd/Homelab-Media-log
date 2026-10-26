@@ -4,9 +4,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Classic Comcast — Movie Details</title>
+<title>Classic Comcast — Movies</title>
 <style>
-:root{--gold:#ffd15a;--muted:#bfd8f4;--deep:#082650;--line:#326ba8}
+:root{--gold:#ffd15a;--muted:#bfd8f4;--deep:#082650}
 *{box-sizing:border-box}
 body{margin:0;background:linear-gradient(140deg,#061735,#10458b) fixed;color:#fff;font:15px system-ui,-apple-system,Arial,sans-serif}
 main{max-width:1050px;margin:auto;padding:14px 12px 75px}
@@ -14,39 +14,44 @@ a{color:var(--gold)}
 h1,h2{color:var(--gold)}
 h1{font-size:clamp(23px,5vw,33px);margin:0 0 8px}
 h2{font-size:21px;margin:0 0 12px}
-.card{background:linear-gradient(120deg,#092d63,#10448b);border:1px solid var(--gold);border-radius:16px;padding:19px;margin:15px 0}
-.hero{display:flex;gap:17px;align-items:flex-start}
+.card{background:linear-gradient(120deg,#092d63,#10448b);border:1px solid var(--gold);border-radius:16px;padding:16px;margin:15px 0}
+.hero{display:flex;gap:15px;align-items:flex-start}
 .poster{width:clamp(95px,25vw,175px);aspect-ratio:2/3;object-fit:cover;border-radius:9px;background:var(--deep);flex-shrink:0}
-.poster.blank{display:flex;align-items:center;justify-content:center;text-align:center;border:1px dashed #88b5e8;color:var(--muted);font-size:12px}
+.blank{display:flex;align-items:center;justify-content:center;text-align:center;border:1px dashed #88b5e8;color:var(--muted);font-size:11px}
 .info{min-width:0;flex:1}
 .muted{color:var(--muted)}
 .small{font-size:13px}
 .description{line-height:1.6;margin:13px 0}
 button{background:var(--gold);color:#092650;border:0;border-radius:9px;padding:10px 13px;font:inherit;font-weight:700;cursor:pointer}
-.secondary{background:#164f95;color:#fff;border:1px solid #73a9e5}
-.actions{display:flex;gap:9px;flex-wrap:wrap;margin:13px 0}
+button:disabled{opacity:.5}
+.secondary{background:#164f95;color:white;border:1px solid #73a9e5}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin:12px 0}
 .status{color:var(--gold);font-size:13px}
 .tracking{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
 .track{background:var(--deep);border-radius:10px;text-align:center;padding:14px 5px}
 .track input{width:22px;height:22px;accent-color:var(--gold)}
 .track label{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:12px}
-.movie{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line)}
+.movie{display:flex;gap:10px;align-items:flex-start;padding:13px 0;border-top:1px solid #326ba8}
 .movie:first-child{border-top:0}
 .movie-poster{width:65px;height:98px;object-fit:cover;border-radius:6px;background:var(--deep);flex-shrink:0;cursor:pointer}
-.movie-poster.blank{display:flex;align-items:center;justify-content:center;text-align:center;font-size:10px;color:var(--muted);border:1px dashed #88b5e8}
 .movie-info{flex:1;min-width:0}
-.movie-name{background:none;color:#fff;text-align:left;padding:0;font-size:15px}
+.movie-name{background:none;color:white;text-align:left;padding:0;font-size:15px}
 .movie-info p{color:var(--muted);font-size:12px;line-height:1.45;margin:6px 0}
 .movie .actions{margin:8px 0}
 .movie .actions button{padding:7px 10px;font-size:12px}
 .movie-checks{display:flex;gap:12px;flex-wrap:wrap}
 .movie-checks label{font-size:12px}
-.movie-checks input{accent-color:var(--gold)}
-.circle{width:31px;height:31px;border-radius:50%;padding:0;display:grid;place-items:center;color:#fff;background:#216bd0;border:1px solid #6ea8f5;font-size:23px;flex-shrink:0}
+input[type=checkbox]{accent-color:var(--gold)}
+.circle{width:31px;height:31px;border-radius:50%;padding:0;display:grid;place-items:center;color:white;background:#216bd0;border:1px solid #6ea8f5;font-size:23px;flex-shrink:0}
 .circle.minus{background:#9a2343;border-color:#fa637e}
 .collection-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .undo{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;background:#082650;border:1px solid var(--gold);border-radius:9px;margin:12px 0}
-textarea,input[type=text]{width:100%;padding:12px;border:1px solid #73a9e5;border-radius:8px;background:#082650;color:#fff;font:inherit}
+.cleanup{background:#082650;border:1px solid #73a9e5;border-radius:10px;padding:13px;margin:14px 0}
+.cleanup h3{color:var(--gold);margin:0 0 8px}
+.cleanup p{line-height:1.5}
+.cleanup-item{border-top:1px solid #326ba8;padding:10px 0;font-size:13px}
+.cleanup-item strong{color:var(--gold)}
+textarea,input[type=text]{width:100%;padding:12px;border:1px solid #73a9e5;border-radius:8px;background:#082650;color:white;font:inherit}
 textarea{min-height:120px}
 .editor{margin-top:12px}
 [hidden]{display:none!important}
@@ -66,11 +71,12 @@ textarea{min-height:120px}
 <body>
 <main>
 <a id="back" href="./index.html">← Back to Comcast Guide</a>
+
 <section class="card">
 <div class="hero">
 <div id="posterHolder"></div>
 <div class="info">
-<h1 id="title">Loading movie...</h1>
+<h1 id="title">Loading...</h1>
 <p id="meta" class="muted small"></p>
 <p id="description" class="description"></p>
 <div class="actions">
@@ -80,15 +86,16 @@ textarea{min-height:120px}
 </div>
 </div>
 </div>
+
 <div id="editor" class="editor" hidden>
 <p class="muted small">Description</p>
 <textarea id="descriptionInput"></textarea>
 <p class="muted small">Release year</p>
-<input id="yearInput" type="text" placeholder="Example: 2001">
+<input id="yearInput" type="text" placeholder="2003">
 <p class="muted small">Genres</p>
-<input id="genresInput" type="text" placeholder="Animation, Comedy">
+<input id="genresInput" type="text" placeholder="Adventure, Fantasy">
 <p class="muted small">Runtime</p>
-<input id="runtimeInput" type="text" placeholder="90 minutes">
+<input id="runtimeInput" type="text" placeholder="143 minutes">
 <div class="actions">
 <button id="saveInfo">Save Details</button>
 <button id="cancelInfo" class="secondary">Cancel</button>
@@ -96,53 +103,66 @@ textarea{min-height:120px}
 </div>
 <p id="status" class="status" role="status"></p>
 </section>
+
 <section id="trackingCard" class="card">
 <h2>My Collection</h2>
 <div id="tracking" class="tracking"></div>
 </section>
+
 <section id="collectionCard" class="card" hidden>
 <div class="collection-heading">
 <h2>Movies in This Collection</h2>
-<button id="addMovie" class="circle" aria-label="Add movie" title="Add movie">+</button>
+<button id="addMovie" class="circle" aria-label="Add movie">+</button>
 </div>
-<p class="muted small">Tap a movie poster or title for its details. Use − to remove it from this collection.</p>
+<p class="muted small">Tap any movie poster or title to open its details.</p>
+
+<div class="actions">
+<button id="cleanDuplicates" class="secondary">🧹 Clean Up Duplicates</button>
+</div>
+
+<div id="cleanupPanel" class="cleanup" hidden></div>
 <div id="undoArea"></div>
 <div id="movieList"></div>
 <div class="actions">
 <button id="addMovieBottom">+ Add Movie</button>
 </div>
 </section>
-<p class="footer">Movie metadata and posters may be provided by TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
+
+<p class="footer">
+Movie metadata and posters may be provided by TMDB.
+This product uses the TMDB API but is not endorsed or certified by TMDB.
+</p>
 </main>
+
 <script>
 'use strict';
 
 const KEY='comcast-collection-v1';
 const POSTER_KEY='comcast-posters-v1';
 const API='https://posters.thomasboydspam.workers.dev';
-
 const $=id=>document.getElementById(id);
 const params=new URLSearchParams(location.search);
 const id=params.get('id');
 const parentId=params.get('parent');
 
-const read=(key,fallback)=>{
- try{
-  return JSON.parse(localStorage.getItem(key))??fallback;
- }catch{
-  return fallback;
- }
-};
+function read(key,fallback){
+ try{return JSON.parse(localStorage.getItem(key))??fallback}
+ catch{return fallback}
+}
 
-const norm=value=>String(value||'')
- .toLowerCase().replace(/[^a-z0-9]/g,'');
+function norm(value){
+ return String(value||'').toLowerCase()
+  .replace(/[^a-z0-9]/g,'');
+}
 
-const uid=()=>Date.now()+'-'+
- Math.random().toString(36).slice(2,9);
+function uid(){
+ return Date.now()+'-'+Math.random().toString(36).slice(2,9);
+}
 
 let data=read(KEY,null);
 let posters=read(POSTER_KEY,{});
 let lastDelete=null;
+let pendingCleanup=null;
 
 if(data){
  data.collectionChildren ||= [];
@@ -168,56 +188,51 @@ const item=topLevel||child;
 function save(){
  localStorage.setItem(KEY,JSON.stringify(data));
 }
-
 function savePosters(){
  localStorage.setItem(POSTER_KEY,JSON.stringify(posters));
 }
-
 function detailFor(target){
  return data.movieDetails[String(target.id)] ||= {};
 }
-
 function collectionChildren(target){
  return data.collectionChildren.filter(x=>
   String(x.parentId)===String(target.id)
  );
 }
-
 function status(message){
  $('status').textContent=message;
 }
-
 function el(tag,cls,text){
  let n=document.createElement(tag);
  if(cls)n.className=cls;
  if(text!==undefined)n.textContent=text;
  return n;
 }
-
 function button(label,cls,fn){
  let b=el('button',cls,label);
  b.type='button';
  b.onclick=fn;
  return b;
 }
-
 function posterUrl(target){
  return posters[String(target.id)]||
   detailFor(target).poster||'';
 }
-
 function createPoster(target,large=false){
  let url=posterUrl(target);
+ let cls=large?'poster':'movie-poster';
 
  if(!url){
-  return el(
-   'div',
-   large?'poster blank':'movie-poster blank',
-   'No Poster'
-  );
+  let blank=el('div',cls+' blank','No Poster');
+  if(!large){
+   blank.style.display='flex';
+   blank.style.alignItems='center';
+   blank.style.justifyContent='center';
+  }
+  return blank;
  }
 
- let img=el('img',large?'poster':'movie-poster');
+ let img=el('img',cls);
  img.src=url;
  img.alt=target.title+' poster';
  img.loading='lazy';
@@ -229,40 +244,31 @@ function updateHeader(){
  let d=detailFor(item);
  $('title').textContent=item.title;
  document.title=item.title+' — Classic Comcast';
-
  $('description').textContent=
   d.description||'No description available yet.';
-
  $('meta').textContent=[
   d.year,d.genres,d.runtime
  ].filter(Boolean).join(' · ');
-
- $('posterHolder').replaceChildren(
-  createPoster(item,true)
- );
+ $('posterHolder').replaceChildren(createPoster(item,true));
 }
 
 function trackingControl(target,field,label){
  let wrap=el('div','track');
  let holder=el('label');
  let check=el('input');
-
  check.type='checkbox';
  check.checked=!!target[field];
-
  check.onchange=()=>{
   target[field]=check.checked;
   save();
  };
-
  holder.append(check,el('span','',label));
  wrap.append(holder);
  return wrap;
 }
 
 function renderTracking(){
- let root=$('tracking');
- root.replaceChildren(
+ $('tracking').replaceChildren(
   trackingControl(item,'owned','Owned'),
   trackingControl(item,'ripped','Ripped'),
   trackingControl(item,'added','In Jellyfin')
@@ -274,11 +280,9 @@ function movieUrl(movie){
   encodeURIComponent(movie.id)+
   '&parent='+encodeURIComponent(item.id);
 }
-
 function openMovie(movie){
  location.href=movieUrl(movie);
 }
-
 function deletedNames(){
  return data.deletedMovieChildren[String(item.id)] ||= [];
 }
@@ -286,14 +290,10 @@ function deletedNames(){
 function addMovie(){
  if(!topLevel)return;
 
- let names=prompt(
-  'Add movie titles (one per line):'
- );
-
+ let names=prompt('Add movie titles (one per line):');
  if(names===null)return;
 
  let added=0;
-
  for(let title of names.split('\n')
   .map(s=>s.trim()).filter(Boolean)){
 
@@ -301,77 +301,58 @@ function addMovie(){
    norm(m.title)===norm(title)
   ))continue;
 
-  let movie={
-   id:uid(),
-   parentId:item.id,
-   title,
-   owned:false,
-   ripped:false,
-   added:false
-  };
-
-  data.collectionChildren.push(movie);
+  data.collectionChildren.push({
+   id:uid(),parentId:item.id,title,
+   owned:false,ripped:false,added:false
+  });
 
   let list=deletedNames();
   let i=list.indexOf(norm(title));
   if(i>=0)list.splice(i,1);
-
   added++;
  }
 
  save();
+ pendingCleanup=null;
  renderCollection();
-
- status(
-  added+' movie(s) added. Tap a title to open its page.'
- );
+ status(added+' movie(s) added.');
 }
 
 function removeMovie(movie){
  if(!confirm(
   'Remove "'+movie.title+
-  '" from this collection?\n\n'+
-  'This does not delete any video files.'
+  '" from this collection?\n\nNo video files will be deleted.'
  ))return;
 
  let index=data.collectionChildren.findIndex(x=>
   String(x.id)===String(movie.id)&&
   String(x.parentId)===String(item.id)
  );
-
  if(index<0)return;
 
- lastDelete={
-  movie:{...movie},
-  index
- };
-
+ lastDelete={movie:{...movie},index};
  data.collectionChildren.splice(index,1);
 
  let names=deletedNames();
-
  if(!names.includes(norm(movie.title))){
   names.push(norm(movie.title));
  }
 
  save();
+ pendingCleanup=null;
  renderCollection();
-
- status('Movie removed. Tap Undo to restore it.');
+ status('Movie removed. Use Undo to restore it.');
 }
 
 function undoDelete(){
  if(!lastDelete)return;
-
  let {movie,index}=lastDelete;
 
  if(!data.collectionChildren.some(x=>
   String(x.id)===String(movie.id)
  )){
   data.collectionChildren.splice(
-   Math.min(index,data.collectionChildren.length),
-   0,
-   movie
+   Math.min(index,data.collectionChildren.length),0,movie
   );
  }
 
@@ -390,16 +371,11 @@ function movieRow(movie){
  let poster=createPoster(movie);
  let info=el('div','movie-info');
 
- let name=button(
-  movie.title,
-  'movie-name',
-  ()=>openMovie(movie)
- );
+ let name=button(movie.title,'movie-name',()=>openMovie(movie));
 
  poster.setAttribute('role','link');
  poster.setAttribute('tabindex','0');
  poster.onclick=()=>openMovie(movie);
-
  poster.onkeydown=e=>{
   if(e.key==='Enter')openMovie(movie);
  };
@@ -408,15 +384,10 @@ function movieRow(movie){
  info.append(name);
 
  let d=detailFor(movie);
-
- if(d.year){
-  info.append(el('p','',d.year));
- }
+ if(d.year)info.append(el('p','',d.year));
 
  if(d.description){
-  info.append(el(
-   'p',
-   '',
+  info.append(el('p','',
    d.description.length>160
     ?d.description.slice(0,157)+'...'
     :d.description
@@ -424,54 +395,36 @@ function movieRow(movie){
  }
 
  let actions=el('div','actions');
-
  actions.append(
   button('View Details','secondary',()=>openMovie(movie))
  );
-
  info.append(actions);
 
  let flags=el('div','movie-checks');
-
  for(let [field,label] of [
-  ['owned','Owned'],
-  ['ripped','Ripped'],
-  ['added','Jellyfin']
+  ['owned','Owned'],['ripped','Ripped'],['added','Jellyfin']
  ]){
   let control=el('label');
   let input=el('input');
-
   input.type='checkbox';
   input.checked=!!movie[field];
-
   input.onchange=()=>{
    movie[field]=input.checked;
    save();
   };
-
-  control.append(
-   input,
-   document.createTextNode(' '+label)
-  );
-
+  control.append(input,document.createTextNode(' '+label));
   flags.append(control);
  }
 
  info.append(flags);
  row.append(info);
-
- row.append(
-  button('−','circle minus',()=>removeMovie(movie))
- );
-
+ row.append(button('−','circle minus',()=>removeMovie(movie)));
  return row;
 }
 
 function renderCollection(){
  if(!topLevel)return;
-
- let card=$('collectionCard');
- card.hidden=false;
+ $('collectionCard').hidden=false;
 
  let list=$('movieList');
  list.replaceChildren();
@@ -481,25 +434,17 @@ function renderCollection(){
  }
 
  if(!list.children.length){
-  list.append(el(
-   'p','muted',
-   'No movies yet. Tap + to add one.'
-  ));
+  list.append(el('p','muted','No movies yet. Tap + to add one.'));
  }
 
  let undo=$('undoArea');
  undo.replaceChildren();
-
  if(lastDelete){
   let wrap=el('div','undo');
-
   wrap.append(
-   el('span','small',
-    'Removed: '+lastDelete.movie.title
-   ),
+   el('span','small','Removed: '+lastDelete.movie.title),
    button('↶ Undo','',undoDelete)
   );
-
   undo.append(wrap);
  }
 }
@@ -513,35 +458,28 @@ function render(){
 
 function openEditor(){
  let d=detailFor(item);
-
  $('editor').hidden=false;
  $('descriptionInput').value=d.description||'';
  $('yearInput').value=d.year||'';
  $('genresInput').value=d.genres||'';
  $('runtimeInput').value=d.runtime||'';
 }
-
 function saveEditor(){
  let d=detailFor(item);
-
  d.description=$('descriptionInput').value.trim();
  d.year=$('yearInput').value.trim();
  d.genres=$('genresInput').value.trim();
  d.runtime=$('runtimeInput').value.trim();
-
  save();
  $('editor').hidden=true;
  render();
  status('Movie details saved.');
 }
-
 function changePoster(){
  let url=prompt(
-  'Paste a direct HTTPS poster image URL.\n'+
-  'Leave blank to remove the poster.',
+  'Paste a direct HTTPS poster URL.\nLeave blank to remove.',
   posterUrl(item)
  );
-
  if(url===null)return;
  url=url.trim();
 
@@ -549,10 +487,8 @@ function changePoster(){
   alert('Please use an HTTPS image URL.');
   return;
  }
-
- if(url){
-  posters[String(item.id)]=url;
- }else{
+ if(url)posters[String(item.id)]=url;
+ else{
   delete posters[String(item.id)];
   delete detailFor(item).poster;
  }
@@ -565,48 +501,29 @@ function changePoster(){
 function resultsFrom(body){
  if(Array.isArray(body))return body;
  if(Array.isArray(body?.results))return body.results;
- if(Array.isArray(body?.data?.results)){
-  return body.data.results;
- }
+ if(Array.isArray(body?.data?.results))return body.data.results;
  return [];
 }
-
 function titleFrom(r){
- return String(
-  r.title||r.name||r.original_title||''
- );
+ return String(r.title||r.name||r.original_title||'');
 }
-
 function posterFrom(r){
  let v=r.poster||r.posterUrl||r.poster_path||'';
-
  if(typeof v!=='string')return '';
  if(v.startsWith('https://'))return v;
-
- if(v.startsWith('/')){
-  return 'https://image.tmdb.org/t/p/w500'+v;
- }
-
+ if(v.startsWith('/'))return 'https://image.tmdb.org/t/p/w500'+v;
  return '';
 }
-
 function searchTerms(){
  let terms=[item.title];
-
  if(topLevel&&collectionChildren(item).length){
   let base=item.title.replace(
-   /\s+(collection|box set|film collection)$/i,
-   ''
+   /\s+(collection|box set|film collection)$/i,''
   ).trim();
-
-  if(norm(base)!==norm(item.title)){
-   terms.push(base);
-  }
-
+  if(norm(base)!==norm(item.title))terms.push(base);
   let first=collectionChildren(item)[0];
   if(first)terms.push(first.title);
  }
-
  return [...new Set(terms)];
 }
 
@@ -617,30 +534,23 @@ async function loadInfo(){
 
  try{
   let match=null;
-
   for(let term of searchTerms()){
    let url=new URL(API+'/poster');
-
    url.searchParams.set('title',term);
    url.searchParams.set('type','movie');
 
    let response=await fetch(url);
    if(!response.ok)continue;
-
    let body=await response.json();
 
    match=resultsFrom(body).find(x=>
     norm(titleFrom(x))===norm(term)
    );
-
    if(match)break;
   }
 
   if(!match){
-   status(
-    'No reliable movie match found. '+
-    'You can add a description and poster manually.'
-   );
+   status('No reliable match found. You can edit details manually.');
    return;
   }
 
@@ -651,12 +561,9 @@ async function loadInfo(){
    posters[String(item.id)]=poster;
    savePosters();
   }
-
   if(!d.description){
-   d.description=
-    match.overview||match.description||'';
+   d.description=match.overview||match.description||'';
   }
-
   if(!d.year){
    d.year=String(
     match.release_date||match.releaseDate||''
@@ -665,13 +572,7 @@ async function loadInfo(){
 
   save();
   render();
-
-  status(
-   d.description
-    ?'Movie information loaded.'
-    :'Poster found. The service did not return a description; you can edit it manually.'
-  );
-
+  status('Available movie information loaded.');
  }catch(e){
   status('Movie lookup failed: '+e.message);
  }finally{
@@ -679,27 +580,268 @@ async function loadInfo(){
  }
 }
 
+/*
+ Duplicate detection is intentionally conservative.
+ It only merges titles with identical normalized names,
+ or the five explicitly mapped Pirates movie aliases.
+*/
+
+const PIRATES_ALIASES=[
+ ['thecurseoftheblackpearl',
+  'piratesofthecaribbeanthecurseoftheblackpearl'],
+ ['deadmanschest',
+  'piratesofthecaribbeandeadmanschest'],
+ ['atworldsend',
+  'piratesofthecaribbeanatworldsend'],
+ ['onstrangertides',
+  'piratesofthecaribbeanonstrangertides'],
+ ['deadmentellnotales',
+  'piratesofthecaribbeandeadmentellnotales']
+];
+
+function duplicateKey(movie){
+ let n=norm(movie.title);
+ let isPirates=norm(item.title).includes('piratesofthecaribbean');
+
+ if(isPirates){
+  for(let pair of PIRATES_ALIASES){
+   if(pair.includes(n))return pair[1];
+  }
+ }
+ return n;
+}
+
+function findDuplicateGroups(){
+ if(!topLevel)return [];
+
+ let groups=new Map();
+
+ for(let movie of collectionChildren(item)){
+  let key=duplicateKey(movie);
+  if(!groups.has(key))groups.set(key,[]);
+  groups.get(key).push(movie);
+ }
+
+ return [...groups.values()].filter(g=>g.length>1);
+}
+
+function movieQuality(movie){
+ let d=detailFor(movie);
+ let score=0;
+
+ if(posterUrl(movie))score+=100;
+ if(d.description)score+=20;
+ if(d.year)score+=5;
+ if(d.genres)score+=5;
+ if(d.runtime)score+=5;
+ if(norm(movie.title).startsWith('piratesofthecaribbean')){
+  score+=10;
+ }
+ return score;
+}
+
+function planCleanup(){
+ return findDuplicateGroups().map(group=>{
+  let ranked=[...group].sort((a,b)=>
+   movieQuality(b)-movieQuality(a)
+  );
+
+  return {
+   keep:ranked[0],
+   remove:ranked.slice(1)
+  };
+ });
+}
+
+function downloadBackup(){
+ let snapshot={
+  ...data,
+  posters:{...posters},
+  backupDate:new Date().toISOString(),
+  backupReason:'Before duplicate cleanup'
+ };
+
+ let blob=new Blob(
+  [JSON.stringify(snapshot,null,2)],
+  {type:'application/json'}
+ );
+ let url=URL.createObjectURL(blob);
+ let a=el('a');
+ a.href=url;
+ a.download='comcast-before-cleanup.json';
+ document.body.append(a);
+ a.click();
+ a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),2000);
+}
+
+function showCleanup(){
+ let panel=$('cleanupPanel');
+ panel.replaceChildren();
+ panel.hidden=false;
+
+ let plan=planCleanup();
+ pendingCleanup=plan;
+
+ panel.append(el('h3','','Duplicate Cleanup Preview'));
+
+ if(!plan.length){
+  panel.append(el('p','small',
+   'No recognized duplicates were found in this collection.'
+  ));
+  panel.append(button('Close','secondary',()=>{
+   panel.hidden=true;
+  }));
+  return;
+ }
+
+ panel.append(el('p','small',
+  'Review these merges. The listed movie to keep will retain its ID, poster, and page. Tracking and missing details from removed entries will be combined into it.'
+ ));
+
+ for(let group of plan){
+  let row=el('div','cleanup-item');
+
+  row.append(el('strong','','KEEP: '+group.keep.title));
+
+  for(let old of group.remove){
+   row.append(el('div','',
+    'MERGE: '+old.title
+   ));
+  }
+  panel.append(row);
+ }
+
+ let count=plan.reduce((n,g)=>n+g.remove.length,0);
+
+ panel.append(el('p','small',
+  count+' duplicate record(s) will be merged. A JSON backup will download before changes.'
+ ));
+
+ let actions=el('div','actions');
+
+ actions.append(
+  button('Confirm & Clean Up','',confirmCleanup),
+  button('Cancel','secondary',()=>{
+   pendingCleanup=null;
+   panel.hidden=true;
+  })
+ );
+
+ panel.append(actions);
+ panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function confirmCleanup(){
+ if(!pendingCleanup?.length)return;
+
+ let fresh=planCleanup();
+
+ if(JSON.stringify(fresh)!==JSON.stringify(pendingCleanup)){
+  pendingCleanup=null;
+  alert('Collection changed. Review duplicates again.');
+  showCleanup();
+  return;
+ }
+
+ if(!confirm(
+  'Merge '+fresh.reduce((n,g)=>n+g.remove.length,0)+
+  ' duplicate movie entries?\n\n'+
+  'A backup will download first. No video files will be deleted.'
+ ))return;
+
+ // The backup is downloaded before any saved records are changed.
+ downloadBackup();
+
+ let removedCount=0;
+ let removedIds=new Set();
+
+ for(let group of fresh){
+  let keep=group.keep;
+  let keptDetail=detailFor(keep);
+
+  for(let old of group.remove){
+   // Combine positive tracking flags.
+   for(let field of ['owned','ripped','added']){
+    keep[field]=!!keep[field]||!!old[field];
+   }
+
+   // Preserve existing keeper details, fill missing fields.
+   let oldDetail=detailFor(old);
+
+   for(let field of [
+    'description','year','genres','runtime',
+    'tmdb','tmdbId','release_date'
+   ]){
+    if(!keptDetail[field]&&oldDetail[field]){
+     keptDetail[field]=oldDetail[field];
+    }
+   }
+
+   if(!posterUrl(keep)&&posterUrl(old)){
+    posters[String(keep.id)]=posterUrl(old);
+   }
+
+   // Retain original metadata under the old ID in the backup.
+   // Live data keeps the original metadata too, for safety.
+   removedIds.add(String(old.id));
+   removedCount++;
+  }
+ }
+
+ data.collectionChildren=data.collectionChildren.filter(x=>
+  !removedIds.has(String(x.id))
+ );
+
+ // Record removed names so older homepage versions cannot
+ // accidentally recreate these entries during migration.
+ for(let group of fresh){
+  let list=deletedNames();
+  for(let old of group.remove){
+   let key=norm(old.title);
+   if(!list.includes(key))list.push(key);
+  }
+ }
+
+ try{
+  savePosters();
+  save();
+ }catch(e){
+  alert(
+   'Could not save cleanup: '+e.message+
+   '. Keep the downloaded backup.'
+  );
+  return;
+ }
+
+ lastDelete=null;
+ pendingCleanup=null;
+ $('cleanupPanel').hidden=true;
+ render();
+ status(
+  'Cleanup complete: '+removedCount+
+  ' duplicate(s) merged. Your movie tracking was preserved.'
+ );
+}
+
 function configureBack(){
  let back=$('back');
 
  if(parent){
   back.textContent='← Back to '+parent.title;
-  back.href='./movie.html?id='+
-   encodeURIComponent(parent.id);
+  back.href='./movie.html?id='+encodeURIComponent(parent.id);
  }
 
  back.addEventListener('click',e=>{
-  let ref=document.referrer;
-
   try{
-   let u=new URL(ref);
+   let u=new URL(document.referrer);
+   let folder=location.pathname.replace(/[^/]+$/,'');
 
    if(
     u.origin===location.origin&&
-    u.pathname.startsWith(
-     location.pathname.replace(/[^/]+$/,'')
-    )&&
-    /\/(?:index|movie)\.html$/.test(u.pathname)
+    u.pathname.startsWith(folder)&&
+    (u.pathname===folder||
+     /\/(?:index|movie)\.html$/.test(u.pathname))
    ){
     e.preventDefault();
     history.back();
@@ -712,33 +854,26 @@ configureBack();
 
 if(!item){
  $('title').textContent='Movie not found';
-
- status(
-  'Return to the Comcast Guide and open a movie from your collection.'
- );
-
+ status('Return to the Comcast Guide and open a movie.');
  $('trackingCard').hidden=true;
  $('loadInfo').disabled=true;
  $('editInfo').disabled=true;
  $('changePoster').disabled=true;
-
 }else{
  $('editInfo').onclick=openEditor;
  $('saveInfo').onclick=saveEditor;
-
  $('cancelInfo').onclick=()=>{
   $('editor').hidden=true;
  };
-
  $('changePoster').onclick=changePoster;
  $('loadInfo').onclick=loadInfo;
  $('addMovie').onclick=addMovie;
  $('addMovieBottom').onclick=addMovie;
+ $('cleanDuplicates').onclick=showCleanup;
 
  render();
 
- if(!posterUrl(item)&&
-    !detailFor(item).description){
+ if(!posterUrl(item)&&!detailFor(item).description){
   loadInfo();
  }
 }
