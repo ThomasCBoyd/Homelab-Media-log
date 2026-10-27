@@ -174,7 +174,7 @@ if(!collectionReadBlocked)migrate();else{const notice=el('p','empty','Your saved
  const settings=document.createElement('button');settings.type='button';settings.className='collection-settings';settings.textContent='⚙ Tools';settings.setAttribute('aria-controls','collectionToolsPanel');settings.setAttribute('aria-expanded','false');
  bar.append(brand,settings);main.insertBefore(bar,header);
  const panel=document.createElement('section');panel.id='collectionToolsPanel';panel.className='collection-tools-panel';panel.hidden=true;panel.setAttribute('aria-label','Collection management and statistics');
- main.insertBefore(panel,tabs);
+ main.insertBefore(panel,main.querySelector('#content'));
  tools.removeChild(search);main.insertBefore(search,panel);
  panel.append(header,tools,status);
  settings.addEventListener('click',()=>{panel.hidden=!panel.hidden;settings.setAttribute('aria-expanded',String(!panel.hidden));if(!panel.hidden)panel.scrollIntoView({block:'nearest'});});
