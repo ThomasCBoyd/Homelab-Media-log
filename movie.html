@@ -129,14 +129,25 @@ async function queueMovieScan(force=false){
   for(const target of targets){
    if(document.visibilityState==='hidden')break;
    const key=String(target.id),d=detailFor(target);
-   if((posterUrl(target)&&!(isFirstHarryPotterFilm(target)&&(!d.description||!d.year)))||d.manualPoster||manualPosterIds.has(key))continue;
+   if((posterUrl(target)&&!(isFirstHarryPotterFilm(target)&&(!d.description||!d.year)))||( !isFirstHarryPotterFilm(target) && (d.manualPoster||manualPosterIds.has(key))))continue;
    if(!force&&Date.now()-(Number(movieRetries[key])||0)<12*60*60*1000)continue;
    let poster='';
    try{
     // For the first Harry Potter film, prefer the verified 2001 record.
     if(isFirstHarryPotterFilm(target)){
      const verified=await lookupFirstHarryPotter();
-     if(verified){mergeMetadata(verified,target);poster=posterFrom(verified);}
+     if(verified){
+      mergeMetadata(verified,target);
+      poster=posterFrom(verified);
+      if(poster&&!posterUrl(target)){
+       posters[String(target.id)]=poster;
+       detailFor(target).poster=poster;
+       detailFor(target).manualPoster=false;
+       manualPosterIds.delete(String(target.id));
+       saveManual();savePosters();save();
+       if(String(target.id)===String(item.id))updateHeader();else renderCollection();
+      }
+     }
     }
     // Other films and collections continue using the existing matching system.
     if(!poster)poster=await lookupArtwork(target,target===item&&isCollection());
@@ -183,6 +194,16 @@ try{
    matched=verified;
    hadResponse=true;
    changed=mergeMetadata(verified,item)||changed;
+   // Repair missing poster even if an earlier manual-remove flag blocked saving.
+   // Never overwrite an existing manually selected image.
+   const verifiedPoster=posterFrom(verified);
+   if(verifiedPoster&&!posterUrl(item)){
+    posters[String(item.id)]=verifiedPoster;
+    detailFor(item).poster=verifiedPoster;
+    detailFor(item).manualPoster=false;
+    manualPosterIds.delete(String(item.id));
+    saveManual();savePosters();save();render();changed=true;
+   }
   }
  }
  if(!matched)for(let term of searchTerms()){
