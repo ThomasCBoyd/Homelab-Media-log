@@ -16,7 +16,17 @@ list. Tapping outside also dismisses it. The clear button restores the current
 tab without changing collection data. The combobox has a screen-reader label,
 active-option tracking, and live suggestion counts. Mobile styling uses a
 16px input, a 44px clear target, a scrollable dropdown, and a stacking layer
-above surrounding controls without clipping ancestors.
+above surrounding controls without clipping ancestors. On touch/tablet layouts,
+rows use compact spacing with a minimum 44px touch target. The **Done** button
+beside the × control dismisses input focus/the software keyboard without clearing
+the query or dismissing suggestions.
+
+Dropdown height follows `visualViewport.height` and `offsetTop`, updating on
+viewport resize/scroll and page resize/scroll with an 8px bottom margin. Without
+the Visual Viewport API it uses available `innerHeight`, capped at half the
+window height. The list handles its own scrolling; touch-edge containment also
+supports browsers without CSS overscroll containment. Arrow navigation scrolls
+only the list, rather than calling document-scrolling `scrollIntoView`.
 
 The implementation is in `search.js` / `search.css`; indexing never writes
 collection data or calls the metadata service. To test with the static server
@@ -25,12 +35,18 @@ running on port 8000:
 ```sh
 node --test tests/*.test.cjs
 python3 tests/browser_search.py
+python3 tests/browser_mobile_search.py
 ```
 
 Browser coverage includes desktop, phone, and tablet Chromium viewports with
 touch selection, keyboard controls, result categories, exact navigation,
-clearing, overlay hit testing, and collection/poster preservation. Actual
-Safari/iPhone/iPad behavior remains unverified: WebKit browser downloads were
+clearing, overlay hit testing, and collection/poster preservation. The mobile keyboard suite simulates reduced Visual Viewport geometry, offset
+changes and viewport resizing without that API at phone/tablet sizes. It checks
+that the dropdown stays above the simulated keyboard boundary, all rows retain
+44px targets, the last result is reachable by scrolling, actual Chromium touch
+gestures/arrow navigation leave page scroll unchanged, and Done/clear preserve
+the expected query and data. These are simulated keyboard bounds, not a real OS
+keyboard. Actual Safari/iPhone/iPad behavior remains unverified: WebKit browser downloads were
 blocked by the cloud network policy. No merge or deployment is performed.
 
 ## Metadata
