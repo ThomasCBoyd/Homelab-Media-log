@@ -55,9 +55,13 @@
       if(typeof url!=='string'||!url.startsWith('https://'))return null;
       try{
         const parsed=new URL(url);
-        if(parsed.hostname==='image.tmdb.org'&&/^\\/t\\/p\\/(?:w\\d+|original)\\//.test(parsed.pathname)){
-          parsed.pathname=parsed.pathname.replace(/^\\/t\\/p\\/(?:w\\d+|original)\\//,'/t/p/original/');
-          return parsed.toString();
+        if(parsed.hostname==='image.tmdb.org'){
+          const segments=parsed.pathname.split('/');
+          if(segments[1]==='t'&&segments[2]==='p'&&/^(?:w[0-9]+|original)$/.test(segments[3]||'')){
+            segments[3]='original';
+            parsed.pathname=segments.join('/');
+            return parsed.toString();
+          }
         }
       }catch(_){}
       return url;
