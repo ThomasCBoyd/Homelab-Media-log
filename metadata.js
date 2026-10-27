@@ -182,12 +182,8 @@
           const ranked = candidates(results, parts.title, wantedYear, aliases);
           if (confident(ranked)) selected = ranked[0].record;
           else if (config.interactive && ranked.length) {
-            const choices = ranked.slice(0, 10).map((x, i) => `${i + 1}. ${names(x.record)[0]} (${recordYear(x.record) || 'year unknown'}) — TMDB ${recordId(x.record)}`).join('\n');
-            const answer = ask('Choose the correct ' + (type === 'tv' ? 'TV show' : 'movie') + ':\n' + choices + '\nCancel to preserve existing metadata.');
-            if (answer === null) return 'cancelled';
-            const n = Number(answer);
-            if (!Number.isInteger(n) || n < 1 || n > Math.min(10, ranked.length)) return 'cancelled';
-            selected = ranked[n - 1].record;
+            selected = await chooseMatch(type, ranked);
+            if (!selected) return 'cancelled';
           } else return fail(target, original, state, ranked.length ? 'ambiguous' : 'unavailable', ranked.length ? 'Choose a match on the detail page, or add a release year / alternate title.' : 'No matching title is available.');
         }
         const id = recordId(selected);
@@ -201,6 +197,65 @@
         const permanent = error.status >= 400 && error.status < 500 && ![408, 429].includes(error.status);
         return fail(target, original, state, permanent ? 'unavailable' : 'temporary', error.message, error.retryAfter);
       }
+    }
+    function chooseMatch(type, ranked) {
+      const choices = ranked.slice(0, 10);
+      // Keep the injectable prompt for non-browser consumers and automated tests.
+      if (!root.document || options.prompt) {
+        const labels = choices.map((x, i) => `${i + 1}. ${names(x.record)[0]} (${recordYear(x.record) || 'year unknown'}) — TMDB ${recordId(x.record)}`).join('\n');
+        const answer = ask('Choose the correct ' + (type === 'tv' ? 'TV show' : 'movie') + ':\n' + labels + '\nCancel to preserve existing metadata.');
+        const n = Number(answer);
+        return Promise.resolve(answer !== null && Number.isInteger(n) && n >= 1 && n <= choices.length ? choices[n - 1].record : null);
+      }
+      return new Promise(resolve => {
+        const doc = root.document;
+        const overlay = doc.createElement('div');
+        overlay.setAttribute('role', 'presentation');
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,8,25,.82);display:flex;align-items:center;justify-content:center;padding:16px';
+        const dialog = doc.createElement('section');
+        dialog.setAttribute('role', 'dialog');
+        dialog.setAttribute('aria-modal', 'true');
+        dialog.setAttribute('aria-label', 'Choose the correct TMDB match');
+        dialog.style.cssText = 'width:min(100%,540px);max-height:85dvh;overflow:auto;background:#092751;border:2px solid #ffd15a;border-radius:14px;padding:18px;color:white;box-shadow:0 16px 45px #0009';
+        const heading = doc.createElement('h2');
+        heading.textContent = 'Choose the correct ' + (type === 'tv' ? 'TV show' : 'movie');
+        heading.style.cssText = 'color:#ffd15a;margin:0 0 8px';
+        const hint = doc.createElement('p');
+        hint.textContent = 'Tap a title to load its exact TMDB record.';
+        hint.style.cssText = 'color:#bed8ef;margin:0 0 14px';
+        dialog.append(heading, hint);
+        const previousFocus = doc.activeElement;
+        let finished = false;
+        function finish(record) {
+          if (finished) return;
+          finished = true;
+          root.removeEventListener('keydown', onKey);
+          overlay.remove();
+          if (previousFocus?.focus) previousFocus.focus();
+          resolve(record);
+        }
+        function onKey(event) { if (event.key === 'Escape') { event.preventDefault(); finish(null); } }
+        root.addEventListener('keydown', onKey);
+        overlay.addEventListener('click', event => { if (event.target === overlay) finish(null); });
+        for (const choice of choices) {
+          const record = choice.record;
+          const option = doc.createElement('button');
+          option.type = 'button';
+          option.style.cssText = 'display:block;width:100%;text-align:left;background:#16477c;color:white;border:1px solid #668dbb;border-radius:10px;margin:8px 0;padding:14px;min-height:56px;font:inherit;cursor:pointer';
+          option.textContent = names(record)[0] + ' (' + (recordYear(record) || 'year unknown') + ') — TMDB ' + recordId(record);
+          option.addEventListener('click', () => finish(record));
+          dialog.append(option);
+        }
+        const cancel = doc.createElement('button');
+        cancel.type = 'button';
+        cancel.textContent = 'Cancel — keep existing metadata';
+        cancel.style.cssText = 'width:100%;padding:14px;margin-top:12px;background:#304966;color:white;border:1px solid #89a9ca;border-radius:10px;min-height:48px;font:inherit';
+        cancel.addEventListener('click', () => finish(null));
+        dialog.append(cancel);
+        overlay.append(dialog);
+        doc.body.append(overlay);
+        dialog.querySelector('button')?.focus();
+      });
     }
     async function lookup(target, config = {}) {
       const key = String(target.id);
