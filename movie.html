@@ -74,7 +74,7 @@ function cmWords(s){return String(s||'').toLowerCase().replace(/&/g,' and ').rep
 function cmSimilarity(a,b){const aa=cmWords(a),bb=cmWords(b);if(!aa.length||!bb.length)return 0;const x=new Set(aa),y=new Set(bb);const common=[...x].filter(w=>y.has(w)).length;return 2*common/(x.size+y.size)}
 function cmScore(candidate,title,year){const name=String(candidate?.title||candidate?.name||candidate?.original_title||candidate?.original_name||'');const aliases=cmAliases(title);let score=Math.max(...aliases.map(t=>{const a=norm(name),b=norm(t);return a===b?100:Math.round(cmSimilarity(name,t)*75)}));const candidateYear=cmYear(candidate),wanted=Number(year)||null;if(wanted&&candidateYear){const delta=Math.abs(wanted-candidateYear);if(delta===0)score+=15;else if(delta===1)score+=3;else score-=Math.min(80,delta*20)}return score}
 function cmRank(results,title,year){return results.map(item=>({item,score:cmScore(item,title,year)})).sort((a,b)=>b.score-a.score)}
-function cmConfident(ranked){return ranked.length>0&&ranked[0].score>=95&&(ranked.length===1||ranked[0].score-ranked[1].score>=12)}
+function cmConfident(ranked){if(!ranked.length||ranked[0].score<95)return false;if(ranked.length===1)return true;const top=ranked[0],second=ranked[1];if(top.score-second.score>=12)return true;/* Duplicate search results for the same TMDB record are not ambiguous. */return String(top.item?.id||top.item?.tmdb_id||'')!==''&&String(top.item?.id||top.item?.tmdb_id)===String(second.item?.id||second.item?.tmdb_id)}
 
 function resultList(body){if(Array.isArray(body))return body;for(let x of [body?.results,body?.data?.results,body?.movies,body?.data])if(Array.isArray(x))return x;return []}
 function resultTitle(r){return String(r?.title||r?.name||r?.original_title||'')}
@@ -135,6 +135,10 @@ async function queueMovieScan(force=false){
    try{
     // Collections use only franchise artwork or a verified member-film poster.
     poster=await lookupArtwork(target,target===item&&isCollection());
+    if(isFirstHarryPotterFilm(target)&&(!poster||!detailFor(target).description)){
+     const verified=await lookupFirstHarryPotter();
+     if(verified){mergeMetadata(verified,target);poster=poster||posterFrom(verified);}
+    }
     if(!poster&&target===item&&isCollection()){
      const member=collectionChildren(item).find(x=>posterUrl(x));
      if(member)poster=posterUrl(member);
@@ -151,6 +155,23 @@ async function queueMovieScan(force=false){
   }
  }finally{movieScanBusy=false}
 }
+function isFirstHarryPotterFilm(target){
+ return target?.type!=='show'&&movieTitleVariants(target?.title).some(t=>norm(t)===norm("Harry Potter and the Philosopher's Stone"));
+}
+async function lookupFirstHarryPotter(){
+ // TMDB movie ID 671 is the 2001 first Harry Potter film, regardless of its regional title.
+ for(const [path,params] of [['/movie/details',{id:671}],['/movie/671',{}]]){
+  const body=await getJSON(path,params);
+  if(!body)continue;
+  const result=body.movie||body.result||body.data||body;
+  if(!result||typeof result!=='object')continue;
+  const title=resultTitle(result),year=releaseYear(result);
+  if((!title||equivalentMovieTitle(title,"Harry Potter and the Philosopher's Stone"))&&(!year||year==='2001')){
+   return result;
+  }
+ }
+ return null;
+}
 async function loadInfo(force=false){if(!item||loading)return;let d=detailFor(item);if(!force&&d.lastLookup&&Date.now()-d.lastLookup<7*86400000)return;loading=true;$('loadInfo').disabled=true;status('Looking up movie information...');let matched=null,changed=false,hadResponse=false;
 try{
  for(let term of searchTerms()){
@@ -159,8 +180,13 @@ try{
   if(body){hadResponse=true;let candidates=resultList(body);let direct=body?.result||body?.movie||body?.data||body;matched=bestMatch(candidates,term)||((resultTitle(direct)&&cmScore(direct,term,d.year)>=95)?direct:null);if(matched)break}
  }
  if(!matched){for(let term of searchTerms()){let body=await getJSON('/movie/search',{query:term});if(!body)continue;hadResponse=true;matched=bestMatch(resultList(body),term);if(matched)break}}
+ // If text search fails for the regional title, request the verified TMDB record directly.
+ if(!matched&&isFirstHarryPotterFilm(item)){
+  const verified=await lookupFirstHarryPotter();
+  if(verified){matched=verified;hadResponse=true;}
+ }
  if(matched){changed=mergeMetadata(matched);let tmdbId=matched.id||matched.tmdb_id||matched.tmdbId;if(tmdbId){for(let path of ['/movie/details','/movie/'+encodeURIComponent(tmdbId)]){let full=await getJSON(path,path.endsWith('/details')?{id:tmdbId}:{});if(!full)continue;let result=full.movie||full.result||full.data||full;if(result&&typeof result==='object'){changed=mergeMetadata(result)||changed;break}}}}
- d.lastLookup=Date.now();save();
+ d.lastLookup=matched?Date.now():0;save();
  let missing=['description','year','genres','runtime'].filter(field=>!d[field]);
  if(changed)status('Movie information updated.'+(missing.length?' Still missing: '+missing.join(', ')+'.':''));
  else if(matched)status('Lookup finished. No new details available.'+(missing.length?' Missing: '+missing.join(', ')+'.':''));
