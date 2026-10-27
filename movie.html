@@ -5,6 +5,7 @@
 <title>Classic Comcast — Movie Details</title>
 <style>
 :root{--gold:#ffd15a;--muted:#bfd8f4;--deep:#082650;--line:#326ba8}*{box-sizing:border-box}body{margin:0;background:linear-gradient(140deg,#061735,#10458b) fixed;color:#fff;font:15px system-ui,-apple-system,Arial,sans-serif}main{max-width:1050px;margin:auto;padding:14px 12px 75px}a,h1,h2{color:var(--gold)}h1{font-size:clamp(23px,5vw,33px);margin:0 0 8px}h2{font-size:21px;margin:0 0 12px}.card{background:linear-gradient(120deg,#092d63,#10448b);border:1px solid var(--gold);border-radius:16px;padding:16px;margin:15px 0}.hero{display:flex;gap:15px;align-items:flex-start}.poster{width:clamp(95px,25vw,175px);aspect-ratio:2/3;object-fit:cover;border-radius:9px;background:var(--deep);flex-shrink:0}.blank{display:flex;align-items:center;justify-content:center;text-align:center;border:1px dashed #88b5e8;color:var(--muted);font-size:11px}.info,.movie-info{min-width:0;flex:1}.muted{color:var(--muted)}.small{font-size:13px}.description{line-height:1.6;margin:13px 0}button{background:var(--gold);color:#092650;border:0;border-radius:9px;padding:10px 13px;font:inherit;font-weight:700;cursor:pointer}button:disabled{opacity:.5}.secondary{background:#164f95;color:#fff;border:1px solid #73a9e5}.actions{display:flex;gap:9px;flex-wrap:wrap;margin:12px 0}.status{color:var(--gold);font-size:13px;line-height:1.5}.tracking{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.track{background:var(--deep);border-radius:10px;text-align:center;padding:14px 5px}.track input{width:22px;height:22px;accent-color:var(--gold)}.track label{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:12px}.movie{display:flex;gap:10px;align-items:flex-start;padding:13px 0;border-top:1px solid var(--line)}.movie:first-child{border-top:0}.movie-poster{width:65px;height:98px;object-fit:cover;border-radius:6px;background:var(--deep);flex-shrink:0;cursor:pointer}.movie-name{background:none;color:#fff;text-align:left;padding:0;font-size:15px}.movie-info p{color:var(--muted);font-size:12px;line-height:1.45;margin:6px 0}.movie .actions{margin:8px 0}.movie .actions button{padding:7px 10px;font-size:12px}.movie-checks{display:flex;gap:12px;flex-wrap:wrap}.movie-checks label{font-size:12px}input[type=checkbox]{accent-color:var(--gold)}.circle{width:31px;height:31px;border-radius:50%;padding:0;display:grid;place-items:center;color:#fff;background:#216bd0;border:1px solid #6ea8f5;font-size:23px;flex-shrink:0}.circle.minus{background:#9a2343;border-color:#fa637e}.collection-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}.undo{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;background:#082650;border:1px solid var(--gold);border-radius:9px;margin:12px 0}.cleanup{background:#082650;border:1px solid #73a9e5;border-radius:10px;padding:13px;margin:14px 0}.cleanup h3{color:var(--gold);margin:0 0 8px}.cleanup-item{border-top:1px solid var(--line);padding:10px 0;font-size:13px}.cleanup-item strong{color:var(--gold)}textarea,input[type=text]{width:100%;padding:12px;border:1px solid #73a9e5;border-radius:8px;background:#082650;color:#fff;font:inherit}textarea{min-height:120px}.editor{margin-top:12px}[hidden]{display:none!important}.footer{text-align:center;color:var(--muted);font-size:12px}@media(max-width:480px){.card{padding:13px}.hero{gap:11px}.poster{width:100px}.description{font-size:13px}.hero button{font-size:12px}.movie{gap:8px}.movie-poster{width:52px;height:78px}.circle{width:28px;height:28px}}
+.clickable-movie{cursor:pointer}.clickable-movie:hover{background:rgba(255,255,255,.04)}.clickable-movie:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 </style>
 </head>
 <body><main>
@@ -46,12 +47,35 @@ function deletedNames(){return data.deletedMovieChildren[String(item.id)] ||= []
 function addMovie(){if(!topLevel)return;let names=prompt('Add movie titles (one per line):');if(names===null)return;let added=0;for(let title of names.split('\n').map(s=>s.trim()).filter(Boolean)){if(collectionChildren(item).some(m=>norm(m.title)===norm(title)))continue;data.collectionChildren.push({id:uid(),parentId:item.id,title,owned:false,ripped:false,added:false});let list=deletedNames(),i=list.indexOf(norm(title));if(i>=0)list.splice(i,1);added++}save();pendingCleanup=null;renderCollection();status(added+' movie(s) added.');setTimeout(()=>queueMovieScan(true),100)}
 function removeMovie(movie){if(!confirm('Remove "'+movie.title+'" from this collection?\nNo video files will be deleted.'))return;let index=data.collectionChildren.findIndex(x=>String(x.id)===String(movie.id)&&String(x.parentId)===String(item.id));if(index<0)return;lastDelete={movie:{...movie},index};data.collectionChildren.splice(index,1);let names=deletedNames();if(!names.includes(norm(movie.title)))names.push(norm(movie.title));save();pendingCleanup=null;renderCollection();status('Movie removed. Use Undo to restore it.')}
 function undoDelete(){if(!lastDelete)return;let {movie,index}=lastDelete;if(!data.collectionChildren.some(x=>String(x.id)===String(movie.id)))data.collectionChildren.splice(Math.min(index,data.collectionChildren.length),0,movie);let names=deletedNames(),i=names.indexOf(norm(movie.title));if(i>=0)names.splice(i,1);lastDelete=null;save();renderCollection();status('Movie restored.')}
-function movieRow(movie){let row=el('div','movie'),poster=createPoster(movie),info=el('div','movie-info');poster.setAttribute('role','link');poster.setAttribute('tabindex','0');poster.onclick=()=>openMovie(movie);poster.onkeydown=e=>{if(e.key==='Enter')openMovie(movie)};row.append(poster);info.append(button(movie.title,'movie-name',()=>openMovie(movie)));let d=detailFor(movie);if(d.year)info.append(el('p','',d.year));if(d.description)info.append(el('p','',d.description.length>160?d.description.slice(0,157)+'...':d.description));let actions=el('div','actions');actions.append(button('View Details','secondary',()=>openMovie(movie)));info.append(actions);let flags=el('div','movie-checks');for(let [field,label] of [['owned','Owned'],['ripped','Ripped'],['added','Jellyfin']]){let control=el('label'),input=el('input');input.type='checkbox';input.checked=!!movie[field];input.onchange=()=>{movie[field]=input.checked;save()};control.append(input,document.createTextNode(' '+label));flags.append(control)}info.append(flags);row.append(info);row.append(button('−','circle minus',()=>removeMovie(movie)));return row}
+function movieRow(movie){let row=el('div','movie'),poster=createPoster(movie),info=el('div','movie-info');poster.setAttribute('role','link');poster.setAttribute('tabindex','0');poster.onclick=()=>openMovie(movie);poster.onkeydown=e=>{if(e.key==='Enter')openMovie(movie)};row.append(poster);info.append(button(movie.title,'movie-name',()=>openMovie(movie)));let d=detailFor(movie);if(d.year)info.append(el('p','',d.year));if(d.description)info.append(el('p','',d.description.length>160?d.description.slice(0,157)+'...':d.description));let actions=el('div','actions');actions.append(button('View Details','secondary',()=>openMovie(movie)));info.append(actions);let flags=el('div','movie-checks');for(let [field,label] of [['owned','Owned'],['ripped','Ripped'],['added','Jellyfin']]){let control=el('label'),input=el('input');input.type='checkbox';input.checked=!!movie[field];input.onchange=()=>{movie[field]=input.checked;save()};control.append(input,document.createTextNode(' '+label));flags.append(control)}info.append(flags);row.append(info);row.append(button('−','circle minus',()=>removeMovie(movie)));
+row.classList.add('clickable-movie');
+row.tabIndex=0;
+row.setAttribute('role','link');
+row.setAttribute('aria-label','Open '+movie.title+' details');
+row.addEventListener('click',event=>{
+ if(event.target.closest('button,input,label,a'))return;
+ openMovie(movie);
+});
+row.addEventListener('keydown',event=>{
+ if(event.target!==row||!['Enter',' '].includes(event.key))return;
+ event.preventDefault();openMovie(movie);
+});
+return row}
 function renderCollection(){if(!topLevel)return;$('collectionCard').hidden=false;let list=$('movieList');list.replaceChildren();for(let movie of collectionChildren(item))list.append(movieRow(movie));if(!list.children.length)list.append(el('p','muted','No movies yet. Tap + to add one.'));let undo=$('undoArea');undo.replaceChildren();if(lastDelete){let wrap=el('div','undo');wrap.append(el('span','small','Removed: '+lastDelete.movie.title),button('↶ Undo','',undoDelete));undo.append(wrap)}}
 function render(){if(!item)return;updateHeader();renderTracking();renderCollection()}
 function openEditor(){let d=detailFor(item);$('editor').hidden=false;$('descriptionInput').value=d.description||'';$('yearInput').value=d.year||'';$('genresInput').value=d.genres||'';$('runtimeInput').value=d.runtime||''}
 function saveEditor(){let d=detailFor(item);d.description=$('descriptionInput').value.trim();d.year=$('yearInput').value.trim();d.genres=$('genresInput').value.trim();d.runtime=$('runtimeInput').value.trim();d.manualFields=['description','year','genres','runtime'];save();$('editor').hidden=true;render();status('Movie details saved. Automatic lookup will not overwrite your edits.')}
 function changePoster(){let url=prompt('Paste a direct HTTPS poster URL.\nLeave blank to remove.',posterUrl(item));if(url===null)return;url=url.trim();if(url&&!url.startsWith('https://')){alert('Please use an HTTPS image URL.');return}if(url){posters[String(item.id)]=url;manualPosterIds.add(String(item.id));detailFor(item).manualPoster=true}else{delete posters[String(item.id)];delete detailFor(item).poster;manualPosterIds.delete(String(item.id));detailFor(item).manualPoster=false}saveManual();savePosters();save();render();if(!url)queueMovieScan()}
+
+/* Consistent conservative title/year matching across the Comcast pages. */
+function cmYear(r){const v=r?.release_date||r?.releaseDate||r?.first_air_date||r?.firstAirDate||r?.year||r?.airDate||'';const m=String(v).match(/(?:19|20)\d{2}/);return m?Number(m[0]):null}
+function cmAliases(title){const t=String(title||'');const values=[t];if(/harry potter and the (sorcerer|philosopher)['’]?s stone/i.test(t)){values.push('Harry Potter and the Philosopher\'s Stone','Harry Potter and the Sorcerer\'s Stone')}return [...new Set(values)]}
+function cmWords(s){return String(s||'').toLowerCase().replace(/&/g,' and ').replace(/[^a-z0-9]+/g,' ').trim().split(/\s+/).filter(Boolean)}
+function cmSimilarity(a,b){const aa=cmWords(a),bb=cmWords(b);if(!aa.length||!bb.length)return 0;const x=new Set(aa),y=new Set(bb);const common=[...x].filter(w=>y.has(w)).length;return 2*common/(x.size+y.size)}
+function cmScore(candidate,title,year){const name=String(candidate?.title||candidate?.name||candidate?.original_title||candidate?.original_name||'');const aliases=cmAliases(title);let score=Math.max(...aliases.map(t=>{const a=norm(name),b=norm(t);return a===b?100:Math.round(cmSimilarity(name,t)*75)}));const candidateYear=cmYear(candidate),wanted=Number(year)||null;if(wanted&&candidateYear){const delta=Math.abs(wanted-candidateYear);if(delta===0)score+=15;else if(delta===1)score+=3;else score-=Math.min(80,delta*20)}return score}
+function cmRank(results,title,year){return results.map(item=>({item,score:cmScore(item,title,year)})).sort((a,b)=>b.score-a.score)}
+function cmConfident(ranked){return ranked.length>0&&ranked[0].score>=95&&(ranked.length===1||ranked[0].score-ranked[1].score>=12)}
+
 function resultList(body){if(Array.isArray(body))return body;for(let x of [body?.results,body?.data?.results,body?.movies,body?.data])if(Array.isArray(x))return x;return []}
 function resultTitle(r){return String(r?.title||r?.name||r?.original_title||'')}
 function posterFrom(r){let v=r?.poster||r?.posterUrl||r?.poster_url||r?.poster_path||'';if(typeof v!=='string')return '';if(v.startsWith('https://'))return v;if(v.startsWith('/'))return 'https://image.tmdb.org/t/p/w500'+v;return ''}
@@ -60,16 +84,30 @@ function genreText(r){let g=r?.genres||r?.genre_names;if(Array.isArray(g))return
 function runtimeText(r){let n=r?.runtime||r?.runtime_minutes;if(!n)return '';if(typeof n==='number')return n+' minutes';return String(n)}
 function mergeMetadata(r,target=item){let d=detailFor(target),manual=new Set(d.manualFields||[]),changed=false;let values={description:r?.overview||r?.description||'',year:releaseYear(r),genres:genreText(r),runtime:runtimeText(r)};for(let [field,value] of Object.entries(values)){if(value&&!d[field]&&!manual.has(field)){d[field]=value;changed=true}}let poster=posterFrom(r);if(poster&&!posterUrl(target)&&!d.manualPoster&&!manualPosterIds.has(String(target.id))){posters[String(target.id)]=poster;savePosters();changed=true}if(changed){save();if(String(target.id)===String(item.id))render()}return changed}
 function isCollection(){return !!topLevel&&(collectionChildren(item).length>0||/\b(collection|box set)\b/i.test(item.title))}
-function searchTerms(){let terms=[item.title];if(isCollection()){let base=item.title.replace(/\s+(collection|box set|film collection)$/i,'').trim();if(norm(base)!==norm(item.title))terms.push(base+' Collection')}return [...new Set(terms)]}
+function searchTerms(){let terms=[item.title];if(isCollection()){let base=item.title.replace(/\s+(collection|box set|film collection)$/i,'').trim();if(norm(base)!==norm(item.title))terms.push(base+' Collection')}return [...new Set(terms.flatMap(movieTitleVariants))]}
 async function getJSON(path,params){let url=new URL(API+path);for(let [key,value] of Object.entries(params))url.searchParams.set(key,String(value));let controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),8000);try{let response=await fetch(url,{signal:controller.signal});if(!response.ok)return null;return await response.json()}catch{return null}finally{clearTimeout(timeout)}}
-function bestMatch(results,term){let exact=results.find(r=>norm(resultTitle(r))===norm(term));if(exact)return exact;return null}
+function movieTitleVariants(title){
+ const original=String(title||'');
+ const variants=[original];
+ if(/harry\s+potter\s+and\s+the\s+sorcerer['’]?s\s+stone/i.test(original)){
+  variants.push(original.replace(/sorcerer['’]?s\s+stone/i,"Philosopher's Stone"));
+ }
+ if(/harry\s+potter\s+and\s+the\s+philosopher['’]?s\s+stone/i.test(original)){
+  variants.push(original.replace(/philosopher['’]?s\s+stone/i,"Sorcerer's Stone"));
+ }
+ return [...new Set(variants)];
+}
+function equivalentMovieTitle(a,b){
+ return movieTitleVariants(a).some(x=>movieTitleVariants(b).some(y=>norm(x)===norm(y)));
+}
+function bestMatch(results,term){const ranked=cmRank(results,term,detailFor(item).year);return cmConfident(ranked)?ranked[0].item:null}
 const MOVIE_RETRY_KEY='comcast-movie-poster-retry-v2';
 let movieRetries=read(MOVIE_RETRY_KEY,{}),movieScanBusy=false;
 const movieWait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-function matchMovie(r,title){return norm(resultTitle(r))===norm(title)}
+function matchMovie(r,title){return cmScore(r,title,detailFor(item).year)>=95}
 function matchCollection(r,title){const a=norm(resultTitle(r)),b=norm(title.replace(/\s+(collection|box set|film collection)$/i,''));return a===b+'collection'||a===norm(title)}
 async function lookupArtwork(target,collection=false){
- const terms=collection?[target.title,target.title.replace(/\s+(collection|box set|film collection)$/i,'')+' Collection']:[target.title];
+ const terms=collection?[target.title,target.title.replace(/\s+(collection|box set|film collection)$/i,'')+' Collection']:movieTitleVariants(target.title);
  for(const term of [...new Set(terms)]){
   for(const [path,args] of [['/poster',{title:term,type:'movie'}],['/movie/search',{query:term}]]){
    const body=await getJSON(path,args);
@@ -118,7 +156,7 @@ try{
  for(let term of searchTerms()){
   // Existing Cloudflare poster endpoint: retained for compatibility.
   let body=await getJSON('/poster',{title:term,type:'movie'});
-  if(body){hadResponse=true;let candidates=resultList(body);let direct=body?.result||body?.movie||body?.data||body;matched=bestMatch(candidates,term)||((resultTitle(direct)&&norm(resultTitle(direct))===norm(term))?direct:null);if(matched)break}
+  if(body){hadResponse=true;let candidates=resultList(body);let direct=body?.result||body?.movie||body?.data||body;matched=bestMatch(candidates,term)||((resultTitle(direct)&&cmScore(direct,term,d.year)>=95)?direct:null);if(matched)break}
  }
  if(!matched){for(let term of searchTerms()){let body=await getJSON('/movie/search',{query:term});if(!body)continue;hadResponse=true;matched=bestMatch(resultList(body),term);if(matched)break}}
  if(matched){changed=mergeMetadata(matched);let tmdbId=matched.id||matched.tmdb_id||matched.tmdbId;if(tmdbId){for(let path of ['/movie/details','/movie/'+encodeURIComponent(tmdbId)]){let full=await getJSON(path,path.endsWith('/details')?{id:tmdbId}:{});if(!full)continue;let result=full.movie||full.result||full.data||full;if(result&&typeof result==='object'){changed=mergeMetadata(result)||changed;break}}}}
