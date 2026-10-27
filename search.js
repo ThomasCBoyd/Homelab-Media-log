@@ -9,13 +9,15 @@
     const results = [];
     const channels = new Map(data.channels.map(channel => [String(channel.id), channel]));
     const parents = new Map(data.items.map(item => [String(item.id), item]));
+    const collectionIds = new Set((data.collectionChildren || []).map(item => String(item.parentId)));
     const channelLabel = channel => channel ? `${channel.name} ${channel.num}` : 'Unassigned channel';
     for (const channel of data.channels) results.push({title: channel.name, category: `Channel · ${channel.num}`, channel,
       search: `${channel.name} ${channel.num}`});
     for (const item of data.items) {
       if (!['show', 'movie'].includes(item.type)) continue;
       const channel = channels.get(String(item.channel));
-      const category = item.type === 'show' ? `TV Show · ${channelLabel(channel)}` : 'Movie / Collection';
+      const category = item.type === 'show' ? `TV Show · ${channelLabel(channel)}`
+        : collectionIds.has(String(item.id)) || /\b(collection|box\s*set)\b/i.test(item.title) ? 'Collection' : 'Movie';
       results.push({title: item.title, category, item, kind: item.type, search: item.title});
     }
     for (const item of data.collectionChildren || []) {

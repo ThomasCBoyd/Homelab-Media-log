@@ -31,7 +31,7 @@ with sync_playwright() as p:
   baseline=page.evaluate("localStorage.getItem('comcast-collection-v1')")
   assert not clear.is_visible()
   assert page.get_by_role('combobox',name='Search your collection and Comcast channels').count()==1
-  for query,title,category in [('Example Film','Example Film','Movie / Collection'),('Example Show','Example Show','TV Show · Cartoon Network 62'),('Exact Child','Exact Child Film','Movie · Example Collection'),('Season 2','Example Show Season 2','Season · Example Show'),('Cartoon','Cartoon Network','Channel · 62'),('62','Cartoon Network','Channel · 62'),('777','Empty Channel','Channel · 777')]:
+  for query,title,category in [('Example Film','Example Film','Movie'),('Example Show','Example Show','TV Show · Cartoon Network 62'),('Exact Child','Exact Child Film','Movie · Example Collection'),('Season 2','Example Show Season 2','Season · Example Show'),('Cartoon','Cartoon Network','Channel · 62'),('62','Cartoon Network','Channel · 62'),('777','Empty Channel','Channel · 777')]:
    fill(query);assert page.locator('#searchSuggestions').get_by_role('option').filter(has=page.get_by_text(title,exact=True)).count()==1
    assert category in page.locator('#searchSuggestions').get_by_role('option').filter(has=page.get_by_text(title,exact=True)).inner_text()
    assert search.get_attribute('aria-expanded')=='true'

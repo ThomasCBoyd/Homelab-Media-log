@@ -4,7 +4,7 @@ const {suggestions}=require('../search.js');
 const data={channels:[{id:1,name:'Cartoon Network',num:'62'},{id:2,name:'Empty Channel',num:'700'}],items:[{id:1,title:'Animated Show',type:'show',channel:1},{id:2,title:'Film Collection',type:'movie'},{id:3,title:'Standalone Film',type:'movie'}],collectionChildren:[{id:4,title:'Child Film',parentId:2},{id:5,title:'Season 1',parentId:1},{id:6,title:'Orphan',parentId:99}]};
 test('all result types have category and exact navigation context',()=>{
  assert.equal(suggestions(data,'Animated')[0].category,'TV Show · Cartoon Network 62');
- assert.equal(suggestions(data,'Standalone')[0].item.id,3);
+ assert.equal(suggestions(data,'Standalone')[0].item.id,3);assert.equal(suggestions(data,'Standalone')[0].category,'Movie');assert.equal(suggestions(data,'Film Collection')[0].category,'Collection');
  const child=suggestions(data,'Child')[0];assert.equal(child.item.id,4);assert.equal(child.parent.id,2);assert.equal(child.category,'Movie · Film Collection');
  const season=suggestions(data,'Season')[0];assert.equal(season.kind,'season');assert.equal(season.parent.id,1);
  assert.equal(suggestions(data,'Cartoon')[0].channel.id,1);assert.equal(suggestions(data,'62')[0].channel.id,1);assert.equal(suggestions(data,'700')[0].channel.id,2);
