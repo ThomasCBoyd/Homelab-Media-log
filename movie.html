@@ -129,16 +129,17 @@ async function queueMovieScan(force=false){
   for(const target of targets){
    if(document.visibilityState==='hidden')break;
    const key=String(target.id),d=detailFor(target);
-   if(posterUrl(target)||d.manualPoster||manualPosterIds.has(key))continue;
+   if((posterUrl(target)&&!(isFirstHarryPotterFilm(target)&&(!d.description||!d.year)))||d.manualPoster||manualPosterIds.has(key))continue;
    if(!force&&Date.now()-(Number(movieRetries[key])||0)<12*60*60*1000)continue;
    let poster='';
    try{
-    // Collections use only franchise artwork or a verified member-film poster.
-    poster=await lookupArtwork(target,target===item&&isCollection());
-    if(isFirstHarryPotterFilm(target)&&(!poster||!detailFor(target).description)){
+    // For the first Harry Potter film, prefer the verified 2001 record.
+    if(isFirstHarryPotterFilm(target)){
      const verified=await lookupFirstHarryPotter();
-     if(verified){mergeMetadata(verified,target);poster=poster||posterFrom(verified);}
+     if(verified){mergeMetadata(verified,target);poster=posterFrom(verified);}
     }
+    // Other films and collections continue using the existing matching system.
+    if(!poster)poster=await lookupArtwork(target,target===item&&isCollection());
     if(!poster&&target===item&&isCollection()){
      const member=collectionChildren(item).find(x=>posterUrl(x));
      if(member)poster=posterUrl(member);
@@ -172,9 +173,19 @@ async function lookupFirstHarryPotter(){
  }
  return null;
 }
-async function loadInfo(force=false){if(!item||loading)return;let d=detailFor(item);if(!force&&d.lastLookup&&Date.now()-d.lastLookup<7*86400000)return;loading=true;$('loadInfo').disabled=true;status('Looking up movie information...');let matched=null,changed=false,hadResponse=false;
+async function loadInfo(force=false){if(!item||loading)return;let d=detailFor(item);if(!force&&d.lastLookup&&Date.now()-d.lastLookup<7*86400000&&!(isFirstHarryPotterFilm(item)&&(!d.description||!posterUrl(item))))return;loading=true;$('loadInfo').disabled=true;status('Looking up movie information...');let matched=null,changed=false,hadResponse=false;
 try{
- for(let term of searchTerms()){
+ // Known TMDB identity: prioritize the verified full record, not a title-search
+ // result that may be incomplete or ambiguous.
+ if(isFirstHarryPotterFilm(item)){
+  const verified=await lookupFirstHarryPotter();
+  if(verified){
+   matched=verified;
+   hadResponse=true;
+   changed=mergeMetadata(verified,item)||changed;
+  }
+ }
+ if(!matched)for(let term of searchTerms()){
   // Existing Cloudflare poster endpoint: retained for compatibility.
   let body=await getJSON('/poster',{title:term,type:'movie'});
   if(body){hadResponse=true;let candidates=resultList(body);let direct=body?.result||body?.movie||body?.data||body;matched=bestMatch(candidates,term)||((resultTitle(direct)&&cmScore(direct,term,d.year)>=95)?direct:null);if(matched)break}
