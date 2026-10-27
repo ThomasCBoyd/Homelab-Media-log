@@ -11,7 +11,7 @@
 <body><main>
 <a id="back" href="./index.html">← Back to Comcast Guide</a>
 <section class="card"><div class="hero"><div id="posterHolder"></div><div class="info"><h1 id="title">Loading...</h1><p id="meta" class="muted small"></p><p id="description" class="description"></p><div class="actions"><button id="loadInfo">↻ Refresh Movie Info</button><button id="editInfo" class="secondary">✎ Edit Details</button><button id="changePoster" class="secondary">Change Poster</button></div></div></div>
-<div id="editor" class="editor" hidden><p class="muted small">Description</p><textarea id="descriptionInput"></textarea><p class="muted small">Release year</p><input id="yearInput" type="text" placeholder="2003"><p class="muted small">Genres</p><input id="genresInput" type="text" placeholder="Adventure, Fantasy"><p class="muted small">Runtime</p><input id="runtimeInput" type="text" placeholder="143 minutes"><div class="actions"><button id="saveInfo">Save Details</button><button id="cancelInfo" class="secondary">Cancel</button></div></div><p id="status" class="status" role="status"></p></section>
+<div id="editor" class="editor" hidden><p class="muted small">Movie title</p><input id="titleInput" type="text" maxlength="250" autocomplete="off"><p class="muted small">Description</p><textarea id="descriptionInput"></textarea><p class="muted small">Release year</p><input id="yearInput" type="text" placeholder="2003"><p class="muted small">Genres</p><input id="genresInput" type="text" placeholder="Adventure, Fantasy"><p class="muted small">Runtime</p><input id="runtimeInput" type="text" placeholder="143 minutes"><div class="actions"><button id="saveInfo">Save Details</button><button id="cancelInfo" class="secondary">Cancel</button></div></div><p id="status" class="status" role="status"></p></section>
 <section id="trackingCard" class="card"><h2>My Collection</h2><div id="tracking" class="tracking"></div></section>
 <section id="collectionCard" class="card" hidden><div class="collection-heading"><h2>Movies in This Collection</h2><button id="addMovie" class="circle" aria-label="Add movie">+</button></div><p class="muted small">Tap a poster or title for details. Movie information loads automatically when you open a movie.</p><div class="actions"><button id="cleanDuplicates" class="secondary">🧹 Clean Up Duplicates</button></div><div id="cleanupPanel" class="cleanup" hidden></div><div id="undoArea"></div><div id="movieList"></div><div class="actions"><button id="addMovieBottom">+ Add Movie</button></div></section>
 <p class="footer">This product uses the TMDB API but is not endorsed or certified by TMDB. Metadata availability depends on the connected poster service.</p>
@@ -47,7 +47,20 @@ function deletedNames(){return data.deletedMovieChildren[String(item.id)] ||= []
 function addMovie(){if(!topLevel)return;let names=prompt('Add movie titles (one per line):');if(names===null)return;let added=0;for(let title of names.split('\n').map(s=>s.trim()).filter(Boolean)){if(collectionChildren(item).some(m=>norm(m.title)===norm(title)))continue;data.collectionChildren.push({id:uid(),parentId:item.id,title,owned:false,ripped:false,added:false});let list=deletedNames(),i=list.indexOf(norm(title));if(i>=0)list.splice(i,1);added++}save();pendingCleanup=null;renderCollection();status(added+' movie(s) added.');setTimeout(()=>queueMovieScan(true),100)}
 function removeMovie(movie){if(!confirm('Remove "'+movie.title+'" from this collection?\nNo video files will be deleted.'))return;let index=data.collectionChildren.findIndex(x=>String(x.id)===String(movie.id)&&String(x.parentId)===String(item.id));if(index<0)return;lastDelete={movie:{...movie},index};data.collectionChildren.splice(index,1);let names=deletedNames();if(!names.includes(norm(movie.title)))names.push(norm(movie.title));save();pendingCleanup=null;renderCollection();status('Movie removed. Use Undo to restore it.')}
 function undoDelete(){if(!lastDelete)return;let {movie,index}=lastDelete;if(!data.collectionChildren.some(x=>String(x.id)===String(movie.id)))data.collectionChildren.splice(Math.min(index,data.collectionChildren.length),0,movie);let names=deletedNames(),i=names.indexOf(norm(movie.title));if(i>=0)names.splice(i,1);lastDelete=null;save();renderCollection();status('Movie restored.')}
-function movieRow(movie){let row=el('div','movie'),poster=createPoster(movie),info=el('div','movie-info');poster.setAttribute('role','link');poster.setAttribute('tabindex','0');poster.onclick=()=>openMovie(movie);poster.onkeydown=e=>{if(e.key==='Enter')openMovie(movie)};row.append(poster);info.append(button(movie.title,'movie-name',()=>openMovie(movie)));let d=detailFor(movie);if(d.year)info.append(el('p','',d.year));if(d.description)info.append(el('p','',d.description.length>160?d.description.slice(0,157)+'...':d.description));let actions=el('div','actions');actions.append(button('View Details','secondary',()=>openMovie(movie)));info.append(actions);let flags=el('div','movie-checks');for(let [field,label] of [['owned','Owned'],['ripped','Ripped'],['added','Jellyfin']]){let control=el('label'),input=el('input');input.type='checkbox';input.checked=!!movie[field];input.onchange=()=>{movie[field]=input.checked;save()};control.append(input,document.createTextNode(' '+label));flags.append(control)}info.append(flags);row.append(info);row.append(button('−','circle minus',()=>removeMovie(movie)));
+function renameMovie(movie){
+ const proposed=prompt('Edit movie title:',movie.title);
+ if(proposed===null)return;
+ const title=proposed.trim();
+ if(!title){alert('Movie title cannot be empty.');return;}
+ if(title===movie.title)return;
+ if(collectionChildren(item).some(x=>String(x.id)!==String(movie.id)&&norm(x.title)===norm(title))){
+  if(!confirm('Another movie in this collection already has that title. Save anyway?'))return;
+ }
+ movie.title=title;
+ detailFor(movie).lastLookup=0;
+ save();renderCollection();status('Movie title updated.');
+}
+function movieRow(movie){let row=el('div','movie'),poster=createPoster(movie),info=el('div','movie-info');poster.setAttribute('role','link');poster.setAttribute('tabindex','0');poster.onclick=()=>openMovie(movie);poster.onkeydown=e=>{if(e.key==='Enter')openMovie(movie)};row.append(poster);info.append(button(movie.title,'movie-name',()=>openMovie(movie)));let d=detailFor(movie);if(d.year)info.append(el('p','',d.year));if(d.description)info.append(el('p','',d.description.length>160?d.description.slice(0,157)+'...':d.description));let actions=el('div','actions');actions.append(button('View Details','secondary',()=>openMovie(movie)),button('Rename','secondary',()=>renameMovie(movie)));info.append(actions);let flags=el('div','movie-checks');for(let [field,label] of [['owned','Owned'],['ripped','Ripped'],['added','Jellyfin']]){let control=el('label'),input=el('input');input.type='checkbox';input.checked=!!movie[field];input.onchange=()=>{movie[field]=input.checked;save()};control.append(input,document.createTextNode(' '+label));flags.append(control)}info.append(flags);row.append(info);row.append(button('−','circle minus',()=>removeMovie(movie)));
 row.classList.add('clickable-movie');
 row.tabIndex=0;
 row.setAttribute('role','link');
@@ -63,8 +76,21 @@ row.addEventListener('keydown',event=>{
 return row}
 function renderCollection(){if(!topLevel)return;$('collectionCard').hidden=false;let list=$('movieList');list.replaceChildren();for(let movie of collectionChildren(item))list.append(movieRow(movie));if(!list.children.length)list.append(el('p','muted','No movies yet. Tap + to add one.'));let undo=$('undoArea');undo.replaceChildren();if(lastDelete){let wrap=el('div','undo');wrap.append(el('span','small','Removed: '+lastDelete.movie.title),button('↶ Undo','',undoDelete));undo.append(wrap)}}
 function render(){if(!item)return;updateHeader();renderTracking();renderCollection()}
-function openEditor(){let d=detailFor(item);$('editor').hidden=false;$('descriptionInput').value=d.description||'';$('yearInput').value=d.year||'';$('genresInput').value=d.genres||'';$('runtimeInput').value=d.runtime||''}
-function saveEditor(){let d=detailFor(item);d.description=$('descriptionInput').value.trim();d.year=$('yearInput').value.trim();d.genres=$('genresInput').value.trim();d.runtime=$('runtimeInput').value.trim();d.manualFields=['description','year','genres','runtime'];save();$('editor').hidden=true;render();status('Movie details saved. Automatic lookup will not overwrite your edits.')}
+function openEditor(){let d=detailFor(item);$('editor').hidden=false;$('titleInput').value=item.title;$('descriptionInput').value=d.description||'';$('yearInput').value=d.year||'';$('genresInput').value=d.genres||'';$('runtimeInput').value=d.runtime||''}
+function saveEditor(){
+ let newTitle=$('titleInput').value.trim();
+ if(!newTitle){alert('Movie title cannot be empty.');$('titleInput').focus();return;}
+ if(newTitle!==item.title){
+  const peers=parent?collectionChildren(parent):data.items.filter(x=>x.type==='movie');
+  if(peers.some(x=>String(x.id)!==String(item.id)&&norm(x.title)===norm(newTitle))){
+   if(!confirm('Another movie in this collection already has that title. Save anyway?'))return;
+  }
+  item.title=newTitle;
+  // Keep the existing ID, ownership, ripping, Jellyfin and metadata records.
+  // Allow the next lookup to use the updated title without deleting saved metadata.
+  detailFor(item).lastLookup=0;
+ }
+ let d=detailFor(item);d.description=$('descriptionInput').value.trim();d.year=$('yearInput').value.trim();d.genres=$('genresInput').value.trim();d.runtime=$('runtimeInput').value.trim();d.manualFields=['description','year','genres','runtime'];save();$('editor').hidden=true;render();status('Movie details saved. Automatic lookup will not overwrite your edits.')}
 function changePoster(){let url=prompt('Paste a direct HTTPS poster URL.\nLeave blank to remove.',posterUrl(item));if(url===null)return;url=url.trim();if(url&&!url.startsWith('https://')){alert('Please use an HTTPS image URL.');return}if(url){posters[String(item.id)]=url;manualPosterIds.add(String(item.id));detailFor(item).manualPoster=true}else{delete posters[String(item.id)];delete detailFor(item).poster;manualPosterIds.delete(String(item.id));detailFor(item).manualPoster=false}saveManual();savePosters();save();render();if(!url)queueMovieScan()}
 
 /* Consistent conservative title/year matching across the Comcast pages. */
