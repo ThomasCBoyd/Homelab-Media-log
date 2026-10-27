@@ -1,0 +1,12 @@
+.tools .search-box{position:relative;flex:1 0 100%;min-width:0;z-index:20;isolation:isolate}
+.tools .search-box input{display:block;box-sizing:border-box;width:100%;min-width:0;margin:0;padding:14px 48px 14px 16px;border:1px solid #7298c4;border-radius:12px;background:#f7faff;color:#082650;font:16px system-ui,-apple-system,Arial,sans-serif;appearance:none;-webkit-appearance:none;box-shadow:0 3px 12px #04173530}
+.tools .search-box input:focus{outline:2px solid #ffd15a;outline-offset:2px}
+.search-box input::-webkit-search-cancel-button,.search-box input::-webkit-search-decoration{-webkit-appearance:none}
+.search-box .search-clear{position:absolute;top:2px;right:2px;width:44px;height:44px;padding:0;background:transparent;color:#355776;border-radius:50%;font-size:23px;font-weight:400;line-height:1;touch-action:manipulation}
+.search-clear:hover{background:#dde8f4}
+.search-suggestions{position:absolute;top:calc(100% + 7px);left:0;right:0;z-index:30;list-style:none;margin:0;padding:5px;background:#0a2a5d;border:1px solid #7298c4;border-radius:12px;box-shadow:0 12px 28px #04132990;max-height:min(440px,50vh);max-height:min(440px,50dvh);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.search-suggestions [role=option]{display:flex;flex-direction:column;gap:4px;min-height:48px;padding:10px 12px;box-sizing:border-box;border-radius:7px;color:white;cursor:pointer;overflow-wrap:anywhere;touch-action:manipulation}
+.search-suggestions [role=option]:hover,.search-suggestions [aria-selected=true]{background:#20569b;outline:1px solid #ffd15a;outline-offset:-1px}
+.search-title{font-size:15px;font-weight:600;line-height:1.35}
+.search-category{font-size:12px;line-height:1.35;color:#c4def6}
+.search-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}

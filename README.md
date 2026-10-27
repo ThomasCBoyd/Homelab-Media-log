@@ -3,6 +3,36 @@
 A static movie/TV collection tracker. Run `python3 -m http.server 8000 --bind 127.0.0.1`
 from this checkout. There is no package installation or build step.
 
+## Search and autocomplete
+
+The search field keeps full-page results and adds up to eight local suggestions
+for TV shows, movies, collection children, seasons, and channel names/numbers.
+Results show their category and parent collection/channel. Movie children link
+to their exact detail page; seasons link to their parent show. Selecting a
+channel opens it in the TV Guide, including channels without shows.
+
+Use Arrow Up/Down and Enter to select a result, or Escape/Tab to dismiss the
+list. Tapping outside also dismisses it. The clear button restores the current
+tab without changing collection data. The combobox has a screen-reader label,
+active-option tracking, and live suggestion counts. Mobile styling uses a
+16px input, a 44px clear target, a scrollable dropdown, and a stacking layer
+above surrounding controls without clipping ancestors.
+
+The implementation is in `search.js` / `search.css`; indexing never writes
+collection data or calls the metadata service. To test with the static server
+running on port 8000:
+
+```sh
+node --test tests/*.test.cjs
+python3 tests/browser_search.py
+```
+
+Browser coverage includes desktop, phone, and tablet Chromium viewports with
+touch selection, keyboard controls, result categories, exact navigation,
+clearing, overlay hit testing, and collection/poster preservation. Actual
+Safari/iPhone/iPad behavior remains unverified: WebKit browser downloads were
+blocked by the cloud network policy. No merge or deployment is performed.
+
 ## Metadata
 
 All pages load `metadata.js`. Adding a movie, TV show, or movie inside a collection
