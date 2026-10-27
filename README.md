@@ -3,6 +3,57 @@
 A static movie/TV collection tracker. Run `python3 -m http.server 8000 --bind 127.0.0.1`
 from this checkout. There is no package installation or build step.
 
+## TV Land Home
+
+Home is the default for new visits; Remember My Place still restores an existing
+Home, TV Guide, Movies, or Dashboard tab and its search/scroll state. Home uses a
+read-only projection of existing collection records in `home.js`, styled by
+`home.css`. It adds no collection keys or activity timestamps. Fresh storage
+starts empty rather than seeding titles or channels. Unreadable saved collection
+JSON is left untouched, with recovery export and valid-backup restore controls.
+
+**Featured From Your Collection** includes owned individual movies (including
+collection children) and shows marked Owned at series, current season, or current
+episode level. Folders do not stand in for owned films, and parent ownership does
+not grant ownership to its children. Labels identify the actual level, such as
+“1 episode marked Owned”; no complete-series or franchise ownership is inferred.
+Stable record IDs deduplicate slides. Cards call the existing `openShow` and
+`openMovie` helpers, retaining child/parent IDs and Remember My Place.
+
+The carousel rotates every six seconds with a fade, previous/next controls,
+indicators, horizontal swipe and pause/resume. One cancellable timer belongs to
+each mount; rerenders and section changes clean up timers/listeners/animations.
+Focus, hover, touch interaction, hidden pages and reduced motion pause rotation.
+Explicit Resume can restart after an interaction; reduced motion always disables
+autoplay and animation. Empty/one-title collections never start a timer.
+
+Artwork comes only from cached detail records/posters: backdrops first, except
+that explicitly manual or conservatively detected legacy poster choices take
+priority. Missing/broken URLs fall back to other cached art and then the blue
+and gold design. Failed URLs are remembered for the page lifetime; Home makes no
+TMDB API requests. Existing background metadata repair continues unchanged.
+
+Continue Organizing uses actual saved ownership/status flags. Recently Updated
+shows only successful saved `metadataLookup.updatedAt` timestamps within 30 days,
+clearly labeled **metadata updates, not editing history**. If there are none,
+Explore Your Saved Titles provides plainly labeled collection shortcuts instead.
+Quick links return to TV Guide, Movies and Dashboard. There are no progress bars.
+
+Home validation (static server on port 8000):
+
+```sh
+node --test tests/*.test.cjs
+python3 tests/browser_home.py
+```
+
+The Home browser suite covers phone/desktop layouts, series/season/episode/movie
+ownership, exact detail routes, a real six-second advance, swipe/manual controls,
+pause/resume, hidden/reduced-motion behavior, rerender timer cleanup, broken-art
+retry containment, backup/restore round trips, existing sections/search and
+empty/singleton/fresh/unreadable storage. Fixtures run in isolated browser
+contexts; existing user data is not used or replaced. Native Safari remains
+unverified because WebKit is unavailable in this cloud environment.
+
 ## Search and autocomplete
 
 The search field keeps full-page results and adds up to eight local suggestions
