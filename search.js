@@ -31,8 +31,21 @@
       .map((result, index) => ({result, index, rank: normalize(result.title) === needle ? 0 : normalize(result.title).startsWith(needle) ? 1 : 2}))
       .sort((a, b) => a.rank - b.rank || a.index - b.index).slice(0, 8).map(match => match.result);
   }
-  function attach({input, clear, list, status, container, getData, changed, selected}) {
+  function attach({input, done, clear, list, status, container, getData, changed, selected}) {
     let matches = [], active = -1;
+    // Safari reports the keyboard's unobscured area through visualViewport.
+    // Its offset is relative to the layout viewport, as are client rectangles.
+    function fitDropdown() {
+      if (list.hidden) return;
+      const viewport = root.visualViewport;
+      const bottom = viewport ? viewport.offsetTop + viewport.height : root.innerHeight;
+      const available = Math.max(0, Math.floor(bottom - list.getBoundingClientRect().top - 8));
+      list.style.maxHeight = Math.min(440, available, viewport ? Infinity : root.innerHeight * 0.5) + 'px';
+    }
+    root.visualViewport?.addEventListener('resize', fitDropdown);
+    root.visualViewport?.addEventListener('scroll', fitDropdown);
+    root.addEventListener('resize', fitDropdown);
+    root.addEventListener('scroll', fitDropdown, {passive: true});
     function close() {
       list.hidden = true; input.setAttribute('aria-expanded', 'false');
       input.removeAttribute('aria-activedescendant'); active = -1;
@@ -45,7 +58,11 @@
       if (active >= 0) {
         const option = list.children[active];
         input.setAttribute('aria-activedescendant', option.id);
-        option.scrollIntoView({block: 'nearest'});
+        // Scroll only the list; scrollIntoView can also move the document on iOS.
+        const top = option.getBoundingClientRect().top - list.getBoundingClientRect().top + list.scrollTop - list.clientTop;
+        if (top < list.scrollTop) list.scrollTop = top;
+        else if (top + option.offsetHeight > list.scrollTop + list.clientHeight)
+          list.scrollTop = top + option.offsetHeight - list.clientHeight;
       } else input.removeAttribute('aria-activedescendant');
     }
     function choose(index) {
@@ -71,7 +88,7 @@
         list.append(option);
       }
       const visible = open && input.value.trim() && matches.length > 0;
-      list.hidden = !visible; input.setAttribute('aria-expanded', String(!!visible));
+      list.hidden = !visible; fitDropdown(); input.setAttribute('aria-expanded', String(!!visible));
       status.textContent = open && input.value.trim() ? `${matches.length} suggestions. Use up and down arrows to choose, then Enter. Full search results are below.` : '';
     }
     input.addEventListener('input', () => { changed(); update(); });
@@ -86,6 +103,20 @@
       else if (event.key === 'Tab') close();
     });
     function reset() { input.value = ''; close(); clear.hidden = true; changed(); }
+    done?.addEventListener('mousedown', event => event.preventDefault());
+    done?.addEventListener('click', () => { input.blur(); done.blur(); fitDropdown(); });
+    // Contain touch scrolling even on Safari versions without overscroll-behavior.
+    let touchY = null;
+    list.addEventListener('touchstart', event => { touchY = event.touches.length === 1 ? event.touches[0].clientY : null; }, {passive: true});
+    list.addEventListener('touchmove', event => {
+      if (touchY === null || event.touches.length !== 1) return;
+      const nextY = event.touches[0].clientY, delta = nextY - touchY;
+      touchY = nextY;
+      if (list.scrollHeight <= list.clientHeight || (delta > 0 && list.scrollTop <= 0)
+        || (delta < 0 && list.scrollTop + list.clientHeight >= list.scrollHeight - 1)) event.preventDefault();
+    }, {passive: false});
+    list.addEventListener('touchend', () => { touchY = null; }, {passive: true});
+    list.addEventListener('touchcancel', () => { touchY = null; }, {passive: true});
     clear.addEventListener('click', () => { reset(); input.focus(); });
     document.addEventListener('pointerdown', event => { if (!container.contains(event.target)) close(); });
     document.addEventListener('focusin', event => { if (!container.contains(event.target)) close(); });
