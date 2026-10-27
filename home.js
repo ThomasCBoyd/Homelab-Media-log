@@ -49,7 +49,20 @@
     const d=record.detail,poster=posters[id(record.item.id)]||d.poster||d.tmdb?.poster||d.metadata?.poster;
     const backdrop=d.backdrop||d.tmdb?.backdrop||d.metadata?.backdrop;
     const manual=manualIds.has(id(record.item.id))||d.manualPoster||(poster&&poster!==d.tmdb?.poster);
-    return [...new Set((manual?[poster,backdrop]:[backdrop,poster]).filter(url=>typeof url==='string'&&url.startsWith('https://')))];
+    // A wide backdrop is better suited to the hero than a thumbnail poster.
+    // Upgrade TMDB image sizes without changing saved artwork or metadata.
+    function highRes(url){
+      if(typeof url!=='string'||!url.startsWith('https://'))return null;
+      try{
+        const parsed=new URL(url);
+        if(parsed.hostname==='image.tmdb.org'&&/^\\/t\\/p\\/(?:w\\d+|original)\\//.test(parsed.pathname)){
+          parsed.pathname=parsed.pathname.replace(/^\\/t\\/p\\/(?:w\\d+|original)\\//,'/t/p/original/');
+          return parsed.toString();
+        }
+      }catch(_){}
+      return url;
+    }
+    return [...new Set([backdrop,poster].filter(Boolean).map(highRes).filter(Boolean))];
   }
   // One timeout, always cancelled before another is scheduled. Mount owns cleanup.
   function rotation({next,setTimer=setTimeout,clearTimer=clearTimeout}){
