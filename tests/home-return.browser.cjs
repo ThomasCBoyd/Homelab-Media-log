@@ -33,7 +33,16 @@ const base=process.env.TEST_URL||'http://127.0.0.1:8769';
     const actual=await page.evaluate(()=>({y:scrollY,x:[...document.querySelectorAll('.home-poster-strip')].map(n=>n.scrollLeft),key:document.querySelector('.home-feature-card').dataset.recordKey,filter:statusFilter,view,opened:[...opened]}));
     assert.deepEqual(actual.x,expected.x);assert(Math.abs(actual.y-expected.y)<=2,JSON.stringify({actual,expected}));assert.equal(actual.key,expected.key);assert.equal(actual.filter,'owned');assert.equal(actual.view,'grid');assert(actual.opened.includes('test-selection'));
    }
-   await check();await page.reload();await page.waitForTimeout(1700);await check();
+   await check();
+   // A cached document can return with native scroll offsets already reset.
+   // The departure snapshot must win over that transient DOM state.
+   await page.evaluate(()=>{
+    window.dispatchEvent(new PageTransitionEvent('pagehide',{persisted:true}));
+    document.querySelectorAll('.home-poster-strip').forEach(n=>n.scrollLeft=0);
+    window.scrollTo(0,0);
+    window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true}));
+   });
+   await page.waitForTimeout(1700);await check();await page.reload();await page.waitForTimeout(1700);await check();
    await page.evaluate(()=>window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true})));await page.waitForTimeout(1700);await check();
   }
   const saved=JSON.parse(await page.evaluate(()=>localStorage.getItem('comcast-collection-v1'))),before=JSON.parse(baseline);

@@ -85,10 +85,12 @@
   }
   function create(adapter){
     let cleanup=()=>{},state=adapter.initialState||{},currentKey=state.currentKey||null,userPaused=!!state.userPaused,restoreFocus=null,capture=()=>state;
+    let suspended=false;
     const position=value=>Number.isFinite(value)&&value>=0?value:0;
     const failedImages=new Set();
     function mount(target){
       cleanup();
+      suspended=false;
       const document=target.ownerDocument,win=document.defaultView,content=model(adapter.getData());
       const saved=state,shelves=new Map();let activeQueue=null;
       const listeners=[];function on(node,event,callback,options){node.addEventListener(event,callback,options);listeners.push(()=>node.removeEventListener(event,callback,options))}
@@ -205,10 +207,14 @@
       restore();frame=win.requestAnimationFrame(()=>{restore();frame=win.requestAnimationFrame(restore)});
       timer=win.setTimeout(stopRestoring,1500);
       capture=()=>{
+        if(suspended)return state;
         // Do not replace pending restoration coordinates with a temporarily clamped layout.
         state={currentKey,userPaused,activeQueue,scrollY:restoring&&saved.scrollY!=null?saved.scrollY:win.scrollY,shelves:Object.fromEntries([...shelves].map(([name,list])=>[name,restoring&&saved.shelves?.[name]!=null?saved.shelves[name]:list.scrollLeft]))};
         return state;
       };
+      // Safari may reset an overflow scroller before pageshow. Do not let the
+      // return-time DOM overwrite the last known position from departure.
+      on(win,'pagehide',()=>{capture();suspended=true});
       if(restoreFocus){const focusTarget=restoreFocus==='card'?card:[...carousel.querySelectorAll('button')].find(node=>node.getAttribute('aria-label')===restoreFocus);focusTarget?.focus({preventScroll:true});restoreFocus=null}
       cleanup=()=>{capture();capture=()=>state;stopRestoring();if(carousel.contains(document.activeElement))restoreFocus=document.activeElement===card?'card':document.activeElement.getAttribute('aria-label');++artGeneration;clock.destroy();animation?.cancel();listeners.forEach(remove=>remove());};
     }
