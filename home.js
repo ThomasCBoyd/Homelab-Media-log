@@ -43,7 +43,16 @@
     const recent=all.map(record=>({record,time:record.detail.metadataLookup?.updatedAt}))
       .filter(x=>x.record.detail.metadataLookup?.status==='ok'&&typeof x.time==='number'&&Number.isFinite(x.time)&&x.time>0&&x.time<=now&&now-x.time<=30*86400000)
       .sort((a,b)=>b.time-a.time).slice(0,6);
-    return {all,featured,recent,organizing:featured.slice(0,6).map(record=>({record,reason:organizingReason(record)}))};
+    // Status is evaluated at each saved tracking level, never inferred from a folder.
+    function pending(record,field){
+      const units=[record.item,...(record.kind==='show'?[...record.seasons,...record.episodes]:[])];
+      return units.some(unit=>unit.owned&&(field==='ripped'?!unit.ripped:unit.ripped&&!unit.added));
+    }
+    const readyToRip=featured.filter(r=>pending(r,'ripped'));
+    const readyForJellyfin=featured.filter(r=>pending(r,'added'));
+    // Alternate media types while preserving saved order within each type.
+    function mixed(entries){const shows=entries.filter(r=>r.kind==='show'),movies=entries.filter(r=>r.kind==='movie'),out=[];while(shows.length||movies.length){if(shows.length)out.push(shows.shift());if(movies.length)out.push(movies.shift())}return out}
+    return {all,featured,recent,readyToRip,readyForJellyfin,shelves:[mixed(featured),mixed(all)],organizing:featured.slice(0,6).map(record=>({record,reason:organizingReason(record)}))};
   }
   function artwork(record,posters,manualIds=new Set()){
     const d=record.detail,poster=posters[id(record.item.id)]||d.poster||d.tmdb?.poster||d.metadata?.poster;
@@ -145,18 +154,38 @@
         on(card,'pointerup',event=>{if(!gesture||gesture.id!==event.pointerId)return;const dx=event.clientX-gesture.x,dy=event.clientY-gesture.y;gesture=null;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.3){preventClickUntil=Date.now()+500;show(index+(dx<0?1:-1))}clock.pause('gesture',false)});
         on(card,'pointercancel',()=>{gesture=null;clock.pause('gesture',false)});
       }
-      function listSection(title,subtitle,entries){
-        const section=el('section','home-shelf');section.append(el('h3','',title),el('p','home-note',subtitle));
-        const list=el('div','home-shortcuts');
-        for(const {record,reason,time} of entries){const tile=button('','home-shortcut',()=>adapter.open(record));tile.append(el('span','home-shortcut-title',record.item.title),el('span','home-note',reason));if(time){const stamp=el('time','home-note',new Date(time).toLocaleDateString());stamp.dateTime=new Date(time).toISOString();tile.append(stamp)}list.append(tile)}
-        section.append(list);home.append(section);return section;
+      const shortcuts=el('section','home-status-shortcuts');shortcuts.setAttribute('aria-label','Collection tasks');home.append(shortcuts);
+      let activeQueue=null;
+      for(const [label,entries,hint] of [['Ready to Rip',content.readyToRip,'Owned, not marked Ripped'],['Ready for Jellyfin',content.readyForJellyfin,'Owned and Ripped, not marked In Jellyfin']]){
+        const shortcut=button('','home-status-shortcut',()=>{
+          const opening=activeQueue!==label;activeQueue=opening?label:null;
+          [...shortcuts.children].forEach(node=>node.setAttribute('aria-expanded',String(opening&&node===shortcut)));
+          queue.hidden=!opening;queue.replaceChildren();
+          if(opening){queue.append(el('h3','',label),el('p','home-note',hint+'. Shows may have pending seasons or episodes.'));
+            if(!entries.length)queue.append(el('p','home-note','No titles match these saved checkboxes.'));
+            for(const record of entries)queue.append(button(record.item.title+' →','home-queue-title',()=>adapter.open(record)));
+          }
+        });
+        shortcut.setAttribute('aria-expanded','false');shortcut.setAttribute('aria-controls','home-task-queue');
+        shortcut.append(el('span','home-status-count',String(entries.length)),el('span','home-status-label',label+' →'));shortcuts.append(shortcut);
       }
-      const organizing=listSection('Continue Organizing','From your saved ownership and checkboxes — not watch history.',content.organizing);
-      if(!content.organizing.length)organizing.append(el('p','home-note','Start in the TV Guide or Movies to review your titles and mark what you own.'));
-      if(content.recent.length)listSection('Recently Updated','Metadata refreshed within the last 30 days. This is not a history of your edits.',content.recent.map(({record,time})=>({record,time,reason:'Metadata updated'})));
-      else listSection('Explore Your Saved Titles','No recent metadata update times are available. These are collection shortcuts, not recent activity.',content.all.slice(0,4).map(record=>({record,reason:record.kind==='show'?'Review TV series':'Review movie details'})));
-      const links=el('section','home-shelf');links.append(el('h3','','Your Collection, Your Way'));
-      const grid=el('div','home-quick-links');for(const [tab,title,detail] of [['guide','TV Guide','Return to your channels'],['movies','Movies','Browse films & box sets'],['dashboard','Dashboard','Review your collection']]){const link=button('','home-quick-link',()=>adapter.tab(tab));link.append(el('span','',title+' →'),el('span','home-note',detail));grid.append(link)}links.append(grid);home.append(links);
+      const queue=el('section','home-task-queue');queue.id='home-task-queue';queue.hidden=true;home.append(queue);
+      function posterShelf(title,note,entries){
+        const section=el('section','home-shelf');section.append(el('h3','',title),el('p','home-note',note));
+        const list=el('div','home-poster-strip');list.setAttribute('role','group');list.setAttribute('aria-label',title);home.append(section);section.append(list);
+        if(!entries.length){section.append(el('p','home-note','No titles here yet. Add titles and track ownership in TV Guide or Movies.'));return}
+        for(const record of entries){
+          const tile=button('','home-poster-tile',()=>adapter.open(record),record.item.title+'. Open '+(record.kind==='show'?'TV show':'movie')+' details');tile.dataset.recordKey=record.key;
+          const art=el('span','home-poster-art',record.kind==='show'?'TV':'MOVIE');art.setAttribute('aria-hidden','true');
+          const d=record.detail,choices=[adapter.getPosters()[id(record.item.id)],d.poster,d.tmdb?.poster,d.metadata?.poster].filter(url=>typeof url==='string'&&url.startsWith('https://')&&!failedImages.has(url));
+          function loadPoster(){const url=choices.shift();if(!url)return;const img=el('img','');img.alt='';img.loading='lazy';img.decoding='async';img.onerror=()=>{failedImages.add(url);img.remove();loadPoster()};img.src=url;art.append(img)}loadPoster();
+          const scope=record.kind==='show'?'TV Show':record.parent?'Movie · '+record.parent.title:'Movie';
+          const tracking=record.item.owned?[record.item.ripped?'Ripped':'Not ripped',record.item.added?'In Jellyfin':'Not in Jellyfin'].join(' · '):record.owned?'Owned seasons / episodes':'Not marked Owned';
+          tile.append(art,el('span','home-poster-title',record.item.title),el('span','home-poster-kind',scope),el('span','home-poster-status',tracking));list.append(tile);
+        }
+      }
+      posterShelf('On Your Shelves','Owned movies & TV shows · swipe to browse',content.shelves[0]);
+      posterShelf('Explore Your Collection','All saved movies & TV shows · collection order, not recently added',content.shelves[1]);
       if(restoreFocus){const focusTarget=restoreFocus==='card'?card:[...carousel.querySelectorAll('button')].find(node=>node.getAttribute('aria-label')===restoreFocus);focusTarget?.focus({preventScroll:true});restoreFocus=null}
       cleanup=()=>{if(carousel.contains(document.activeElement))restoreFocus=document.activeElement===card?'card':document.activeElement.getAttribute('aria-label');++artGeneration;clock.destroy();animation?.cancel();listeners.forEach(remove=>remove());};
     }
@@ -165,3 +194,4 @@
   root.ClassicHome={records,model,artwork,organizingReason,rotation,create};
   if(typeof module!=='undefined')module.exports=root.ClassicHome;
 })(typeof window==='undefined'?globalThis:window);
+

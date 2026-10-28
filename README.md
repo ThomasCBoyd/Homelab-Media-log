@@ -33,11 +33,26 @@ priority. Missing/broken URLs fall back to other cached art and then the blue
 and gold design. Failed URLs are remembered for the page lifetime; Home makes no
 TMDB API requests. Existing background metadata repair continues unchanged.
 
-Continue Organizing uses actual saved ownership/status flags. Recently Updated
-shows only successful saved `metadataLookup.updatedAt` timestamps within 30 days,
-clearly labeled **metadata updates, not editing history**. If there are none,
-Explore Your Saved Titles provides plainly labeled collection shortcuts instead.
-Quick links return to TV Guide, Movies and Dashboard. There are no progress bars.
+Below the featured carousel, compact **Ready to Rip** and **Ready for Jellyfin**
+shortcuts show counts of titles with pending saved checkboxes. Tap either to
+reveal exact detail links. Owned series, seasons and current episodes qualify
+independently: Ready to Rip means Owned and not Ripped; Ready for Jellyfin means
+Owned and Ripped and not In Jellyfin. Counts represent titles, not discs or episodes.
+
+**On Your Shelves** mixes owned movies and TV shows. **Explore Your Collection**
+includes all saved movies and shows. Both alternate TV and movies when available,
+keeping saved order within each media type; collection folders are excluded but
+individual child movies retain their parent routes. These labels make no claim
+about recently-added dates, watch history or complete-series ownership. Shelves
+use cached posters, safe text fallbacks and native horizontal touch scrolling.
+Home only projects saved data; it adds no storage fields or timestamps.
+
+Redesign checks: `node --test tests/*.test.cjs` and
+`node tests/home-redesign.browser.cjs` (requires Playwright, a static server on
+port 8000 and Chrome; set PLAYWRIGHT_MODULE / CHROME_PATH for local installations).
+The browser test uses an isolated fixture, phone and desktop Chromium viewports,
+exact show/movie/child navigation, task queues, storage preservation,
+backup/restore, and tabs/search. Native iPhone Safari remains unverified.
 
 Home validation (static server on port 8000):
 
@@ -197,3 +212,4 @@ unverified here. Without that flag, the suite uses native browser networking.
 Live results depend on the external service and can change over time.
 
 No merge or deployment is part of these tests.
+
