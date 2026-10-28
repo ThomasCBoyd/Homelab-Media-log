@@ -1,0 +1,42 @@
+html:has(body.cinematic){background:#061735}
+/* Scoped to individual detail pages; collection folders retain Monterey styling. */
+.cinematic main{max-width:1180px;padding-top:24px}
+.cinematic .cinematic-hero{position:relative;isolation:isolate;overflow:hidden;padding:clamp(20px,4vw,48px);min-height:430px;display:flex;flex-direction:column;justify-content:flex-end;background:#082650}
+.detail-art{position:absolute;inset:0;z-index:-2;pointer-events:none}
+.detail-art img{width:100%;height:100%;object-fit:cover;object-position:center 30%;opacity:.62}
+.cinematic-hero:after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(6,23,53,.93),rgba(6,23,53,.35)),linear-gradient(0deg,#082650,transparent);z-index:-1;pointer-events:none}
+.cinematic .hero{align-items:center;gap:30px}
+.cinematic .poster{width:clamp(120px,20vw,215px);box-shadow:0 15px 35px #0008;border:1px solid #ffd15a80}
+.cinematic .hero-content,.cinematic .info{min-width:0;flex:1}
+.cinematic h1{font-size:clamp(28px,4vw,48px);line-height:1.12;overflow-wrap:anywhere}
+.detail-eyebrow{text-transform:uppercase;letter-spacing:.18em;font-size:12px;color:var(--gold);margin:0 0 14px}
+.cinematic .description{max-width:66ch;font-size:16px;line-height:1.7;color:#e0ecfa}
+.cinematic .card{border-color:var(--gold)}
+.cinematic .season{border-color:#ffd15a80;box-shadow:0 7px 24px #03152c40}
+.cinematic .season-head{background:linear-gradient(110deg,#082650,#134780);min-height:76px}
+.cinematic .season-head strong{color:var(--gold)}
+.series-statuses{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+.series-statuses span{border:1px solid #ffd15a80;border-radius:30px;padding:7px 12px;background:#082650b8;color:var(--gold);font-size:13px}
+.cinematic button,.cinematic input[type=text],.cinematic textarea{min-height:44px}
+.cinematic :focus-visible{outline:2px solid var(--gold);outline-offset:4px}
+.cinematic #collectionRelationship{display:inline-block;margin:10px 0}
+.cinematic .track label{min-height:64px;cursor:pointer}
+@media(max-width:600px){
+ .cinematic main{padding:14px 10px 80px}
+ .cinematic .cinematic-hero{padding:22px 16px;min-height:0}
+ .cinematic .hero{display:block}
+ .cinematic #posterHolder,.cinematic #poster{float:left;margin:0 18px 14px 0}
+ .cinematic .poster{width:105px}
+ .cinematic h1{font-size:29px}
+ .cinematic .hero .actions{clear:both;padding-top:10px}
+ .cinematic .description{font-size:14px;clear:both;padding-top:12px}
+ .cinematic .hero button{font-size:13px}
+ .cinematic input[type=text],.cinematic textarea{font-size:16px}
+ .cinematic .season-head{flex-wrap:wrap}
+ .cinematic .season-head strong{min-width:100px}
+ .cinematic .episode-heading,.cinematic .episode-row{grid-template-columns:minmax(0,1fr) 44px 44px 44px;gap:3px}
+ .cinematic .episode-row .circle{grid-row:auto;width:44px;height:44px}
+ .cinematic .episode-row .circle.minus{grid-column:2}
+ .cinematic .episode-heading span:nth-last-child(-n+2){display:none}
+ .cinematic .tick{min-height:44px;cursor:pointer}
+}
