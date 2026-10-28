@@ -40,3 +40,35 @@ html:has(body.cinematic){background:#061735}
  .cinematic .episode-heading span:nth-last-child(-n+2){display:none}
  .cinematic .tick{min-height:44px;cursor:pointer}
 }
+
+/* Ventura 1.2: compact detail sections, with the cinematic hero untouched. */
+.cinematic main>.card:not(.cinematic-hero){padding:14px;margin:10px 0;border-radius:12px}
+.cinematic main>.card:not(.cinematic-hero) h2{font-size:18px;margin-bottom:10px}
+.cinematic .counts{gap:6px}
+.cinematic .count{padding:9px 6px;border:1px solid #ffd15a45;border-radius:8px}
+.cinematic .count b{font-size:22px}.cinematic .count span{font-size:11px}
+.detail-progress{display:block;width:100%;height:5px;margin-top:7px;accent-color:#ffd15a;border:0;border-radius:4px;overflow:hidden;background:#061735}
+.detail-progress::-webkit-progress-bar{background:#061735}.detail-progress::-webkit-progress-value{background:#ffd15a}.detail-progress::-moz-progress-bar{background:#ffd15a}
+.cinematic .season{margin:7px 0;border-radius:9px;box-shadow:none}
+.cinematic .season-head{min-height:48px;padding:7px 10px;gap:8px;flex-wrap:nowrap}
+.cinematic .season-head strong{font-size:14px;min-width:0}.cinematic .season-meta{font-size:11px}.cinematic .pill{font-size:10px;padding:3px 7px}
+.cinematic .season-body{padding:6px 8px}.cinematic .season-tools{gap:5px;margin-bottom:5px}
+.cinematic .season-tools button{font-size:11px;padding:6px 8px;min-height:36px}
+.cinematic .episode-heading,.cinematic .episode-row{grid-template-columns:minmax(0,1fr) 44px 44px 44px 36px 36px;gap:2px}
+.cinematic .episode-heading{padding:5px 0;font-size:10px}
+.cinematic .episode-row{min-height:46px;padding:1px 0}
+.cinematic .ep-name strong{font-size:12px;line-height:1.4}.cinematic .ep-name small{font-size:10px;margin-top:2px}
+.cinematic .tick{display:grid;place-items:center;min-height:44px;cursor:pointer}.cinematic .tick input{width:18px;height:18px;accent-color:var(--gold)}
+.cinematic .episode-row .circle{width:32px;height:36px;min-height:36px;border-radius:7px;font-size:19px;grid-column:auto;grid-row:auto}
+.cinematic .episode-detail,.cinematic .episode-row .editor{grid-column:1/-1}
+.cinematic .track{padding:0 6px;border:1px solid #ffd15a60;border-radius:8px}
+.cinematic .track label{min-height:48px;flex-direction:row;justify-content:center;gap:7px}
+.cinematic .movie{padding:8px 0}.cinematic .movie-poster{width:44px;height:66px}
+@media(max-width:600px){
+ .cinematic .season-head{flex-wrap:wrap}.cinematic .season-head strong{flex:1}.cinematic .season-meta{margin-left:auto}
+ .cinematic .episode-heading,.cinematic .episode-row{grid-template-columns:minmax(0,1fr) 40px 40px 44px}
+ .cinematic .episode-row .circle{grid-row:2}.cinematic .episode-row .circle:not(.minus){grid-column:2}.cinematic .episode-row .circle.minus{grid-column:3}
+ .cinematic .episode-heading span:nth-last-child(-n+2){display:none}
+ .cinematic .episode-row:has(.editor) .editor{grid-row:auto}
+ .cinematic .tracking{gap:5px}.cinematic .track label{font-size:11px;gap:4px}.cinematic .track input{width:18px;height:18px}
+}

@@ -4,3 +4,19 @@
 @media(prefers-reduced-motion:no-preference){.hub-movie-open .hub-art img{transition:transform .2s}.hub-movie-open:hover .hub-art img{transform:scale(1.025)}}
 /* Keep the fallback behind full-bleed artwork, including Safari's grid sizing. */
 .hub-backdrop img{position:absolute;inset:0}
+
+/* Scoped to detail content; Home and the collection chooser stay unchanged. */
+.hub-detail-view .hub-seasons{gap:8px}.hub-detail-view .hub-season{padding:10px 12px;border-color:#ffd15a80;border-radius:10px}
+.hub-detail-view .hub-season-overview{gap:10px}.hub-detail-view .hub-season-art{flex-basis:40px}
+.hub-detail-view .hub-season-title{font-size:16px;padding:3px 0}.hub-detail-view .hub-note{margin:4px 0;font-size:11px}
+.hub-detail-view .hub-tracking{padding:3px 0;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+.hub-detail-view .hub-tracking label{align-items:center;padding-top:0;min-height:44px;font-size:11px;gap:5px}
+.hub-detail-view .hub-tracking input{width:18px;height:18px}
+.hub-detail-view .hub-episodes{margin-top:2px}.hub-detail-view .hub-episodes>summary{padding:10px 0;min-height:44px;font-size:12px}
+.hub-detail-view .hub-episode{padding:6px 0 0}.hub-detail-view .hub-episode h4{font-size:12px;line-height:1.4}
+.hub-detail-view .hub-movies{grid-template-columns:1fr;gap:8px}
+.hub-detail-view .hub-movie{border-color:#ffd15a80;border-radius:9px;padding:8px 10px}
+.hub-detail-view .hub-movie-open .hub-art{float:left;width:42px;margin-right:10px;border-radius:4px}
+.hub-detail-view .hub-movie h3{font-size:14px;margin:4px 0}.hub-detail-view .hub-movie-open>.hub-note{margin:4px 0}
+.hub-detail-view .hub-movie-open{min-height:64px}.hub-detail-view .hub-movie .hub-tracking{clear:both}
+@media(min-width:700px){.hub-detail-view .hub-movies{grid-template-columns:repeat(2,minmax(0,1fr))}}
