@@ -84,11 +84,13 @@
     return {count(value){count=value;schedule()},pause(reason,value){value?pauses.add(reason):pauses.delete(reason);schedule()},reset:schedule,destroy(){destroyed=true;if(timer!==null)clearTimer(timer);timer=null},get running(){return timer!==null}};
   }
   function create(adapter){
-    let cleanup=()=>{},currentKey=null,userPaused=false,restoreFocus=null;
+    let cleanup=()=>{},state=adapter.initialState||{},currentKey=state.currentKey||null,userPaused=!!state.userPaused,restoreFocus=null,capture=()=>state;
+    const position=value=>Number.isFinite(value)&&value>=0?value:0;
     const failedImages=new Set();
     function mount(target){
       cleanup();
       const document=target.ownerDocument,win=document.defaultView,content=model(adapter.getData());
+      const saved=state,shelves=new Map();let activeQueue=null;
       const listeners=[];function on(node,event,callback,options){node.addEventListener(event,callback,options);listeners.push(()=>node.removeEventListener(event,callback,options))}
       function el(tag,cls,text){const node=document.createElement(tag);node.className=cls||'';if(text!=null)node.textContent=text;return node}
       function button(text,cls,action,label){const node=el('button',cls,text);node.type='button';if(label)node.setAttribute('aria-label',label);on(node,'click',action);return node}
@@ -155,7 +157,6 @@
         on(card,'pointercancel',()=>{gesture=null;clock.pause('gesture',false)});
       }
       const shortcuts=el('section','home-status-shortcuts');shortcuts.setAttribute('aria-label','Collection tasks');home.append(shortcuts);
-      let activeQueue=null;
       for(const [label,entries,hint] of [['Ready to Rip',content.readyToRip,'Owned, not marked Ripped'],['Ready for Jellyfin',content.readyForJellyfin,'Owned and Ripped, not marked In Jellyfin']]){
         const shortcut=button('','home-status-shortcut',()=>{
           const opening=activeQueue!==label;activeQueue=opening?label:null;
@@ -166,13 +167,14 @@
             for(const record of entries)queue.append(button(record.item.title+' →','home-queue-title',()=>adapter.open(record)));
           }
         });
-        shortcut.setAttribute('aria-expanded','false');shortcut.setAttribute('aria-controls','home-task-queue');
+        shortcut.dataset.queue=label;shortcut.setAttribute('aria-expanded','false');shortcut.setAttribute('aria-controls','home-task-queue');
         shortcut.append(el('span','home-status-count',String(entries.length)),el('span','home-status-label',label+' →'));shortcuts.append(shortcut);
       }
       const queue=el('section','home-task-queue');queue.id='home-task-queue';queue.hidden=true;home.append(queue);
       function posterShelf(title,note,entries){
         const section=el('section','home-shelf');section.append(el('h3','',title),el('p','home-note',note));
         const list=el('div','home-poster-strip');list.setAttribute('role','group');list.setAttribute('aria-label',title);home.append(section);section.append(list);
+        shelves.set(title,list);
         if(!entries.length){section.append(el('p','home-note','No titles here yet. Add titles and track ownership in TV Guide or Movies.'));return}
         for(const record of entries){
           const tile=button('','home-poster-tile',()=>adapter.open(record),record.item.title+'. Open '+(record.kind==='show'?'TV show':'movie')+' details');tile.dataset.recordKey=record.key;
@@ -186,12 +188,34 @@
       }
       posterShelf('On Your Shelves','Owned movies & TV shows · swipe to browse',content.shelves[0]);
       posterShelf('Explore Your Collection','All saved movies & TV shows · collection order, not recently added',content.shelves[1]);
+      if(saved.activeQueue)[...shortcuts.children].find(node=>node.dataset.queue===saved.activeQueue)?.click();
+      // Keep UI state separate from collection/ownership data. Capture before DOM replacement
+      // and before pagehide, including Safari's back/forward cache path.
+      let restoring=true,frame=null,timer=null;
+      function restore(){
+        if(!restoring)return;
+        for(const [name,list] of shelves)list.scrollLeft=position(saved.shelves?.[name]);
+        if(saved.scrollY!=null)win.scrollTo(0,position(saved.scrollY));
+      }
+      function stopRestoring(){restoring=false;if(frame!==null)win.cancelAnimationFrame(frame);if(timer!==null)win.clearTimeout(timer);observer?.disconnect()}
+      const observer=win.ResizeObserver?new win.ResizeObserver(restore):null;
+      observer?.observe(home);
+      on(home,'load',restore,true);on(home,'error',restore,true);
+      for(const event of ['pointerdown','touchstart','wheel','keydown'])on(win,event,stopRestoring,{passive:true});
+      restore();frame=win.requestAnimationFrame(()=>{restore();frame=win.requestAnimationFrame(restore)});
+      timer=win.setTimeout(stopRestoring,1500);
+      capture=()=>{
+        // Do not replace pending restoration coordinates with a temporarily clamped layout.
+        state={currentKey,userPaused,activeQueue,scrollY:restoring&&saved.scrollY!=null?saved.scrollY:win.scrollY,shelves:Object.fromEntries([...shelves].map(([name,list])=>[name,restoring&&saved.shelves?.[name]!=null?saved.shelves[name]:list.scrollLeft]))};
+        return state;
+      };
       if(restoreFocus){const focusTarget=restoreFocus==='card'?card:[...carousel.querySelectorAll('button')].find(node=>node.getAttribute('aria-label')===restoreFocus);focusTarget?.focus({preventScroll:true});restoreFocus=null}
-      cleanup=()=>{if(carousel.contains(document.activeElement))restoreFocus=document.activeElement===card?'card':document.activeElement.getAttribute('aria-label');++artGeneration;clock.destroy();animation?.cancel();listeners.forEach(remove=>remove());};
+      cleanup=()=>{capture();capture=()=>state;stopRestoring();if(carousel.contains(document.activeElement))restoreFocus=document.activeElement===card?'card':document.activeElement.getAttribute('aria-label');++artGeneration;clock.destroy();animation?.cancel();listeners.forEach(remove=>remove());};
     }
-    return {mount,unmount(){cleanup();cleanup=()=>{};}};
+    return {mount,getState:()=>capture(),unmount(){cleanup();cleanup=()=>{};}};
   }
   root.ClassicHome={records,model,artwork,organizingReason,rotation,create};
   if(typeof module!=='undefined')module.exports=root.ClassicHome;
 })(typeof window==='undefined'?globalThis:window);
+
 
