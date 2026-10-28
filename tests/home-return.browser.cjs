@@ -14,6 +14,9 @@ const base=process.env.TEST_URL||'http://127.0.0.1:8769';
   await context.route('https://art.test/**',async r=>{await new Promise(resolve=>setTimeout(resolve,250));await r.fulfill({status:404,body:''})});
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto(base);await page.evaluate(()=>metadata.stop());
+  // Exercise Home after a Collections history entry, not only on a fresh page.
+  await page.locator('#collectionsTab').click();await page.locator('.hub-card').first().click();
+  await page.locator('#homeTab').click();
   const baseline=await page.evaluate(()=>localStorage.getItem('comcast-collection-v1'));
   // Both movie and TV routes, browser Back and existing app links, plus a full reload.
   for(const [kind,back] of [['show','browser'],['movie','link'],['show','link'],['movie','browser']]){
