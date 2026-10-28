@@ -26,11 +26,11 @@ test('empty and singleton featured collections are supported without synthetic e
 test('series-level Owned is labeled as a checkbox, not a complete-series ownership claim',()=>{
  const d=data();d.items[0].owned=true;assert.equal(H.model(d).featured[0].ownership,'Series marked Owned');
 });
-test('artwork prefers cached backdrops but honors manual/legacy poster choices',()=>{
+test('featured artwork preserves backdrop-first priority and validates URLs',()=>{
  const r=H.model(data()).featured[0];r.detail={tmdb:{poster:'https://a.test/p.jpg',backdrop:'https://a.test/b.jpg'}};
  assert.deepEqual(H.artwork(r,{}),['https://a.test/b.jpg','https://a.test/p.jpg']);
- assert.equal(H.artwork(r,{'movie':'https://a.test/custom.jpg'})[0],'https://a.test/custom.jpg');
- assert.equal(H.artwork(r,{},new Set(['movie']))[0],'https://a.test/p.jpg');
+ assert.deepEqual(H.artwork(r,{'movie':'https://a.test/custom.jpg'}),['https://a.test/b.jpg','https://a.test/custom.jpg']);
+ assert.equal(H.artwork(r,{},new Set(['movie']))[0],'https://a.test/b.jpg');
  r.detail={poster:'javascript:bad'};assert.deepEqual(H.artwork(r,{}),[]);
 });
 test('recent activity uses only actual successful metadata refresh timestamps within 30 days',()=>{
@@ -49,4 +49,19 @@ test('hidden, reduced-motion, focus, hover, gesture and explicit pause compose i
  const f=fakeClock(),r=H.rotation({...f,next:()=>{}});r.count(2);
  for(const reason of ['hidden','motion','focus','hover','gesture','user']){r.pause(reason,true);assert.equal(f.tasks.size,0);r.pause(reason,false);assert.equal(f.tasks.size,1)}
  r.pause('hidden',true);r.pause('motion',true);r.pause('hidden',false);assert.equal(f.tasks.size,0);r.pause('motion',false);assert.equal(f.tasks.size,1);r.count(1);assert.equal(f.tasks.size,0);r.count(0);assert.equal(f.tasks.size,0);r.destroy();
+});
+
+
+test('queues evaluate owned units and shelves mix types without changing saved order or data',()=>{
+ const d=data();d.collectionChildren[0].owned=true;d.collectionChildren[0].ripped=true;
+ d.items[1].ripped=true;d.items[1].added=false;d.collectionChildren[1].ripped=false;
+ const before=JSON.stringify(d),m=H.model(d);
+ assert.deepEqual(m.readyToRip.map(r=>r.item.id),['child']);
+ assert.deepEqual(m.readyForJellyfin.map(r=>r.item.id),['show','movie']);
+ assert.deepEqual(m.shelves[0].map(r=>r.kind),['show','movie','movie']);
+ assert.equal(m.shelves[1].length,m.all.length);assert.equal(JSON.stringify(d),before);
+ d.showDetails.show.episodes.season[0]={owned:true,ripped:false,added:true};
+ assert.equal(H.model(d).readyToRip[0].item.id,'show');
+ d.collectionChildren[0].owned=false;d.showDetails.show.episodes.season[0].owned=false;
+ assert.ok(!H.model(d).readyForJellyfin.some(r=>r.kind==='show'));
 });
