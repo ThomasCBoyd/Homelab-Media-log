@@ -19,6 +19,22 @@ test('Unicode, punctuation, ampersands and year normalization is generic',()=>{
   assert.equal(M.normalize('Amélie: Rock & Roll!'),M.normalize('Amelie Rock and Roll'));
   assert.deepEqual(M.titleParts('A Story [1998]'),{title:'A Story',year:'1998'});
 });
+test('discovery uses the existing Worker routes for movie and TV results without saving anything',async()=>{
+ const calls=[],fetcher=async url=>{const u=new URL(url);calls.push(u);return Response.json({results:u.pathname==='/movie/search'?
+  [{id:10,title:'Movie Match',release_date:'2021-04-02',overview:'Film synopsis',poster:'/film.jpg'},{id:0,title:'Invalid'}]:
+  [{id:20,name:'Series Match',first_air_date:'2019-10-01',overview:'Series synopsis',poster:'/series.jpg'}]})};
+ const results=await M.discover('Match',fetcher);
+ assert.deepEqual(calls.map(x=>x.pathname),['/movie/search','/tv/search']);
+ assert.equal(calls[0].searchParams.get('query'),'Match');assert.equal(calls[1].searchParams.get('title'),'Match');
+ assert.deepEqual(results.map(x=>[x.kind,x.id,x.title,x.year]),[['movie',10,'Movie Match','2021'],['show',20,'Series Match','2019']]);
+ assert.equal(results[0].poster,'https://image.tmdb.org/t/p/w500/film.jpg');
+ assert.equal(results[1].overview,'Series synopsis');
+});
+test('discovery accepts a partial Worker failure and skips short queries',async()=>{
+ let calls=0;const fetcher=async url=>{calls++;if(new URL(url).pathname==='/movie/search')throw Error('offline');return Response.json({results:[{id:2,name:'TV'}]})};
+ assert.deepEqual(await M.discover('x',fetcher),[]);assert.equal(calls,0);
+ assert.deepEqual((await M.discover('title',fetcher)).map(x=>x.title),['TV']);assert.equal(calls,2);
+});
 test('original and alternate titles, deduplication, and release-year disambiguation',()=>{
   const ranked=M.candidates([{id:1,title:'Other',original_title:'Original',year:'2001'},{id:2,title:'Original',year:'2020'},{id:2,title:'Original',year:'2020'}],'Original','2020');
   assert.equal(ranked.length,2);assert.ok(M.confident(ranked));assert.equal(ranked[0].record.id,2);
@@ -109,3 +125,4 @@ test('entries added during a scan are picked up in its next pass',async()=>{
   const scan=s.client.scan();while(!release)await new Promise(r=>setImmediate(r));
   s.data.items.push({id:'second',type:'movie',title:'Example (2020)'});await s.client.scan();release();await scan;assert.equal(s.data.movieDetails.second.tmdbId,123);
 });
+
