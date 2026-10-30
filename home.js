@@ -54,6 +54,23 @@
     function mixed(entries){const shows=entries.filter(r=>r.kind==='show'),movies=entries.filter(r=>r.kind==='movie'),out=[];while(shows.length||movies.length){if(shows.length)out.push(shows.shift());if(movies.length)out.push(movies.shift())}return out}
     return {all,featured,recent,readyToRip,readyForJellyfin,shelves:[mixed(featured),mixed(all)],organizing:featured.slice(0,6).map(record=>({record,reason:organizingReason(record)}))};
   }
+  // Shuffle the carousel independently of the saved collection order. Keep the
+  // same shuffled sequence across Home remounts, including Safari back navigation.
+  let carouselOrder=[];
+  function shuffledCarousel(entries,random=Math.random){
+    const byKey=new Map(entries.map(entry=>[entry.key,entry]));
+    const existing=carouselOrder.filter(key=>byKey.has(key));
+    const existingSet=new Set(existing);
+    const newcomers=entries.map(entry=>entry.key).filter(key=>!existingSet.has(key));
+    for(let i=newcomers.length-1;i>0;i--){
+      const j=Math.floor(random()*(i+1));
+      [newcomers[i],newcomers[j]]=[newcomers[j],newcomers[i]];
+    }
+    // Shuffle once per collection membership, not on every navigation.
+    // When the initial order is empty, all entries participate in the shuffle.
+    carouselOrder=[...existing,...newcomers];
+    return carouselOrder.map(key=>byKey.get(key));
+  }
   function artwork(record,posters,manualIds=new Set()){
     const d=record.detail,poster=posters[id(record.item.id)]||d.poster||d.tmdb?.poster||d.metadata?.poster;
     const backdrop=d.backdrop||d.tmdb?.backdrop||d.metadata?.backdrop;
@@ -92,6 +109,7 @@
       cleanup();
       suspended=false;
       const document=target.ownerDocument,win=document.defaultView,content=model(adapter.getData());
+      content.featured=shuffledCarousel(content.all);
       const saved=state,shelves=new Map();let activeQueue=null;
       const listeners=[];function on(node,event,callback,options){node.addEventListener(event,callback,options);listeners.push(()=>node.removeEventListener(event,callback,options))}
       function el(tag,cls,text){const node=document.createElement(tag);node.className=cls||'';if(text!=null)node.textContent=text;return node}
@@ -117,7 +135,7 @@
         }
         load();
         const copy=el('span','home-feature-copy');
-        copy.append(el('span','home-kicker',record.kind==='show'?'ON YOUR TV DIAL':'FROM YOUR MOVIE SHELF'),el('span','home-feature-title',record.item.title),el('span','home-ownership',record.ownership));
+        copy.append(el('span','home-kicker',record.kind==='show'?'ON YOUR TV DIAL':'FROM YOUR MOVIE SHELF'),el('span','home-feature-title',record.item.title),el('span','home-ownership',record.ownership||'Not marked Owned'));
         const meta=record.kind==='show'?(record.channel?record.channel.name+' · Channel '+record.channel.num:'TV Series'):(record.parent?'Movie · '+record.parent.title:'Movie');
         copy.append(el('span','home-feature-meta',[meta,record.detail.year||record.detail.tmdb?.firstAirDate?.slice(0,4)].filter(Boolean).join(' · ')));
         const description=record.detail.manualFields?.includes('description')?record.detail.description:(record.detail.description||record.detail.tmdb?.overview);
@@ -133,7 +151,7 @@
       function show(next,manual=true){index=(next+content.featured.length)%content.featured.length;draw();if(manual){status.textContent=content.featured[index].item.title+'. '+(index+1)+' of '+content.featured.length;clock.reset()}}
       let preventClickUntil=0;
       if(!content.featured.length){
-        const empty=el('div','home-feature-empty');empty.append(el('span','home-empty-mark','YOUR NEXT CLASSIC AWAITS'),el('h4','','Make this lineup yours'),el('p','','Titles you mark Owned will appear here. Owned seasons and episodes count too. Nothing in your collection has been changed.'),button('Browse TV Guide','home-gold',()=>adapter.tab('guide')));carousel.append(empty);
+        const empty=el('div','home-feature-empty');empty.append(el('span','home-empty-mark','YOUR NEXT CLASSIC AWAITS'),el('h4','','Make this lineup yours'),el('p','','Movies and TV shows in your collection will appear here. Nothing in your collection has been changed.'),button('Browse TV Guide','home-gold',()=>adapter.tab('guide')));carousel.append(empty);
       }else{
         card=button('','home-feature-card',()=>{if(Date.now()>preventClickUntil)adapter.open(content.featured[index])});carousel.append(card);
         const controls=el('div','home-carousel-controls');
@@ -220,7 +238,7 @@
     }
     return {mount,getState:()=>capture(),unmount(){cleanup();cleanup=()=>{};}};
   }
-  root.ClassicHome={records,model,artwork,organizingReason,rotation,create};
+  root.ClassicHome={records,model,artwork,organizingReason,rotation,shuffledCarousel,create};
   if(typeof module!=='undefined')module.exports=root.ClassicHome;
 })(typeof window==='undefined'?globalThis:window);
 
