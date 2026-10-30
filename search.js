@@ -1,4 +1,4 @@
-/* Local-only autocomplete. The page owns filtering, navigation and collection data. */
+/* Collection autocomplete and optional TMDB discovery. The page owns navigation and saving. */
 (function (root) {
   'use strict';
   const normalize = value => String(value ?? '').normalize('NFKD').replace(/\p{M}/gu, '')
@@ -31,8 +31,9 @@
       .map((result, index) => ({result, index, rank: normalize(result.title) === needle ? 0 : normalize(result.title).startsWith(needle) ? 1 : 2}))
       .sort((a, b) => a.rank - b.rank || a.index - b.index).slice(0, 8).map(match => match.result);
   }
-  function attach({input, done, clear, list, status, container, getData, changed, selected}) {
-    let matches = [], active = -1;
+  function attach({input, done, clear, list, status, container, getData, changed, selected, discover}) {
+    let matches = [], remote = [], active = -1, requestId = 0, debounce;
+    const options = () => [...list.querySelectorAll('[role=option]')];
     // Safari reports the keyboard's unobscured area through visualViewport.
     // Its offset is relative to the layout viewport, as are client rectangles.
     function fitDropdown() {
@@ -49,14 +50,15 @@
     function close() {
       list.hidden = true; input.setAttribute('aria-expanded', 'false');
       input.removeAttribute('aria-activedescendant'); active = -1;
-      for (const option of list.children) option.setAttribute('aria-selected', 'false');
+      for (const option of options()) option.setAttribute('aria-selected', 'false');
       status.textContent = '';
     }
     function highlight(index) {
       active = index;
-      [...list.children].forEach((option, n) => option.setAttribute('aria-selected', String(n === active)));
+      const available = options();
+      available.forEach((option, n) => option.setAttribute('aria-selected', String(n === active)));
       if (active >= 0) {
-        const option = list.children[active];
+        const option = available[active];
         input.setAttribute('aria-activedescendant', option.id);
         // Scroll only the list; scrollIntoView can also move the document on iOS.
         const top = option.getBoundingClientRect().top - list.getBoundingClientRect().top + list.scrollTop - list.clientTop;
@@ -68,13 +70,22 @@
     function choose(index) {
       const result = matches[index];
       if (!result) return;
-      close(); input.blur(); selected(result);
+      close(); input.blur();
+      if (result.source === 'tmdb') selected(result);
+      else selected(result);
     }
-    function update(open = true) {
+    function draw(open = true) {
       clear.hidden = !input.value.length;
-      matches = suggestions(getData(), input.value); active = -1;
+      const local = suggestions(getData(), input.value);
+      matches = [...local, ...remote]; active = -1;
       list.replaceChildren(); input.removeAttribute('aria-activedescendant');
-      for (const [index, result] of matches.entries()) {
+      function heading(label) {
+        const row = document.createElement('li'); row.className = 'search-group'; row.setAttribute('role', 'presentation');
+        row.textContent = label; list.append(row);
+      }
+      function renderOptions(results, offset) {
+       for (const [localIndex, result] of results.entries()) {
+        const index = offset + localIndex;
         const option = document.createElement('li');
         option.id = `search-option-${index}`; option.setAttribute('role', 'option');
         option.setAttribute('aria-selected', 'false');
@@ -86,12 +97,43 @@
         option.addEventListener('mousedown', event => event.preventDefault());
         option.addEventListener('click', () => choose(index));
         list.append(option);
+       }
+      }
+      if (local.length) { heading('In your collection'); renderOptions(local, 0); }
+      if (remote.some(x => x.kind === 'movie')) {
+        heading('TMDB Movies');
+        let offset = local.length;
+        renderOptions(remote.filter(x => x.kind === 'movie'), offset);
+      }
+      if (remote.some(x => x.kind === 'show')) {
+        heading('TMDB TV Shows');
+        const offset = local.length + remote.filter(x => x.kind === 'movie').length;
+        renderOptions(remote.filter(x => x.kind === 'show'), offset);
       }
       const visible = open && input.value.trim() && matches.length > 0;
       list.hidden = !visible; fitDropdown(); input.setAttribute('aria-expanded', String(!!visible));
-      status.textContent = open && input.value.trim() ? `${matches.length} suggestions. Use up and down arrows to choose, then Enter. Full search results are below.` : '';
+      status.textContent = open && input.value.trim() ? `${local.length} collection suggestions, ${remote.length} TMDB results. Use up and down arrows to choose, then Enter. Full search results are below.` : '';
     }
-    input.addEventListener('input', () => { changed(); update(); });
+    function update(open = true, searchRemote = false) {
+      draw(open);
+      if (!searchRemote || typeof discover !== 'function') return;
+      const query = input.value.trim(), id = ++requestId;
+      clearTimeout(debounce); remote = [];
+      draw(open);
+      if (query.length < 2) return;
+      debounce = setTimeout(async () => {
+        try {
+          const results = await discover(query);
+          if (id !== requestId || query !== input.value.trim()) return;
+          remote = Array.isArray(results) ? results.map(x => ({...x, source:'tmdb'})) : [];
+        } catch {
+          if (id !== requestId) return;
+          remote = [];
+        }
+        draw(open);
+      }, 250);
+    }
+    input.addEventListener('input', () => { changed(); update(true, true); });
     input.addEventListener('focus', () => update());
     input.addEventListener('keydown', event => {
       if (event.isComposing) return;
@@ -127,3 +169,4 @@
   root.ClassicSearch = {suggestions, attach};
   if (typeof module !== 'undefined') module.exports = root.ClassicSearch;
 })(typeof window === 'undefined' ? globalThis : window);
+

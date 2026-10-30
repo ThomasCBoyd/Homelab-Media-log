@@ -57,6 +57,30 @@
       return body;
     } finally { clearTimeout(timeout); }
   }
+  async function discover(query, fetcher = root.fetch.bind(root)) {
+    const term = String(query || '').trim();
+    if (term.length < 2) return [];
+    const lookups = await Promise.allSettled([
+      request('/movie/search', {query: term}, fetcher),
+      request('/tv/search', {title: term}, fetcher)
+    ]);
+    const output = [];
+    for (const [index, result] of lookups.entries()) {
+      if (result.status !== 'fulfilled' || !Array.isArray(result.value.results)) continue;
+      const kind = index === 0 ? 'movie' : 'show';
+      for (const record of result.value.results) {
+        const id = recordId(record), title = record.title || record.name || record.original_title || record.original_name;
+        if (!id || !title) continue;
+        const meta = fields(record);
+        const releaseYear = recordYear(record);
+        output.push({id, kind, title: String(title), year: releaseYear,
+          category: (kind === 'show' ? 'TV series' : 'Movie') + (releaseYear ? ' · ' + releaseYear : ''),
+          overview: meta.description,
+          poster: meta.poster, originalTitle: record.original_title || record.original_name || ''});
+      }
+    }
+    return output;
+  }
   function create(adapter, options = {}) {
     const now = options.now || Date.now;
     const fetcher = options.fetch || root.fetch.bind(root);
@@ -307,6 +331,7 @@
     }
     return {scan, lookup, interactive, alias, targets, detail, folder, stop() { stopped = true; clearTimeout(timer); root.removeEventListener?.('storage', storageChanged); }};
   }
-  root.ClassicMetadata = {create, normalize, titleParts, candidates, confident, fields, request};
+  root.ClassicMetadata = {create, normalize, titleParts, candidates, confident, fields, request, discover};
   if (typeof module !== 'undefined') module.exports = root.ClassicMetadata;
 })(typeof window === 'undefined' ? globalThis : window);
+
