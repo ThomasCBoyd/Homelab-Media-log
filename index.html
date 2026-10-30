@@ -94,7 +94,30 @@ row.addEventListener('keydown',event=>{
  if(item.type==='show')openShow(item);else openMovie(item);
 });
 wrap.append(row);if(isOpen&&item.type==='movie'){const body=el('div','children'),list=children(item);for(const child of list)body.append(childRow(child,item));if(!list.length)body.append(el('div','empty','No movies yet.'));const actions=el('div','actions');actions.append(button('View Collection','detailslink',()=>openMovie(item)),button('+ Add Movie','',()=>addChild(item)));body.append(actions);wrap.append(body)}return wrap}
-function addItem(type,channel){const title=prompt(type==='show'?'TV show title':'Movie or collection title');if(!title||!title.trim())return;data.items.push({id:uid(),type,channel:channel?.id,title:title.trim(),owned:false,ripped:false,added:false});save();render();requestPosterScan()}
+function channelSelector(selectedId){
+ const wrap=el('label','tmdb-channel-label'),label=el('span','','Channel Location (optional)'),select=el('select','tmdb-channel-select');
+ select.setAttribute('aria-label','Channel Location');select.style.cssText='display:block;width:100%;min-height:44px;margin:8px 0 14px;padding:10px;background:#092751;color:white;border:1px solid #e7bb4c;border-radius:8px';
+ const none=document.createElement('option');none.value='';none.textContent='Unassigned';select.append(none);
+ for(const channel of [...data.channels].sort((a,b)=>Number(a.num)-Number(b.num)||String(a.name).localeCompare(String(b.name)))){
+  const option=document.createElement('option');option.value=String(channel.id);option.textContent=channel.name+' — Channel '+channel.num;select.append(option);
+ }
+ select.value=selectedId==null?'':String(selectedId);wrap.append(label,select);return {wrap,select};
+}
+function addItem(type,channel){
+ const title=prompt(type==='show'?'TV show title':'Movie or collection title');if(!title||!title.trim())return;
+ if(type!=='show'){data.items.push({id:uid(),type,channel:channel?.id,title:title.trim(),owned:false,ripped:false,added:false});save();render();requestPosterScan();return}
+ const overlay=el('div','tmdb-preview-overlay'),dialog=el('section','tmdb-preview');dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');
+ const heading=el('h2','','Add TV Show'),name=el('p','',title.trim()),choice=channelSelector(channel?.id);
+ const actions=el('div','tmdb-preview-actions'),close=()=>overlay.remove();
+ const confirmAdd=button('Add TV Show','tmdb-confirm',()=>{
+  if(collectionReadBlocked){alert('Collection cannot be saved safely.');return}
+  data.items.push({id:uid(),type:'show',channel:choice.select.value||null,title:title.trim(),owned:false,ripped:false,added:false});
+  try{save()}catch(error){data.items.pop();alert('Could not save TV show.');return}
+  close();render();requestPosterScan();
+ });
+ actions.append(confirmAdd,button('Cancel','tmdb-cancel',close));dialog.append(heading,name,choice.wrap,actions);overlay.append(dialog);document.body.append(overlay);choice.select.focus();
+ overlay.addEventListener('click',event=>{if(event.target===overlay)close()});overlay.addEventListener('keydown',event=>{if(event.key==='Escape')close()});
+}
 function section(name,num,items,type,channel){const card=el('section','card'),head=el('div','cardhead'),arrow=el('span','arrow',channel?'▸':''),number=el('span','channelnum',num);head.append(arrow,number);const grow=el('div','grow');grow.append(el('h2','',name),el('span','muted',items.length+' matching titles'));if(channel){const all=data.items.filter(x=>x.type==='show'&&String(x.channel)===String(channel.id));grow.append(el('span','channel-progress',all.filter(x=>x.owned).length+' / '+all.length+' owned · '+all.filter(x=>x.ripped).length+' ripped'));}head.append(grow);if(channel)head.append(button('Edit','mini',event=>{event.stopPropagation();const n=prompt('Channel number',channel.num);if(n===null||!n.trim())return;const newName=prompt('Channel name',channel.name);if(newName===null||!newName.trim())return;channel.num=n.trim();channel.name=newName.trim();save();render()}));if(channel){card.dataset.channelId=String(channel.id);head.tabIndex=-1}card.append(head);const body=el('div');card.append(body);const searching=!!$('search').value.trim();let isOpen=!channel||searching||openChannels.map(String).includes(String(channel.id));function update(){body.hidden=!isOpen;arrow.textContent=isOpen?'▾':'▸'}if(channel)head.onclick=event=>{if(event.target.closest('button'))return;isOpen=!isOpen;update();if(!searching){const ids=new Set(openChannels.map(String));if(isOpen)ids.add(String(channel.id));else ids.delete(String(channel.id));openChannels=[...ids];localStorage.setItem(OPEN_KEY,JSON.stringify(openChannels))}};if(view==='list'){const headings=el('div','row heading');for(const label of ['Title','Owned','Ripped','Added','Edit'])headings.append(el('span',label==='Title'?'':'center',label));body.append(headings)}const listing=el('div',view==='grid'?'grid-items':'list-items');for(const item of items)listing.append(itemRow(item));body.append(listing);if(!items.length)body.append(el('div','empty','No matching titles.'));const actions=el('div','actions');actions.append(button(type==='show'?'+ Add Show':'+ Add Movie / Collection','',()=>addItem(type,channel)));body.append(actions);update();return card}
 function updateStats(){const folders=new Set(data.items.filter(item=>item.type==='movie'&&children(item).length>0).map(item=>String(item.id)));const main=data.items.filter(item=>item.type!=='season'&&!folders.has(String(item.id)));const movies=data.collectionChildren.filter(item=>folders.has(String(item.parentId)));const titles=[...main,...movies];$('stats').textContent=titles.filter(x=>x.owned).length+' owned / '+titles.length+' titles • '+titles.filter(x=>x.ripped).length+' ripped • '+titles.filter(x=>x.added).length+' added';const showIds=new Set(data.items.filter(x=>x.type==='show').map(x=>String(x.id)));const seasons=data.collectionChildren.filter(x=>showIds.has(String(x.parentId)));$('seasonStats').textContent='Seasons: '+seasons.filter(x=>x.owned).length+'/'+seasons.length+' owned • '+seasons.filter(x=>x.ripped).length+' ripped • '+seasons.filter(x=>x.added).length+' added'}
 function titleMatches(item,q){return !q||item.title.toLowerCase().includes(q)||children(item).some(child=>child.title.toLowerCase().includes(q))}
@@ -195,6 +218,7 @@ async function previewTMDB(source){
   if(poster){poster.src=values.poster;poster.alt=title+' poster';poster.loading='lazy'}
   const titleNode=el('h3','',title);const actions=el('div','tmdb-preview-actions');
   const destination=source.kind==='show'?'TV Shows / Comcast Guide':'Movies / Movie Collection';
+  const channelChoice=source.kind==='show'?channelSelector(null):null;
   const fresh=readableCollectionForDiscovery(),duplicate=!!fresh&&discoveryDuplicate(source,fresh);
   const add=button(duplicate?'Already in your collection':fresh?'Add to '+destination:'Collection unavailable','tmdb-confirm',()=>{
    add.disabled=true;
@@ -205,7 +229,7 @@ async function previewTMDB(source){
    try{
     next=JSON.parse(JSON.stringify(current));const id=uid(),type=source.kind==='show'?'show':'movie';
     next.collectionChildren ||= [];next.showDetails ||= {};next.movieDetails ||= {};
-    next.items.push({id,type,title,channel:null,owned:false,ripped:false,added:false});
+    next.items.push({id,type,title,channel:type==='show'?(channelChoice.select.value||null):null,owned:false,ripped:false,added:false});
     const bucket=type==='show'?next.showDetails:next.movieDetails;
     const identityType=type==='show'?'tv':'movie',identity=[identityType,ClassicMetadata.normalize(ClassicMetadata.titleParts(title).title),year||''].join('|');
     bucket[id]={...values,tmdb:{...info,id:Number(source.id)},tmdbId:Number(source.id),metadataLookup:{id:Number(source.id),status:'ok',identity,updatedAt:Date.now()}};
@@ -213,7 +237,7 @@ async function previewTMDB(source){
    }catch(error){message.textContent='Could not save this title. Your collection was left unchanged.';add.disabled=false;return}
    data=next;message.textContent='Added to '+destination+'.';render();rememberPlace();close();
   });
-  add.disabled=duplicate||!fresh;actions.append(add,cancel);dialog.replaceChildren(heading,titleNode,message);if(poster)dialog.append(poster);dialog.append(summary,actions);add.focus();
+  add.disabled=duplicate||!fresh;actions.append(add,cancel);dialog.replaceChildren(heading,titleNode,message);if(poster)dialog.append(poster);dialog.append(summary);if(channelChoice)dialog.append(channelChoice.wrap);dialog.append(actions);if(channelChoice)channelChoice.select.focus();else add.focus();
  }catch(error){message.textContent='Could not load this TMDB preview. Try again later.';dialog.append(cancel)}
  overlay.addEventListener('click',event=>{if(event.target===overlay)close()});overlay.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();close()}});
 }
