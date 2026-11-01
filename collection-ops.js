@@ -37,6 +37,13 @@ function softDelete(data,kind,id,parentId){
  bin.push({id:'trash-'+Date.now()+'-'+Math.random().toString(36).slice(2),kind,record,detail,related,memberships,parentId,deletedAt:Date.now()});
  next.tvLandTrash=bin;return next;
 }
+const RETENTION_MS=7*24*60*60*1000;
+function pruneTrash(data,now=Date.now()){
+ const next=JSON.parse(JSON.stringify(data));
+ const old=Array.isArray(next.tvLandTrash)?next.tvLandTrash:[];
+ next.tvLandTrash=old.filter(x=>Number.isFinite(x.deletedAt)&&x.deletedAt>now-RETENTION_MS);
+ return {data:next,removed:old.length-next.tvLandTrash.length};
+}
 function restore(data,trashId){
  const next=JSON.parse(JSON.stringify(data)),item=(next.tvLandTrash||[]).find(x=>same(x.id,trashId));if(!item)return null;
  const id=item.record.id;
@@ -56,6 +63,6 @@ function restore(data,trashId){
  if(item.memberships?.length){const key=(item.kind==='child'?'child:':'item:')+id;next.customCollections=(next.customCollections||[]).map(g=>item.memberships.includes(g.id)?{...g,members:[...new Set([...(g.members||[]),key])]}:g)}
  next.tvLandTrash=next.tvLandTrash.filter(x=>!same(x.id,trashId));return next;
 }
-root.TVLandCollectionOps={entries,members,softDelete,restore};
+root.TVLandCollectionOps={entries,members,softDelete,restore,pruneTrash,RETENTION_MS};
 if(typeof module==='object')module.exports=root.TVLandCollectionOps;
 })(typeof globalThis!=='undefined'?globalThis:this);
