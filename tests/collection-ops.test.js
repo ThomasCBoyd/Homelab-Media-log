@@ -1,0 +1,6 @@
+const test=require('node:test'),assert=require('node:assert/strict');const ops=require('../collection-ops.js');
+const data={items:[{id:1,type:'movie',title:'Movie'},{id:2,type:'show',title:'Show'},{id:3,type:'movie',title:'Box Set'}],collectionChildren:[{id:4,parentId:3,title:'Child'}],movieDetails:{1:{poster:'movie.jpg'},4:{poster:'child.jpg'}},showDetails:{2:{episodes:{a:[{id:8,title:'Episode'}]}}},customCollections:[{id:'a',type:'movie',name:'Favorites',members:['item:1','child:4']}],channels:[]};
+test('separate movie and TV members',()=>{assert.deepEqual(ops.entries(data,'show').map(x=>x.title),['Show']);assert.deepEqual(ops.entries(data,'movie').map(x=>x.title),['Movie','Child'])});
+test('deletion is reversible and does not mutate source',()=>{const deleted=ops.softDelete(data,'item',2);assert.equal(data.items.length,3);assert.equal(deleted.items.length,2);assert.deepEqual(ops.restore(deleted,deleted.tvLandTrash[0].id).showDetails[2],data.showDetails[2])});
+test('collection deletion leaves media intact',()=>{const deleted=ops.softDelete(data,'collection','a');assert.equal(deleted.items.length,3);assert.equal(deleted.customCollections.length,0)});
+test('box set cannot be deleted while child movies exist',()=>{assert.ok(ops.softDelete(data,'item',3).error)});
