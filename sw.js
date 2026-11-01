@@ -1,5 +1,5 @@
 /* TV Land offline shell. Never cache personal collection records or TMDB API responses. */
-const VERSION='tv-land-shell-20261101-v6';
+const VERSION='tv-land-shell-20261101-v7';
 const POSTERS='tv-land-posters-v1';
 const MAX_POSTERS=180;
 function posterRequest(url){
@@ -21,7 +21,8 @@ self.addEventListener('install',event=>{
  event.waitUntil((async()=>{
   const cache=await caches.open(VERSION);
   // Fail installation rather than claim offline readiness with a partial shell.
-  await cache.addAll(SHELL);
+  await cache.addAll(SHELL.map(url=>new Request(url,{cache:'reload'})));
+  await self.skipWaiting();
  })());
 });
 self.addEventListener('activate',event=>{
