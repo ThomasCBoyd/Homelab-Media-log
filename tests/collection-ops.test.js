@@ -4,3 +4,5 @@ test('separate movie and TV members',()=>{assert.deepEqual(ops.entries(data,'sho
 test('deletion is reversible and does not mutate source',()=>{const deleted=ops.softDelete(data,'item',2);assert.equal(data.items.length,3);assert.equal(deleted.items.length,2);assert.deepEqual(ops.restore(deleted,deleted.tvLandTrash[0].id).showDetails[2],data.showDetails[2])});
 test('collection deletion leaves media intact',()=>{const deleted=ops.softDelete(data,'collection','a');assert.equal(deleted.items.length,3);assert.equal(deleted.customCollections.length,0)});
 test('box set cannot be deleted while child movies exist',()=>{assert.ok(ops.softDelete(data,'item',3).error)});
+
+test('trash expires after exactly seven days',()=>{const now=Date.now(),week=ops.RETENTION_MS;const source={tvLandTrash:[{id:'expired',deletedAt:now-week-1},{id:'fresh',deletedAt:now-week+1}]};const result=ops.pruneTrash(source,now);assert.equal(result.removed,1);assert.deepEqual(result.data.tvLandTrash.map(x=>x.id),['fresh']);assert.equal(source.tvLandTrash.length,2)});
