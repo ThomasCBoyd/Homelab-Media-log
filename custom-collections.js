@@ -18,18 +18,7 @@ function mount(root,adapter){
  const sections=[...root.querySelectorAll('.hub-group')];const movieSection=sections.find(x=>x.querySelector('h2')?.textContent.startsWith('Movie Box Sets'));const showSection=sections.find(x=>x.querySelector('h2')?.textContent.startsWith('TV Series Collections'));
  const grids={movie:movieSection?.querySelector('.hub-grid'),show:showSection?.querySelector('.hub-grid')};
  const list=el('div','hub-grid');
- for(const group of data.customCollections){
-  if(!group||!['movie','show'].includes(group.type))continue;
-  const card=el('article','hub-card custom-collection-card'),titles=valid(data,group);
-  const art=el('div','custom-cover'),image=el('img');image.alt='';image.loading='lazy';const urls=[group.cover,...valid(data,group).map(x=>adapter.poster(x.source))].filter(Boolean);let at=0;image.onerror=()=>{at++;if(urls[at])image.src=urls[at];else image.remove()};if(urls.length){image.src=urls[0];art.append(image)}else art.append(el('span','','TV LAND'));card.append(art);card.append(el('strong','',group.name),el('span','muted',(group.type==='show'?'TV Shows':'Movies')+' · '+titles.length+' titles'));
-  if(group.description)card.append(el('p','muted',group.description));
-  const detail=el('details');detail.append(el('summary','','View titles'));
-  for(const title of titles){const line=el('div','custom-title-row');line.append(el('span','',title.title),btn('Remove',()=>{if(!confirm('Remove this title from the collection only?'))return;const latest=adapter.getData(),updated=(latest.customCollections||[]).map(g=>g.id===group.id?{...g,members:g.members.filter(k=>k!==title.id)}:g);if(adapter.save(updated)!==false)adapter.refresh()}));detail.append(line)}
-  card.append(detail,btn('Edit',()=>editor(group)));
-  (grids[group.type]||list).append(card);
- }
- if(list.childElementCount)area.append(list);
- for(const [kind,section] of [['movie',movieSection],['show',showSection]]){if(!section)continue;const count=(data.customCollections||[]).filter(g=>g.type===kind).length;const title=section.querySelector('h2');if(title&&count){const n=Number(title.textContent.match(/\((\d+)\)/)?.[1]||0);title.textContent=(kind==='movie'?'Movie Box Sets':'TV Series Collections')+' ('+(n+count)+')'}const empty=section.querySelector('p.muted');if(empty&&section.querySelector('.hub-grid')?.children.length)empty.remove()}
+ api.edit=group=>editor(group);
  const recovery=el('details');recovery.append(el('summary','','Recently Deleted'));for(const entry of (data.tvLandTrash||[]).slice().reverse()){const line=el('div','custom-title-row');line.append(el('span','',entry.record?.name||entry.record?.title||'Untitled'),btn('Restore',()=>adapter.restore(entry.id)));recovery.append(line)}area.append(recovery);const heading=root.querySelector('.hub-heading');if(heading)heading.after(area);else root.prepend(area);
  function editor(existing){
   const backdrop=el('div','custom-collection-overlay'),dialog=el('section','custom-collection-dialog');

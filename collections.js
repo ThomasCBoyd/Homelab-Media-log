@@ -41,6 +41,7 @@ function description(data,item){const d=detail(data,item);return d.manualFields?
 // Resolve against the latest stored data, so an edit cannot overwrite another tab's changes.
 function setStatus(data,target,field,value){
  if(!fields.includes(field)||typeof value!=='boolean')return false;
+ if(target.kind==='custom'){const g=(data.customCollections||[]).find(x=>same(x.id,target.groupId));if(!g||(g.members||[]).indexOf(target.key)<0)return false;const [kind,...rest]=target.key.split(':');const id=rest.join(':');const record=(kind==='child'?(data.collectionChildren||[]):(data.items||[])).find(x=>same(x.id,id));if(!record)return false;record[field]=value;return true}
  const parent=(data.items||[]).find(x=>same(x.id,target.parentId));if(!parent||!['movie','show'].includes(parent.type))return false;
  const member=(data.collectionChildren||[]).find(x=>same(x.parentId,parent.id)&&same(x.id,target.memberId));if(!member)return false;
  let record=member;
@@ -53,20 +54,33 @@ function setStatus(data,target,field,value){
  record[field]=value;return true;
 }
 function render(root,adapter){
- const data=adapter.data,all=groups(data),item=(data.items||[]).find(x=>same(x.id,adapter.selected)),selected=item&&['show','movie'].includes(item.type)&&members(data,item).length?{item,members:ordered(data,item,members(data,item))}:null;
+ const data=adapter.data,all=groups(data),custom=(data.customCollections||[]).find(g=>same('custom:'+g.id,adapter.selected)),item=(data.items||[]).find(x=>same(x.id,adapter.selected)),selected=item&&['show','movie'].includes(item.type)&&members(data,item).length?{item,members:ordered(data,item,members(data,item))}:null;
  const el=(tag,cls,text)=>{const n=document.createElement(tag);n.className=cls||'';if(text!=null)n.textContent=text;return n};
  const button=(text,fn,cls='')=>{const b=el('button',cls,text);b.type='button';b.onclick=fn;return b};
  function art(item,cls='hub-art',parent,hero=false){
   const holder=el('div',cls),urls=artwork(data,item,adapter.poster,parent);const fallback=el('span','hub-art-fallback','TV LAND');fallback.setAttribute('aria-hidden','true');holder.append(fallback);
   if(urls.length){const img=el('img');img.alt='';img.loading=hero?'eager':'lazy';let index=hero?0:Math.max(0,urls.indexOf(imageURL(adapter.poster(item))));img.src=urls[index];img.onerror=()=>{urls.splice(index,1);index=0;if(urls.length)img.src=urls[0];else img.remove()};holder.append(img)}return holder;
  }
+ if(custom){renderCustom();return}
  if(!selected){
   const heading=el('header','hub-heading');heading.append(el('h1','','Collections'),el('p','muted','Your movie box sets and television collections, together.'));root.append(heading);
   for(const [name,title] of [['movies','Movie Box Sets'],['shows','TV Series Collections']]){
    const section=el('section','hub-group');section.append(el('h2','',title+' ('+all[name].length+')'));const grid=el('div','hub-grid');
    for(const group of all[name]){const card=button('',()=>adapter.select(group.item.id),'hub-card');card.append(art(group.item),el('strong','',group.item.title),el('span','muted',group.members.length+' '+(name==='movies'?'movies':'seasons')),el('span','hub-summary',summary(group.members)));grid.append(card)}
-   section.append(grid);if(!all[name].length)section.append(el('p','muted',name==='movies'?'No saved movie box sets with members yet. Add movies to a collection in Movies.':'No owned TV series with saved seasons yet. Manage series and seasons in TV Guide.'));root.append(section);
+   for(const group of (data.customCollections||[]).filter(g=>g.type===(name==='movies'?'movie':'show'))){const list=globalThis.TVLandCustomCollections.valid(data,group);const card=button('',()=>adapter.select('custom:'+group.id),'hub-card');const source=list[0]?.source||{};const proxy={...source,id:source.id,type:group.type};const poster=group.cover||adapter.poster(source);const holder=el('div','hub-art');if(poster){const img=el('img');img.src=poster;img.alt='';holder.append(img)}else holder.append(el('span','hub-art-fallback','TV LAND'));card.append(holder,el('strong','',group.name),el('span','muted',list.length+' '+(name==='movies'?'movies':'shows')),el('span','hub-summary',summary(list.map(x=>x.source))));grid.append(card)}
+   section.querySelector('h2').textContent=title+' ('+(all[name].length+(data.customCollections||[]).filter(g=>g.type===(name==='movies'?'movie':'show')).length)+')';
+   section.append(grid);if(!grid.children.length)section.append(el('p','muted',name==='movies'?'No saved movie box sets with members yet. Add movies to a collection in Movies.':'No owned TV series with saved seasons yet. Manage series and seasons in TV Guide.'));root.append(section);
   }return;
+ }
+ function renderCustom(){
+  const entries=globalThis.TVLandCustomCollections.valid(data,custom), list=entries.map(x=>x.source), isTV=custom.type==='show';
+  root.classList.add('hub-detail-view');root.append(button('← All Collections',()=>adapter.select(null),'hub-back'));
+  const hero=el('section','hub-detail hub-hero'), back=el('div','hub-backdrop'), url=custom.cover||(list[0]&&adapter.poster(list[0]));
+  if(url){const img=el('img');img.src=url;img.alt='';back.append(img)}hero.append(back);
+  const copy=el('div','hub-hero-copy');copy.append(el('span','hub-eyebrow',isTV?'TV COLLECTION':'MOVIE COLLECTION'),el('h2','',custom.name),el('p','hub-description',custom.description||'Explore the titles saved in your collection.'));
+  const counts=el('div','hub-counts'), refresh=()=>{counts.replaceChildren();for(const [label,value] of [[isTV?'Saved shows':'Saved movies',list.length],...fields.map((f,i)=>[labels[i],list.filter(x=>x[f]).length+'/'+list.length])]){const n=el('div','hub-count');n.append(el('strong','',value),el('span','',label));counts.append(n)}};refresh();copy.append(counts,button('Edit collection',()=>globalThis.TVLandCustomCollections.edit?.(custom),'hub-primary'));hero.append(copy);root.append(hero);
+  const section=el('section','hub-library');section.append(el('h2','hub-subtitle',isTV?'Shows in this collection':'Movies in this collection'));const grid=el('div','hub-movies');
+  for(const entry of entries){const item=entry.source, card=el('article','hub-movie'), open=button('',()=>adapter.open(item,entry.id.startsWith('child:')?(data.items||[]).find(x=>same(x.id,item.parentId)):null),'hub-movie-open');open.append(art(item),el('h3','',item.title));card.append(open);const box=el('fieldset','hub-tracking');for(const [i,field] of fields.entries()){const label=el('label'),input=el('input');input.type='checkbox';input.checked=!!item[field];input.onchange=()=>{if(adapter.update({kind:'custom',groupId:custom.id,key:entry.id},field,input.checked)){item[field]=input.checked;refresh()}else{input.checked=!!item[field];alert('Could not save this change.')}};label.append(input,el('span','',labels[i]));box.append(label)}card.append(box);grid.append(card)}section.append(grid);root.append(section);
  }
  const {item:parent,members:list}=selected,isTV=parent.type==='show',refreshers=[];
  root.classList.add('hub-detail-view');
