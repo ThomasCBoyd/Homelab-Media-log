@@ -239,7 +239,7 @@ async function previewTMDB(source,fromCustomCollection=false){
     bucket[id]={...values,tmdb:{...info,id:Number(source.id)},tmdbId:Number(source.id),metadataLookup:{id:Number(source.id),status:'ok',identity,updatedAt:Date.now()}};
     localStorage.setItem(KEY,JSON.stringify(next));
    }catch(error){message.textContent='Could not save this title. Your collection was left unchanged.';add.disabled=false;return}
-   data=next;message.textContent='Added to '+destination+'.';if(!fromCustomCollection){render();rememberPlace()}close();if(fromCustomCollection)finish({id});
+   data=next;message.textContent='Added to '+destination+'.';if(!fromCustomCollection){render();rememberPlace()}if(fromCustomCollection){overlay.remove();const resolve=finish;finish=null;resolve?.({id})}else close();
   });
   add.disabled=duplicate||!fresh;actions.append(add,cancel);dialog.replaceChildren(heading,titleNode,message);if(poster)dialog.append(poster);dialog.append(summary);if(channelChoice)dialog.append(channelChoice.wrap);dialog.append(actions);if(channelChoice)channelChoice.select.focus();else add.focus();
  }catch(error){message.textContent='Could not load this TMDB preview. Try again later.';dialog.append(cancel)}
