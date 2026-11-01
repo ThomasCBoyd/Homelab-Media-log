@@ -6,9 +6,9 @@ function posterRequest(url){
  return url.protocol==='https:'&&url.hostname==='image.tmdb.org'&&url.pathname.startsWith('/t/p/');
 }
 async function storePoster(request,response){
- if(!response||!response.ok||response.type==='opaque')return;
+ if(!response||(!response.ok&&response.type!=='opaque'))return;
  const type=response.headers.get('content-type')||'';
- if(!type.startsWith('image/'))return;
+ if(response.type!=='opaque'&&!type.startsWith('image/'))return;
  try{
   const cache=await caches.open(POSTERS);
   await cache.put(request,response.clone());
