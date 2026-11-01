@@ -14,7 +14,10 @@ function mount(root,adapter){
  const data=adapter.data;data.customCollections ||= [];
  const el=(tag,cls,txt)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(txt!=null)n.textContent=txt;return n};
  const btn=(label,click)=>{const n=el('button','',label);n.type='button';n.onclick=click;return n};
- const area=el('section','hub-group custom-collections'),header=el('div','custom-collections-header');header.append(el('h2','','My Custom Collections'),btn('+ New Collection',()=>editor(null)));area.append(header);
+ const area=el('section','custom-collections-controls'),header=el('div','custom-collections-header');header.append(btn('+ New Collection',()=>editor(null)));area.append(header);
+ const movieGrid=root.querySelector('.hub-group:nth-of-type(2) .hub-grid')||root.querySelector('.hub-group .hub-grid');
+ const sections=[...root.querySelectorAll('.hub-group')];const movieSection=sections.find(x=>x.querySelector('h2')?.textContent.startsWith('Movie Box Sets'));const showSection=sections.find(x=>x.querySelector('h2')?.textContent.startsWith('TV Series Collections'));
+ const grids={movie:movieSection?.querySelector('.hub-grid'),show:showSection?.querySelector('.hub-grid')};
  const list=el('div','hub-grid');
  for(const group of data.customCollections){
   if(!group||!['movie','show'].includes(group.type))continue;
@@ -24,15 +27,15 @@ function mount(root,adapter){
   const detail=el('details');detail.append(el('summary','','View titles'));
   for(const title of titles){const line=el('div','custom-title-row');line.append(el('span','',title.title),btn('Remove',()=>{if(!confirm('Remove this title from the collection only?'))return;const latest=adapter.getData(),updated=(latest.customCollections||[]).map(g=>g.id===group.id?{...g,members:g.members.filter(k=>k!==title.id)}:g);if(adapter.save(updated)!==false)adapter.refresh()}));detail.append(line)}
   card.append(detail,btn('Edit',()=>editor(group)));
-  list.append(card);
+  (grids[group.type]||list).append(card);
  }
- if(!list.childElementCount)area.append(el('p','muted','Create a movie or TV show collection and add titles already in TV Land.'));
- else area.append(list);
- const recovery=el('details');recovery.append(el('summary','','Recently Deleted'));for(const entry of (data.tvLandTrash||[]).slice().reverse()){const line=el('div','custom-title-row');line.append(el('span','',entry.record?.name||entry.record?.title||'Untitled'),btn('Restore',()=>adapter.restore(entry.id)));recovery.append(line)}area.append(recovery);root.prepend(area);
+ if(list.childElementCount)area.append(list);
+ for(const [kind,section] of [['movie',movieSection],['show',showSection]]){if(!section)continue;const count=(data.customCollections||[]).filter(g=>g.type===kind).length;const title=section.querySelector('h2');if(title&&count){const n=Number(title.textContent.match(/\((\d+)\)/)?.[1]||0);title.textContent=(kind==='movie'?'Movie Box Sets':'TV Series Collections')+' ('+(n+count)+')'}const empty=section.querySelector('p.muted');if(empty&&section.querySelector('.hub-grid')?.children.length)empty.remove()}
+ const recovery=el('details');recovery.append(el('summary','','Recently Deleted'));for(const entry of (data.tvLandTrash||[]).slice().reverse()){const line=el('div','custom-title-row');line.append(el('span','',entry.record?.name||entry.record?.title||'Untitled'),btn('Restore',()=>adapter.restore(entry.id)));recovery.append(line)}area.append(recovery);const heading=root.querySelector('.hub-heading');if(heading)heading.after(area);else root.prepend(area);
  function editor(existing){
   const backdrop=el('div','custom-collection-overlay'),dialog=el('section','custom-collection-dialog');
   dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');dialog.setAttribute('aria-label',existing?'Edit Collection':'New Collection');
-  let phase=existing?1:0,kind=existing?.type||'movie',searchVersion=0,delay,remote=[];
+  let phase=existing?1:0,kind=existing?.type||'movie',searchVersion=0,delay,remote=[],adding=false;
   const selected=new Set(existing?.members||[]),name=el('input'),search=el('input'),cover=el('input'),body=el('div'),actions=el('div','custom-collection-actions');
   name.value=existing?.name||'';name.placeholder='Collection name';name.setAttribute('aria-label','Collection name');
   search.placeholder='Search your library and TMDB';search.setAttribute('aria-label','Search titles');
@@ -47,8 +50,8 @@ function mount(root,adapter){
    const row=(label,click,active)=>{const r=el('div','custom-title-row');r.append(el('span','',label),btn(active?'✓ Added':'+ Add',click));list.append(r)};
    for(const item of available)row(item.title,()=>{if(selected.has(item.id))selected.delete(item.id);else selected.add(item.id);redrawResults()},selected.has(item.id));
    for(const item of remote.filter(x=>x.kind===kind))row(item.title+(item.year?' ('+item.year+')':'')+' · TMDB',async()=>{
-    const result=await adapter.addTMDB(item);
-    if(result?.id){selected.add('item:'+result.id);remote=[];search.value='';redrawResults();const status=body.querySelector('.custom-search-status');if(status)status.textContent='Added to TV Land and selected for this collection.'}
+    if(adding)return;adding=true;const status=body.querySelector('.custom-search-status');if(status)status.textContent='Adding title…';
+    try{const result=await adapter.addTMDB(item);if(result?.id!=null){selected.add('item:'+result.id);remote=[];search.value='';if(status)status.textContent='Added to TV Land and selected for this collection.'}else if(status)status.textContent='Title was not added. Please select it from your library if it already exists.'}finally{adding=false;redrawResults()}
    },false);
    if(!available.length&&!remote.length)list.append(el('p','muted','No saved titles match. Try searching TMDB.'));
    count.textContent=selected.size+' titles selected';
@@ -62,9 +65,12 @@ function mount(root,adapter){
   }
   function save(){
    if(!name.value.trim()){alert('Enter a collection name.');return}
+   if(adding){alert('Please wait until the title finishes adding.');return}
    const latest=current(),id=existing?.id||'custom-'+Date.now()+'-'+Math.random().toString(36).slice(2);
    const url=cover.value.trim();if(url&&!/^https:\/\//i.test(url)){alert('Collection artwork must be an HTTPS URL.');return}
-   const group={id,type:kind,name:name.value.trim(),description:existing?.description||'',cover:url,members:[...selected].filter(k=>candidates(latest,kind).some(x=>x.id===k))};
+   const available=new Set(candidates(latest,kind).map(x=>x.id));const members=[...selected].filter(k=>available.has(k));
+   if(selected.size!==members.length){alert('Some selected titles were not saved in the library. Please go back and reselect them.');return}
+   const group={id,type:kind,name:name.value.trim(),description:existing?.description||'',cover:url,members};
    const updated=existing?(latest.customCollections||[]).map(x=>x.id===id?group:x):[...(latest.customCollections||[]),group];
    if(adapter.save(updated)===false){alert('Could not save the collection.');return}
    close();adapter.refresh();if(!url&&adapter.findCover)adapter.findCover(group);
@@ -80,7 +86,7 @@ function mount(root,adapter){
     actions.append(btn('Continue',()=>{if(!name.value.trim()){alert('Enter a collection name.');return}phase=1;draw()}),btn('Cancel',close));
    }else if(phase===1){
     body.append(el('h2','','Add '+(kind==='movie'?'Movies':'TV Shows')),search,el('p','custom-search-status muted','Search saved titles or TMDB.'),el('div','custom-collection-members'),el('p','custom-selected-count muted'));
-    actions.append(btn('Continue',()=>{phase=2;searchVersion++;clearTimeout(delay);draw()}),btn('Back',()=>{phase=0;searchVersion++;clearTimeout(delay);draw()}),btn('Cancel',close));
+    actions.append(btn('Continue',()=>{if(adding){alert('Please wait until the title finishes adding.');return}phase=2;searchVersion++;clearTimeout(delay);draw()}),btn('Back',()=>{phase=0;searchVersion++;clearTimeout(delay);draw()}),btn('Cancel',close));
     search.oninput=searchAll;redrawResults();if(search.value.trim().length>=2)searchAll();
    }else{
     body.append(el('h2','','Review Collection'),el('strong','',name.value),el('p','muted',(kind==='movie'?'Movies':'TV Shows')+' · '+selected.size+' titles'));
