@@ -18,24 +18,24 @@ function mount(root,adapter){
  for(const group of data.customCollections){
   if(!group||!['movie','show'].includes(group.type))continue;
   const card=el('article','hub-card custom-collection-card'),titles=valid(data,group);
-  card.append(el('strong','',group.name),el('span','muted',(group.type==='show'?'TV Shows':'Movies')+' · '+titles.length+' titles'));
+  const art=el('div','custom-cover'),image=el('img');image.alt='';image.loading='lazy';const urls=[group.cover,...valid(data,group).map(x=>adapter.poster(x.source))].filter(Boolean);let at=0;image.onerror=()=>{at++;if(urls[at])image.src=urls[at];else image.remove()};if(urls.length){image.src=urls[0];art.append(image)}else art.append(el('span','','TV LAND'));card.append(art);card.append(el('strong','',group.name),el('span','muted',(group.type==='show'?'TV Shows':'Movies')+' · '+titles.length+' titles'));
   if(group.description)card.append(el('p','muted',group.description));
   const detail=el('details');detail.append(el('summary','','View titles'));
-  for(const title of titles)detail.append(el('p','',title.title));
+  for(const title of titles){const line=el('div','custom-title-row');line.append(el('span','',title.title),btn('Remove',()=>{if(!confirm('Remove this title from the collection only?'))return;const latest=adapter.getData(),updated=(latest.customCollections||[]).map(g=>g.id===group.id?{...g,members:g.members.filter(k=>k!==title.id)}:g);if(adapter.save(updated)!==false)adapter.refresh()}));detail.append(line)}
   card.append(detail,btn('Edit',()=>editor(group)));
   list.append(card);
  }
  if(!list.childElementCount)area.append(el('p','muted','Create a movie or TV show collection and add titles already in TV Land.'));
  else area.append(list);
- root.prepend(area);
+ const recovery=el('details');recovery.append(el('summary','','Recently Deleted'));for(const entry of (data.tvLandTrash||[]).slice().reverse()){const line=el('div','custom-title-row');line.append(el('span','',entry.record?.name||entry.record?.title||'Untitled'),btn('Restore',()=>adapter.restore(entry.id)));recovery.append(line)}area.append(recovery);root.prepend(area);
  function editor(existing){
   const backdrop=el('div','custom-collection-overlay'),dialog=el('section','custom-collection-dialog');dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');dialog.setAttribute('aria-label',existing?'Edit collection':'Create collection');
-  const heading=el('h2','',existing?'Edit Collection':'Create Collection'),name=el('input'),desc=el('textarea'),type=el('select'),selection=el('div','custom-collection-members'),search=el('input');
+  const heading=el('h2','',existing?'Edit Collection':'New Collection'),name=el('input'),desc=el('textarea'),type=el('select'),selection=el('div','custom-collection-members'),search=el('input');
   name.placeholder='Collection name';name.setAttribute('aria-label','Collection name');name.value=existing?.name||'';
   desc.placeholder='Description (optional)';desc.setAttribute('aria-label','Description');desc.value=existing?.description||'';
   for(const [value,label] of [['movie','Movies'],['show','TV Shows']]){const o=el('option','',label);o.value=value;type.append(o)}
   type.value=existing?.type||'movie';type.setAttribute('aria-label','Collection type');if(existing)type.disabled=true;
-  search.placeholder='Find saved titles';search.setAttribute('aria-label','Search saved titles');
+  search.placeholder='Search your saved titles';search.setAttribute('aria-label','Search saved titles');
   const selected=new Set(existing?.members||[]);
   function choices(){
    selection.replaceChildren();
@@ -45,7 +45,7 @@ function mount(root,adapter){
   }
   type.onchange=()=>{selected.clear();choices()};search.oninput=choices;choices();
   const remoteArea=el('section','custom-collection-remote'),remoteStatus=el('p','muted','Search TMDB to add a title not already in TV Land.'),remoteList=el('div','custom-collection-members'),remoteSearch=el('input');
-  remoteSearch.placeholder='Search TMDB movies or TV shows';remoteSearch.setAttribute('aria-label','Search TMDB');remoteArea.append(el('h3','','Add a new title from TMDB'),remoteSearch,remoteStatus,remoteList);
+  remoteSearch.placeholder='Search TMDB for new titles';remoteSearch.setAttribute('aria-label','Search TMDB');remoteArea.append(el('h3','','Add a new title from TMDB'),remoteSearch,remoteStatus,remoteList);
   let searchSequence=0,searchDelay;
   remoteSearch.oninput=()=>{
    const query=remoteSearch.value.trim(),sequence=++searchSequence;clearTimeout(searchDelay);remoteList.replaceChildren();
@@ -73,12 +73,7 @@ function mount(root,adapter){
    if(adapter.save(updated)===false){alert('Could not save this collection.');return}
    close();adapter.refresh();
   }),btn('Cancel',close));
-  if(existing)actions.append(btn('Delete Collection',()=>{
-   if(!confirm('Delete only this custom collection? Its movies and TV shows will remain saved.'))return;
-   const latest=adapter.getData(),previous=latest.customCollections||[];
-   if(adapter.save(previous.filter(x=>x.id!==existing.id))===false){alert('Could not save deletion.');return}
-   close();adapter.refresh();
-  }));
+  if(existing)actions.append(btn('Delete Collection',()=>{if(!confirm('Move this collection to Recently Deleted? All titles remain in your library.'))return;close();adapter.deleteRecord('collection',existing.id)}));
   dialog.append(heading,el('label','','Collection name'),name,el('label','','Type'),type,el('label','','Description'),desc,el('label','','Add existing titles'),search,selection,remoteArea,actions);
   backdrop.append(dialog);document.body.append(backdrop);name.focus();backdrop.onclick=e=>{if(e.target===backdrop)close()};dialog.onkeydown=e=>{if(e.key==='Escape')close()};
  }
