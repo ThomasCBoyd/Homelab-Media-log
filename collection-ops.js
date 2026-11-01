@@ -11,7 +11,7 @@ function entries(data,type){
 function members(data,group){return entries(data,group.type).filter(x=>(group.members||[]).includes(x.key))}
 function softDelete(data,kind,id,parentId){
  const next=JSON.parse(JSON.stringify(data)),bin=next.tvLandTrash||[];
- let record,detail,related=[];
+ let record,detail,related=[],memberships=[];
  if(kind==='collection'){
   record=(next.customCollections||[]).find(x=>same(x.id,id));if(!record)return null;
   next.customCollections=next.customCollections.filter(x=>!same(x.id,id));
@@ -24,15 +24,17 @@ function softDelete(data,kind,id,parentId){
   next.items=next.items.filter(x=>!same(x.id,id));
   if(record.type==='show')next.collectionChildren=(next.collectionChildren||[]).filter(x=>!same(x.parentId,id));
   if(record.type==='show')delete next.showDetails?.[id];else delete next.movieDetails?.[id];
+  memberships=(next.customCollections||[]).filter(g=>(g.members||[]).includes('item:'+id)).map(g=>g.id);
   next.customCollections=(next.customCollections||[]).map(g=>({...g,members:(g.members||[]).filter(k=>k!=='item:'+id)}));
  }else if(kind==='child'){
   record=(next.collectionChildren||[]).find(x=>same(x.id,id)&&same(x.parentId,parentId));if(!record)return null;
   detail=next.movieDetails?.[id];
   next.collectionChildren=next.collectionChildren.filter(x=>!(same(x.id,id)&&same(x.parentId,parentId)));
   delete next.movieDetails?.[id];
+  memberships=(next.customCollections||[]).filter(g=>(g.members||[]).includes('child:'+id)).map(g=>g.id);
   next.customCollections=(next.customCollections||[]).map(g=>({...g,members:(g.members||[]).filter(k=>k!=='child:'+id)}));
  }else return null;
- bin.push({id:'trash-'+Date.now()+'-'+Math.random().toString(36).slice(2),kind,record,detail,related,parentId,deletedAt:Date.now()});
+ bin.push({id:'trash-'+Date.now()+'-'+Math.random().toString(36).slice(2),kind,record,detail,related,memberships,parentId,deletedAt:Date.now()});
  next.tvLandTrash=bin;return next;
 }
 function restore(data,trashId){
@@ -51,6 +53,7 @@ function restore(data,trashId){
   (next.collectionChildren||=[]).push(item.record);
   if(item.detail)(next.movieDetails||={})[id]=item.detail;
  }
+ if(item.memberships?.length){const key=(item.kind==='child'?'child:':'item:')+id;next.customCollections=(next.customCollections||[]).map(g=>item.memberships.includes(g.id)?{...g,members:[...new Set([...(g.members||[]),key])]}:g)}
  next.tvLandTrash=next.tvLandTrash.filter(x=>!same(x.id,trashId));return next;
 }
 root.TVLandCollectionOps={entries,members,softDelete,restore};
