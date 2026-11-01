@@ -5,8 +5,9 @@ const str=x=>String(x);
 function candidates(data,type){
  const parents=(data.items||[]).filter(x=>x.type===type);
  if(type==='show')return parents.map(x=>({id:'item:'+x.id,title:x.title,source:x}));
- const folders=new Set((data.collectionChildren||[]).map(x=>str(x.parentId)));
- return [...parents.filter(x=>!folders.has(str(x.id))).map(x=>({id:'item:'+x.id,title:x.title,source:x})),...(data.collectionChildren||[]).filter(x=>folders.has(str(x.parentId))).map(x=>({id:'child:'+x.id,title:x.title,source:x}))];
+ const movieParents=new Set(parents.map(x=>str(x.id)));
+ const folders=new Set((data.collectionChildren||[]).filter(x=>movieParents.has(str(x.parentId))).map(x=>str(x.parentId)));
+ return [...parents.filter(x=>!folders.has(str(x.id))).map(x=>({id:'item:'+x.id,title:x.title,source:x})),...(data.collectionChildren||[]).filter(x=>movieParents.has(str(x.parentId))).map(x=>({id:'child:'+x.id,title:x.title,source:x}))];
 }
 function valid(data,group){return candidates(data,group.type).filter(x=>(group.members||[]).includes(x.id))}
 function mount(root,adapter){
