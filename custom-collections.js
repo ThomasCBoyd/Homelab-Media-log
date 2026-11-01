@@ -58,7 +58,7 @@ function mount(root,adapter){
      remoteStatus.textContent=filtered.length?'Choose a title to preview and confirm.':'No matching TMDB titles found.';
      for(const item of filtered){const b=btn(item.title+(item.year?' ('+item.year+')':'')+' — Preview',async()=>{
        const result=await adapter.addTMDB(item);
-       if(result?.id){selected.add('item:'+result.id);choices();remoteStatus.textContent='Added to TV Land and selected for this collection. Save the collection to finish.';remoteList.replaceChildren()}
+       if(result?.id){selected.add('item:'+result.id);data.items=adapter.getData().items;choices();remoteStatus.textContent='Added to TV Land and selected for this collection. Save the collection to finish.';remoteList.replaceChildren()}
      });remoteList.append(b)}
     }catch{if(sequence===searchSequence)remoteStatus.textContent='TMDB search unavailable. Check your connection.'}
    },300);
@@ -68,15 +68,15 @@ function mount(root,adapter){
   actions.append(btn('Save Collection',()=>{
    const clean=name.value.trim();if(!clean){alert('Enter a collection name.');return}
    const next={id:existing?.id||'custom-'+Date.now()+'-'+Math.random().toString(36).slice(2),type:type.value,name:clean,description:desc.value.trim(),members:[...selected].filter(id=>candidates(data,type.value).some(x=>x.id===id))};
-   const previous=data.customCollections;
-   data.customCollections=existing?previous.map(x=>x.id===existing.id?next:x):[...previous,next];
-   if(adapter.save()===false){data.customCollections=previous;alert('Could not save this collection.');return}
+   const latest=adapter.getData(),previous=latest.customCollections||[];
+   const updated=existing?previous.map(x=>x.id===existing.id?next:x):[...previous,next];
+   if(adapter.save(updated)===false){alert('Could not save this collection.');return}
    close();adapter.refresh();
   }),btn('Cancel',close));
   if(existing)actions.append(btn('Delete Collection',()=>{
    if(!confirm('Delete only this custom collection? Its movies and TV shows will remain saved.'))return;
-   const previous=data.customCollections;data.customCollections=previous.filter(x=>x.id!==existing.id);
-   if(adapter.save()===false){data.customCollections=previous;alert('Could not save deletion.');return}
+   const latest=adapter.getData(),previous=latest.customCollections||[];
+   if(adapter.save(previous.filter(x=>x.id!==existing.id))===false){alert('Could not save deletion.');return}
    close();adapter.refresh();
   }));
   dialog.append(heading,el('label','','Collection name'),name,el('label','','Type'),type,el('label','','Description'),desc,el('label','','Add existing titles'),search,selection,remoteArea,actions);
