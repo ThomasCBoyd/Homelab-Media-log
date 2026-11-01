@@ -20,3 +20,5 @@
 .hub-detail-view .hub-movie h3{font-size:14px;margin:4px 0}.hub-detail-view .hub-movie-open>.hub-note{margin:4px 0}
 .hub-detail-view .hub-movie-open{min-height:64px}.hub-detail-view .hub-movie .hub-tracking{clear:both}
 @media(min-width:700px){.hub-detail-view .hub-movies{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.hub-grid.hub-list{grid-template-columns:1fr}.hub-list .hub-card{display:grid;grid-template-columns:70px minmax(0,1fr);column-gap:14px;align-items:center}.hub-list .hub-art{grid-row:1 / span 3;width:70px}.hub-list .hub-card strong,.hub-list .hub-card .muted,.hub-list .hub-card .hub-summary{grid-column:2}.hub-list .hub-summary{line-height:1.4}
