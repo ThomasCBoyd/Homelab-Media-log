@@ -15,7 +15,6 @@ function mount(root,adapter){
  const el=(tag,cls,txt)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(txt!=null)n.textContent=txt;return n};
  const btn=(label,click)=>{const n=el('button','',label);n.type='button';n.onclick=click;return n};
  const area=el('section','custom-collections-controls'),header=el('div','custom-collections-header');header.append(btn('+ New Collection',()=>editor(null)));area.append(header);
- const movieGrid=root.querySelector('.hub-group:nth-of-type(2) .hub-grid')||root.querySelector('.hub-group .hub-grid');
  const sections=[...root.querySelectorAll('.hub-group')];const movieSection=sections.find(x=>x.querySelector('h2')?.textContent.startsWith('Movie Box Sets'));const showSection=sections.find(x=>x.querySelector('h2')?.textContent.startsWith('TV Series Collections'));
  const grids={movie:movieSection?.querySelector('.hub-grid'),show:showSection?.querySelector('.hub-grid')};
  const list=el('div','hub-grid');
