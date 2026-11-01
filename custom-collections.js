@@ -35,7 +35,7 @@ function mount(root,adapter){
   desc.placeholder='Description (optional)';desc.setAttribute('aria-label','Description');desc.value=existing?.description||'';
   for(const [value,label] of [['movie','Movies'],['show','TV Shows']]){const o=el('option','',label);o.value=value;type.append(o)}
   type.value=existing?.type||'movie';type.setAttribute('aria-label','Collection type');if(existing)type.disabled=true;
-  search.placeholder='Search your saved titles';search.setAttribute('aria-label','Search saved titles');
+  search.placeholder='Search your library and TMDB';search.setAttribute('aria-label','Search saved titles');
   const selected=new Set(existing?.members||[]);
   function choices(){
    selection.replaceChildren();
@@ -43,9 +43,9 @@ function mount(root,adapter){
    for(const item of matches){const label=el('label'),check=el('input');check.type='checkbox';check.checked=selected.has(item.id);check.onchange=()=>check.checked?selected.add(item.id):selected.delete(item.id);label.append(check,document.createTextNode(' '+item.title));selection.append(label)}
    if(!matches.length)selection.append(el('p','muted','No matching saved titles. Add them to TV Land first.'));
   }
-  type.onchange=()=>{selected.clear();choices()};search.oninput=choices;choices();
+  type.onchange=()=>{selected.clear();choices()};search.oninput=()=>{choices();remoteSearch.value=search.value;remoteSearch.oninput()};choices();
   const remoteArea=el('section','custom-collection-remote'),remoteStatus=el('p','muted','Search TMDB to add a title not already in TV Land.'),remoteList=el('div','custom-collection-members'),remoteSearch=el('input');
-  remoteSearch.placeholder='Search TMDB for new titles';remoteSearch.setAttribute('aria-label','Search TMDB');remoteArea.append(el('h3','','Add a new title from TMDB'),remoteSearch,remoteStatus,remoteList);
+  remoteSearch.placeholder='Search TMDB for new titles';remoteSearch.setAttribute('aria-label','Search TMDB');remoteArea.append(el('h3','','TMDB results'),remoteStatus,remoteList);
   let searchSequence=0,searchDelay;
   remoteSearch.oninput=()=>{
    const query=remoteSearch.value.trim(),sequence=++searchSequence;clearTimeout(searchDelay);remoteList.replaceChildren();
