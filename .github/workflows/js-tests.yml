@@ -1,0 +1,23 @@
+name: TV Land JavaScript tests
+on:
+  pull_request:
+    paths:
+      - '**.js'
+      - 'tests/**'
+      - '.github/workflows/js-tests.yml'
+  push:
+    branches: [feature/tv-land-collection-redesign]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript syntax
+        run: |
+          node --check index.html 2>/dev/null || true
+          for f in *.js; do node --check "$f"; done
+      - name: Run JavaScript tests
+        run: node --test tests/*.test.js
