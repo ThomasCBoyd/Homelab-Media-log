@@ -44,6 +44,26 @@ function mount(root,adapter){
    if(!matches.length)selection.append(el('p','muted','No matching saved titles. Add them to TV Land first.'));
   }
   type.onchange=()=>{selected.clear();choices()};search.oninput=choices;choices();
+  const remoteArea=el('section','custom-collection-remote'),remoteStatus=el('p','muted','Search TMDB to add a title not already in TV Land.'),remoteList=el('div','custom-collection-members'),remoteSearch=el('input');
+  remoteSearch.placeholder='Search TMDB movies or TV shows';remoteSearch.setAttribute('aria-label','Search TMDB');remoteArea.append(el('h3','','Add a new title from TMDB'),remoteSearch,remoteStatus,remoteList);
+  let searchSequence=0,searchDelay;
+  remoteSearch.oninput=()=>{
+   const query=remoteSearch.value.trim(),sequence=++searchSequence;clearTimeout(searchDelay);remoteList.replaceChildren();
+   if(query.length<2){remoteStatus.textContent='Enter at least two characters.';return}
+   remoteStatus.textContent='Searching…';
+   searchDelay=setTimeout(async()=>{
+    try{
+     const results=await adapter.discover(query);if(sequence!==searchSequence)return;
+     const filtered=results.filter(x=>x.kind===type.value).slice(0,8);
+     remoteStatus.textContent=filtered.length?'Choose a title to preview and confirm.':'No matching TMDB titles found.';
+     for(const item of filtered){const b=btn(item.title+(item.year?' ('+item.year+')':'')+' — Preview',async()=>{
+       const result=await adapter.addTMDB(item);
+       if(result?.id){selected.add('item:'+result.id);choices();remoteStatus.textContent='Added to TV Land and selected for this collection. Save the collection to finish.';remoteList.replaceChildren()}
+     });remoteList.append(b)}
+    }catch{if(sequence===searchSequence)remoteStatus.textContent='TMDB search unavailable. Check your connection.'}
+   },300);
+  };
+  type.onchange=()=>{selected.clear();choices();remoteList.replaceChildren();remoteStatus.textContent='Search TMDB to add a title not already in TV Land.'};
   const actions=el('div','custom-collection-actions'),close=()=>backdrop.remove();
   actions.append(btn('Save Collection',()=>{
    const clean=name.value.trim();if(!clean){alert('Enter a collection name.');return}
@@ -59,7 +79,7 @@ function mount(root,adapter){
    if(adapter.save()===false){data.customCollections=previous;alert('Could not save deletion.');return}
    close();adapter.refresh();
   }));
-  dialog.append(heading,el('label','','Collection name'),name,el('label','','Type'),type,el('label','','Description'),desc,el('label','','Add existing titles'),search,selection,actions);
+  dialog.append(heading,el('label','','Collection name'),name,el('label','','Type'),type,el('label','','Description'),desc,el('label','','Add existing titles'),search,selection,remoteArea,actions);
   backdrop.append(dialog);document.body.append(backdrop);name.focus();backdrop.onclick=e=>{if(e.target===backdrop)close()};dialog.onkeydown=e=>{if(e.key==='Escape')close()};
  }
 }
