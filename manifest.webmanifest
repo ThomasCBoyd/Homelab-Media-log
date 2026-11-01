@@ -1,0 +1,18 @@
+{
+  "name": "TV Land — Your Personal Lineup",
+  "short_name": "TV Land",
+  "description": "Your personal movies and TV collection, available offline.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#061739",
+  "theme_color": "#10366e",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
