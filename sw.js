@@ -1,5 +1,5 @@
 /* TV Land offline shell. Never cache personal collection records or TMDB API responses. */
-const VERSION='tv-land-shell-20261101-v3';
+const VERSION='tv-land-shell-20261101-v4';
 const POSTERS='tv-land-posters-v1';
 const MAX_POSTERS=180;
 function posterRequest(url){
@@ -16,7 +16,7 @@ async function storePoster(request,response){
   if(keys.length>MAX_POSTERS)await Promise.all(keys.slice(0,keys.length-MAX_POSTERS).map(key=>cache.delete(key)));
  }catch(error){/* Storage quotas and private browsing may prevent caching. */}
 }
-const SHELL=['./','./index.html','./show.html','./movie.html','./metadata.js','./search.js','./collections.js','./home.js','./details.js','./custom-collections.js','./search.css','./home.css','./collections.css','./details.css','./manifest.webmanifest'];
+const SHELL=['./','./index.html','./show.html','./movie.html','./metadata.js','./search.js','./collections.js','./home.js','./details.js','./collection-ops.js','./custom-collections.js','./search.css','./home.css','./collections.css','./details.css','./manifest.webmanifest'];
 self.addEventListener('install',event=>{
  event.waitUntil((async()=>{
   const cache=await caches.open(VERSION);
