@@ -22,6 +22,7 @@ function softDelete(data,kind,id,parentId){
   // Refuse deletion of a legacy box set with child movies; avoid orphaning them.
   if(record.type==='movie'&&related.length)return {error:'This box set contains movies. Remove or move its movies before deleting the box set.'};
   next.items=next.items.filter(x=>!same(x.id,id));
+  if(record.type==='show')next.collectionChildren=(next.collectionChildren||[]).filter(x=>!same(x.parentId,id));
   if(record.type==='show')delete next.showDetails?.[id];else delete next.movieDetails?.[id];
   next.customCollections=(next.customCollections||[]).map(g=>({...g,members:(g.members||[]).filter(k=>k!=='item:'+id)}));
  }else if(kind==='child'){
@@ -43,6 +44,7 @@ function restore(data,trashId){
  }else if(item.kind==='item'){
   if(next.items.some(x=>same(x.id,id)))return null;
   next.items.push(item.record);
+  if(item.record.type==='show'&&item.related?.length)(next.collectionChildren||=[]).push(...item.related);
   if(item.detail)(item.record.type==='show'?(next.showDetails||={}):(next.movieDetails||={}))[id]=item.detail;
  }else if(item.kind==='child'){
   if((next.collectionChildren||[]).some(x=>same(x.id,id)))return null;
