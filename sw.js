@@ -1,5 +1,5 @@
 /* TV Land offline shell. Never cache personal collection records or TMDB API responses. */
-const VERSION='tv-land-shell-20261101-v9';
+const VERSION='tv-land-shell-20261101-v10';
 const POSTERS='tv-land-posters-v1';
 const MAX_POSTERS=180;
 function posterRequest(url){

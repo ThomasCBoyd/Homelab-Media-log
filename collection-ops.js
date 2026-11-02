@@ -44,6 +44,11 @@ function pruneTrash(data,now=Date.now()){
  next.tvLandTrash=old.filter(x=>Number.isFinite(x.deletedAt)&&x.deletedAt>now-RETENTION_MS);
  return {data:next,removed:old.length-next.tvLandTrash.length};
 }
+function deletePermanently(data,trashId){
+ if(!data||!Array.isArray(data.tvLandTrash)||trashId==null)return null;
+ const index=data.tvLandTrash.findIndex(x=>same(x.id,trashId));if(index<0)return null;
+ const next=JSON.parse(JSON.stringify(data));next.tvLandTrash.splice(index,1);return next;
+}
 function restore(data,trashId){
  const next=JSON.parse(JSON.stringify(data)),item=(next.tvLandTrash||[]).find(x=>same(x.id,trashId));if(!item)return null;
  const id=item.record.id;
@@ -63,6 +68,6 @@ function restore(data,trashId){
  if(item.memberships?.length){const key=(item.kind==='child'?'child:':'item:')+id;next.customCollections=(next.customCollections||[]).map(g=>item.memberships.includes(g.id)?{...g,members:[...new Set([...(g.members||[]),key])]}:g)}
  next.tvLandTrash=next.tvLandTrash.filter(x=>!same(x.id,trashId));return next;
 }
-root.TVLandCollectionOps={entries,members,softDelete,restore,pruneTrash,RETENTION_MS};
+root.TVLandCollectionOps={entries,members,softDelete,restore,deletePermanently,pruneTrash,RETENTION_MS};
 if(typeof module==='object')module.exports=root.TVLandCollectionOps;
 })(typeof globalThis!=='undefined'?globalThis:this);
