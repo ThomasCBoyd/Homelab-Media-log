@@ -9,7 +9,7 @@
 .clickable-movie{cursor:pointer}.clickable-movie:hover{background:rgba(255,255,255,.04)}.clickable-movie:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .swipe-nav{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:12px 0}.swipe-nav button{min-height:44px}.swipe-count{color:#bfd8f4;font-size:13px;text-align:center}
 
-@media (prefers-reduced-motion:no-preference){html[data-movie-slide="next"] main{animation:movie-enter-next .22s ease-out}html[data-movie-slide="previous"] main{animation:movie-enter-prev .22s ease-out}main.movie-exit-next{animation:movie-exit-next .16s ease-in forwards}main.movie-exit-previous{animation:movie-exit-prev .16s ease-in forwards}@keyframes movie-enter-next{from{opacity:.4;transform:translateX(24px)}to{opacity:1;transform:none}}@keyframes movie-enter-prev{from{opacity:.4;transform:translateX(-24px)}to{opacity:1;transform:none}}@keyframes movie-exit-next{to{opacity:.4;transform:translateX(-24px)}}@keyframes movie-exit-prev{to{opacity:.4;transform:translateX(24px)}}}
+@media (prefers-reduced-motion:no-preference){html[data-movie-slide="next"] main{animation:movie-enter-next .22s ease-out}html[data-movie-slide="previous"] main{animation:movie-enter-prev .22s ease-out}main.movie-exit-next{animation:movie-exit-next .16s ease-in forwards}main.movie-exit-previous{animation:movie-exit-prev .16s ease-in forwards}.movie-enter-next{animation:movie-enter-next .22s ease-out}.movie-enter-previous{animation:movie-enter-prev .22s ease-out}@keyframes movie-enter-next{from{opacity:.4;transform:translateX(24px)}to{opacity:1;transform:none}}@keyframes movie-enter-prev{from{opacity:.4;transform:translateX(-24px)}to{opacity:1;transform:none}}@keyframes movie-exit-next{to{opacity:.4;transform:translateX(-24px)}}@keyframes movie-exit-prev{to{opacity:.4;transform:translateX(24px)}}}
 </style>
 <link rel="stylesheet" href="./details.css?v=ventura-1.2"><link rel="manifest" href="./manifest.webmanifest"><meta name="theme-color" content="#10366e"><link rel="icon" href="./icon.svg"></head>
 <body><main>
@@ -24,7 +24,7 @@
 <script>
 'use strict';
 const KEY='comcast-collection-v1',POSTER_KEY='comcast-posters-v1',MANUAL_KEY='comcast-manual-posters-v1',API='https://posters.thomasboydspam.workers.dev';
-const $=id=>document.getElementById(id),params=new URLSearchParams(location.search),id=params.get('id'),parentId=params.get('parent');
+const $=id=>document.getElementById(id),params=new URLSearchParams(location.search);let id=params.get('id'),parentId=params.get('parent');
 const read=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}};
 const norm=value=>String(value||'').toLowerCase().replace(/[^a-z0-9]/g,'');
 const uid=()=>Date.now()+'-'+Math.random().toString(36).slice(2,9);
@@ -32,9 +32,9 @@ const savedManualPosters=read(MANUAL_KEY,[]);
 let manualPosterIds=new Set((Array.isArray(savedManualPosters)?savedManualPosters:[]).map(String));
 let data=read(KEY,null),posters=read(POSTER_KEY,{}),lastDelete=null,pendingCleanup=null,loading=false;
 if(data){data.collectionChildren ||= [];data.movieDetails ||= {};data.deletedMovieChildren ||= {}}
-const topLevel=data?.items?.find(x=>String(x.id)===String(id)&&x.type==='movie');
-const child=data?.collectionChildren?.find(x=>String(x.id)===String(id)&&String(x.parentId)===String(parentId));
-const parent=child?data.items.find(x=>String(x.id)===String(parentId)&&x.type==='movie'):null;
+let topLevel=data?.items?.find(x=>String(x.id)===String(id)&&x.type==='movie');
+let child=data?.collectionChildren?.find(x=>String(x.id)===String(id)&&String(x.parentId)===String(parentId));
+let parent=child?data.items.find(x=>String(x.id)===String(parentId)&&x.type==='movie'):null;
 const collectionId=params.get('collection');
 function setupCollectionNavigation(){
  if(!collectionId||!data||!item)return;
@@ -46,11 +46,27 @@ function setupCollectionNavigation(){
   const group=(data.items||[]).find(x=>String(x.id)===collectionId&&x.type==='movie');
   if(group)sequence=ClassicCollections.ordered(data,group,(data.collectionChildren||[]).filter(x=>String(x.parentId)===collectionId)).map(item=>({item,parent:group}));
  }
- const index=sequence.findIndex(x=>String(x.item.id)===String(id)&&(x.parent?String(x.parent.id)===String(parentId):!parentId));
+ let index=sequence.findIndex(x=>String(x.item.id)===String(id)&&(x.parent?String(x.parent.id)===String(parentId):!parentId));
  if(index<0||sequence.length<2)return;
  const nav=$('movieSwipeNav'),previous=$('previousMovie'),next=$('nextMovie');nav.hidden=false;
  $('moviePosition').textContent=(index+1)+' / '+sequence.length;previous.disabled=index===0;next.disabled=index===sequence.length-1;
- let navigating=false;function move(offset){const target=sequence[index+offset];if(!target||navigating)return;navigating=true;const url=new URL('./movie.html',location.href);url.searchParams.set('id',target.item.id);if(target.parent)url.searchParams.set('parent',target.parent.id);url.searchParams.set('collection',collectionId);const direction=offset>0?'next':'previous';try{sessionStorage.setItem('tvland-movie-slide',direction)}catch{}if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){location.assign(url.href);return}document.querySelector('main').classList.add('movie-exit-'+direction);setTimeout(()=>location.assign(url.href),160)}
+ let navigating=false;
+ function move(offset){
+  const target=sequence[index+offset];if(!target||navigating||!$('editor').hidden)return;
+  const latest=read(KEY,null);if(!latest||!Array.isArray(latest.items)||!Array.isArray(latest.collectionChildren))return;
+  const nextId=String(target.item.id),nextParent=target.parent?String(target.parent.id):null;
+  const nextItem=nextParent?latest.collectionChildren.find(x=>String(x.id)===nextId&&String(x.parentId)===nextParent):latest.items.find(x=>String(x.id)===nextId&&x.type==='movie');
+  if(!nextItem){status('This movie is no longer available.');return}
+  navigating=true;const main=document.querySelector('main'),direction=offset>0?'next':'previous';
+  const transition=()=>{
+   data=latest;data.movieDetails ||= {};data.deletedMovieChildren ||= {};id=nextId;parentId=nextParent;topLevel=nextParent?null:nextItem;child=nextParent?nextItem:null;parent=nextParent?data.items.find(x=>String(x.id)===nextParent&&x.type==='movie'):null;item=nextItem;index+=offset;
+   const url=new URL(location.href);url.searchParams.set('id',id);if(parentId)url.searchParams.set('parent',parentId);else url.searchParams.delete('parent');history.replaceState(history.state,'',url.href);
+   $('moviePosition').textContent=(index+1)+' / '+sequence.length;previous.disabled=index===0;next.disabled=index===sequence.length-1;$('status').textContent='';$('collectionCard').hidden=true;document.getElementById('collectionRelationship')?.remove();render();
+   main.classList.remove('movie-exit-'+direction);main.classList.remove('movie-enter-next','movie-enter-previous');void main.offsetWidth;main.classList.add('movie-enter-'+direction);navigating=false;
+  };
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){transition();return}
+  main.classList.remove('movie-enter-next','movie-enter-previous');main.classList.add('movie-exit-'+direction);setTimeout(transition,160);
+ }
  previous.onclick=()=>move(-1);next.onclick=()=>move(1);
  let start=null;document.addEventListener('touchstart',e=>{if(e.touches.length!==1||e.target.closest('button,a,input,textarea,select,dialog,[contenteditable]')){start=null;return}start={x:e.touches[0].clientX,y:e.touches[0].clientY}},{passive:true});
  document.addEventListener('touchend',e=>{if(!start||!e.changedTouches.length)return;const dx=e.changedTouches[0].clientX-start.x,dy=e.changedTouches[0].clientY-start.y;start=null;if(Math.abs(dx)>80&&Math.abs(dx)>Math.abs(dy)*1.5)move(dx<0?1:-1)},{passive:true});
